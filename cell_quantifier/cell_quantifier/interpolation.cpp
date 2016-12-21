@@ -1,8 +1,11 @@
 #include "interpolation.hpp"
+
+#include "auxiliary.hpp"
 #include <iostream>
 
+
 // Calculate the cross product of two points.
-float cross(cv::Point2d a, cv::Point2d b)
+double cross(cv::Point2d a, cv::Point2d b)
 {
 	return a.x*b.y - a.y*b.x;
 }
@@ -28,12 +31,31 @@ cv::Vec3d nearestNeighborInterpolation(cv::Mat image, cv::Point2d p, cv::Point2d
 }
 
 
+// Interpolates the color of a point p in a triangle
+// that is defined by the three points a, b and c. The area
+// of the sub-triangles ABP, BCP and CAP weights the color of p.
+cv::Vec3d barycentricInterpolation(cv::Mat image, cv::Point2d p, cv::Point2d a, cv::Point2d b, cv::Point2d c)
+{
+	// get weight coefficients from triangle areas
+	double tri_area = triangleArea(a, b, c);
+
+	double alpha_a = triangleArea(b, c, p) / tri_area;
+	double alpha_b = triangleArea(a, p, c) / tri_area;
+	double alpha_c = triangleArea(a, b, p) / tri_area;
+
+	// alpha_a + alpha_b + alpha_c = 1, get interpolated color
+	cv::Vec3d pixelVal = image.at<cv::Vec3d>(a) * alpha_a + image.at<cv::Vec3d>(b) * alpha_b + image.at<cv::Vec3d>(c) * alpha_c;
+
+	return pixelVal;
+}
+
+
 // Find u,v interpolation values for a point p
 // that is lies between the four vertices of the quadroid 
 // defined by a, b, c and d.
 // see: http://www.iquilezles.org/www/articles/ibilinear/ibilinear.htm
 // and: http://stackoverflow.com/questions/808441/inverse-bilinear-interpolation
-cv::Vec2d invBilinearInterpolation(cv::Point2d p, cv::Point2d a, cv::Point2d b, cv::Point2d c, cv::Point2d d)
+cv::Vec2d invBilinearInterpolation(cv::Mat image, cv::Point2d p, cv::Point2d a, cv::Point2d b, cv::Point2d c, cv::Point2d d)
 {
 	cv::Point2d e = b - a;
 	cv::Point2d f = d - a;
@@ -83,8 +105,8 @@ cv::Vec2d invBilinearInterpolation(cv::Point2d p, cv::Point2d a, cv::Point2d b, 
 	// if those aren't either, there is none (I guess)
 	if (v < 0.0 || v > 1.0 || u < 0.0 || u > 1.0)
 	{
-		u = -1.0;
-		v = -1.0;
+		u = clamp(u, 0, 1); // -1.0;
+		v = clamp(v, 0, 1); // -1.0;
 	}
 
 	return cv::Vec2d(u, v);

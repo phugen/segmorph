@@ -36,8 +36,8 @@ void elasticDeformation(cv::Mat* image, cv::Mat* label, int gridSize, double sig
 
 
 	std::random_device rdev;
-	uint64_t seed = 1; // (uint64_t(rdev()) << 32) | rdev(); 
-	cv::RNG randomgen = cv::RNG::RNG(seed);
+	uint64_t seed = (uint64_t(rdev()) << 32) | rdev(); 
+	cv::RNG randomgen = cv::RNG::RNG(seed); 
 
 	randomgen.fill(xField, cv::RNG::UNIFORM, -1, 1, true);
 	randomgen.fill(yField, cv::RNG::UNIFORM, -1, 1, true);
@@ -193,9 +193,9 @@ void elasticDeformation(cv::Mat* image, cv::Mat* label, int gridSize, double sig
 			}
 
 
-			// rasterize point coordinates (happens automatically I think)
-			//q1.x = cvRound(q1.x); q2.x = cvRound(q2.x); q3.x = cvRound(q3.x); q4.x = cvRound(q4.x);
-			//q1.y = cvRound(q1.y); q2.y = cvRound(q2.y); q3.y = cvRound(q3.y); q4.y = cvRound(q4.y);
+			// rasterize point coordinates
+			q1.x = cvRound(q1.x); q2.x = cvRound(q2.x); q3.x = cvRound(q3.x); q4.x = cvRound(q4.x);
+			q1.y = cvRound(q1.y); q2.y = cvRound(q2.y); q3.y = cvRound(q3.y); q4.y = cvRound(q4.y);
 
 
 //#define CIRCLES 1
@@ -216,7 +216,12 @@ void elasticDeformation(cv::Mat* image, cv::Mat* label, int gridSize, double sig
 
 #define INTERPOLATE 1
 #ifdef INTERPOLATE
-			std::vector<cv::Point2d> cell = { q1, q2, q3, q4, q1 }; // contour of quad
+			std::vector<cv::Point2d> cell = { q1, q2, q3, q4, q1 }; // contour of tri1
+
+			// split quad into two triangles
+			// TODO: split intelligently?
+			std::vector<cv::Point2d> tri1 = { q1, q2, q3, q1 };
+			std::vector<cv::Point2d> tri2 = { q1, q3, q4, q1 };
 
 			// get MBR of current grid cell
 			double minX = fmin(q1.x, fmin(q2.x, fmin(q3.x, q4.x)));
@@ -225,37 +230,58 @@ void elasticDeformation(cv::Mat* image, cv::Mat* label, int gridSize, double sig
 			double minY = fmin(q1.y, fmin(q2.y, fmin(q3.y, q4.y)));
 			double maxY = fmax(q1.y, fmax(q2.y, fmax(q3.y, q4.y)));
 
-			// for each point in the grid shape's MBR that inside the cell:
+			// for each point in the grid shape's MBR that's inside the cell:
 			// Interpolate values via inverse bilinear interpolation
-			for (double grid_y = q1.y; grid_y < maxY; grid_y++)
+			for (double grid_y = minY; grid_y < maxY; grid_y++)
 			{
-				for (double grid_x = q1.x; grid_x < maxX; grid_x++)
+				for (double grid_x = minX; grid_x < maxX; grid_x++)
 				{
 					cv::Point2d p = cv::Point2d(grid_x, grid_y); // interpolation point
 					cv::Vec3d pixelVal; // pixel color
 
-					if (p.x == 140 && p.y == 149)
+					if (p.x == 322 && p.y == 64)
 						std::cout << "GOT EM" << std::endl;
 
-					// is the point inside the irregular grid cell? If no, don't interpolate
-					// (Points on the boundary count as inside the cell)
-					//if(!isInsideConvexQuadrilateral(p, q1, q2, q3, q4))
+#define BARYCENTRIC
+#ifdef BARYCENTRIC
+					// Is p inside triangle 1 or 2? If yes,
+					// perform barycentric interpolation for p
+					// (Points on the boundary count as inside the triangle)
+					if (winding_isInPolygon(p, tri1))
+					{
+						pixelVal = barycentricInterpolation(*image, p, q1, q2, q3);
+					}
+
+					else if (winding_isInPolygon(p, tri2))
+					{
+						pixelVal = barycentricInterpolation(*image, p, q1, q3, q4);
+					}
+
+					// If not, don't interpolate
+					else
+					{
+						continue;
+					}
+#endif
+
+
+
+//#define BILINEAR
+#ifdef BILINEAR
 					if (!winding_isInPolygon(p, cell))
 					{
-						//std::cout << contour << std::endl;
 						continue;
 					}
 
-
 					// inverse bilinear interpolation for original image:
 					// get u and v parameters for interpolation
-					cv::Vec2d inv = invBilinearInterpolation(p, q1, q2, q3, q4);
+					cv::Vec2d inv = invBilinearInterpolation(*image, p, q1, q2, q3, q4);
 
 					// calculate bilinearly interpolated value
 					if (inv == cv::Vec2d(-1.0, -1.0))
 					{
 						// if no solution: do nearest neighbor interpolation
-						pixelVal = nearestNeighborInterpolation(*image, p, q1, q2, q3, q4);
+						pixelVal = cv::Vec3d(0, 255, 0); // nearestNeighborInterpolation(*image, p, q1, q2, q3, q4);
 					}
 
 					else
@@ -266,6 +292,7 @@ void elasticDeformation(cv::Mat* image, cv::Mat* label, int gridSize, double sig
 								* ((1 - inv[1]) * image->at<cv::Vec3d>(q3) + inv[1]
 								* image->at<cv::Vec3d>(q4));
 					}
+#endif
 
 					// apply chosen color to output image
 					imageElastic.at<cv::Vec3d>(p) = pixelVal;

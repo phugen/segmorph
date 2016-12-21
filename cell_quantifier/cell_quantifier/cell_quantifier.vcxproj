@@ -119,11 +119,14 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>$(OPENCV_DIR)\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>$(OPENCV_DIR)\x64\vc12\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>opencv_world300.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -132,9 +135,14 @@
     <ClCompile Include="graphCut.cpp" />
     <ClCompile Include="ipan.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="ipanPoint.cpp" />
-    <ClCompile Include="ipanTriangle.cpp" />
+    <ClCompile Include="ipanPoint.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="ipanTriangle.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="auxiliary.cpp" />
     <ClCompile Include="Kmeans.cpp" />
     <ClCompile Include="main.cpp" />
@@ -154,9 +162,15 @@
     <ClInclude Include="graphCut.hpp" />
     <ClInclude Include="Kmeans.hpp" />
     <ClInclude Include="ipanTest.hpp" />
-    <ClInclude Include="ipanPoint.hpp" />
-    <ClInclude Include="ipan.hpp" />
-    <ClInclude Include="ipanTriangle.hpp" />
+    <ClInclude Include="ipanPoint.hpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="ipan.hpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="ipanTriangle.hpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="Otsu.hpp" />
     <ClInclude Include="SegmentationTest.hpp" />
   </ItemGroup>
