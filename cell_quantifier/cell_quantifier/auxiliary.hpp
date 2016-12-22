@@ -24,9 +24,14 @@
 
 // Constants
 const double pi = 3.14159265358979323846;
+const int ACCESS_MIRROR = 0;
+const int ACCESS_NEUTRAL = 1;
+const int ACCESS_CLAMP = 2;
+const double NEUTRAL = 0.0;
 
 // Misc functions
 int mod(int a, int b);
+double fmod_custom(double x, double m);
 double clamp(double val, double low, double high);
 std::vector<std::string> listFilesInDirectory(std::string path);
 
@@ -40,3 +45,6 @@ bool isInsideConvexQuadrilateral(cv::Point2d p, cv::Point2d q1, cv::Point2d q2, 
 bool winding_isInPolygon(cv::Point2d P, std::vector<cv::Point2d> V);
 double triangleArea(cv::Point2d a, cv::Point2d b, cv::Point2d c);
 
+
+template <typename T> int writeSafe(cv::Mat* mat, int y, int x, T val, int mode = ACCESS_MIRROR);
+template <typename T> T readSafe(cv::Mat* mat, int y, int x, int mode = ACCESS_MIRROR);

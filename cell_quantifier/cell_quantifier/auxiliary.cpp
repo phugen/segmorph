@@ -19,6 +19,52 @@ int mod(int a, int b)
 	return ret;
 }
 
+// Analogous to mod above, but for floating-point numbers.
+double fmod_custom(double x, double m)
+{
+	double res = INFINITY;
+
+	if (m == 0)
+		return res;
+
+	double posMod, negMod, posM, posX;
+
+	posM = m < 0 ? -m : m;
+	posX = x < 0 ? -x : x;
+
+	posMod = fmod(posX, posM);
+	negMod = fmod(-posX, posM) + posM;
+
+	// pick up the correct res
+	if (x >= 0)
+	{
+		if (m > 0)
+		{
+			res = posMod;
+		}
+
+		else
+		{
+			res = -negMod;
+		}
+	}
+
+	else
+	{
+		if (m > 0)
+		{
+			res = negMod;
+		}
+
+		else
+		{
+			res = -posMod;
+		}
+	}
+
+	return res;
+}
+
 
 /*
 	Clamps the input value to the specified range.
@@ -394,6 +440,8 @@ void overlayFoundBorders(std::string GTPath, cv::Mat segmented, std::string wind
 
 
 
+
+
 /*
 	Creates more training data from an image (and its ground truth label image) by applying the
 	following transformations randomly:
@@ -473,7 +521,7 @@ void augmentImageAndLabel(std::string imagePath, std::string labelPath, double m
 	cv::Mat elasticImage = flipped;
 	cv::Mat elasticLabel = flippedLabel;
 
-	int gridSize = 10;
+	int gridSize = 1;
 	int sigma = 20;
 	int alpha = 8000;
 	elasticDeformation(&elasticImage, &elasticLabel, gridSize, sigma, alpha);

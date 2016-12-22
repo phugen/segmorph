@@ -1,6 +1,6 @@
 #include "interpolation.hpp"
-
 #include "auxiliary.hpp"
+#include "ElasticDeformation.hpp"
 #include <iostream>
 
 
@@ -24,7 +24,8 @@ cv::Vec3d nearestNeighborInterpolation(cv::Mat image, cv::Point2d p, cv::Point2d
 	});
 
 	// return color of closest point
-	cv::Vec3d color = image.at<cv::Vec3d>(sortedByDist.front());
+	cv::Point2d closest = sortedByDist.front();
+	cv::Vec3d color = readSafe<cv::Vec3d>(&image, closest.y, closest.x);
 		
 
 	return color;
@@ -44,7 +45,9 @@ cv::Vec3d barycentricInterpolation(cv::Mat image, cv::Point2d p, cv::Point2d a, 
 	double alpha_c = triangleArea(a, b, p) / tri_area;
 
 	// alpha_a + alpha_b + alpha_c = 1, get interpolated color
-	cv::Vec3d pixelVal = image.at<cv::Vec3d>(a) * alpha_a + image.at<cv::Vec3d>(b) * alpha_b + image.at<cv::Vec3d>(c) * alpha_c;
+	cv::Vec3d pixelVal = readSafe<cv::Vec3d>(&image, a.y, a.x) * alpha_a 
+					   + readSafe<cv::Vec3d>(&image, b.y, b.x) * alpha_b 
+					   + readSafe<cv::Vec3d>(&image, c.y, c.x) * alpha_c;
 
 	return pixelVal;
 }
