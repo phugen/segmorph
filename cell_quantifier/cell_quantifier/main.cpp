@@ -116,7 +116,5 @@ int main(int argc, char* argv)
 	augmentImageAndLabel(ipath, labelPath, 0, 0);
 
 	cv::waitKey(0);
-
-
 	return 0;
 }

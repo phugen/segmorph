@@ -75,6 +75,9 @@
     <ClCompile Include="elasticDeformation.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="extractSamples.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="auxiliary.hpp">
@@ -117,6 +120,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ElasticDeformation.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="extractSamples.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

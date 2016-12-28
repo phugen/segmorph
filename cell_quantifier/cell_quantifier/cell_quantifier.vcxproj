@@ -131,6 +131,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="elasticDeformation.cpp" />
+    <ClCompile Include="extractSamples.cpp" />
     <ClCompile Include="interpolation.cpp" />
     <ClCompile Include="graphCut.cpp" />
     <ClCompile Include="ipan.cpp">
@@ -156,6 +157,7 @@
     <ClInclude Include="ActiveContour.hpp" />
     <ClInclude Include="auxiliary.hpp" />
     <ClInclude Include="ElasticDeformation.hpp" />
+    <ClInclude Include="extractSamples.hpp" />
     <ClInclude Include="interpolation.hpp" />
     <ClInclude Include="GMM.hpp" />
     <ClInclude Include="edge.hpp" />

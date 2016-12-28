@@ -36,7 +36,7 @@ void elasticDeformation(cv::Mat* image, cv::Mat* label, int gridSize, double sig
 
 
 	std::random_device rdev;
-	uint64_t seed = 1; // (uint64_t(rdev()) << 32) | rdev();
+	uint64_t seed = (uint64_t(rdev()) << 32) | rdev();
 	cv::RNG randomgen = cv::RNG::RNG(seed);
 
 	randomgen.fill(xField, cv::RNG::UNIFORM, -1, 1, true);
