@@ -25,11 +25,17 @@
     <Filter Include="Header Files\Tests">
       <UniqueIdentifier>{dccb5580-b9a0-431b-ae73-32b4a754e5e7}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Segmentation">
+    <Filter Include="Source Files\Segmentation_Tests">
+      <UniqueIdentifier>{7ba08a05-bc51-427d-8f5b-612ad8618bc1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Segmentation_Tests">
       <UniqueIdentifier>{7ae939b9-6a2e-4bd4-913d-60badc8b2056}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Segmentation">
-      <UniqueIdentifier>{7ba08a05-bc51-427d-8f5b-612ad8618bc1}</UniqueIdentifier>
+    <Filter Include="Source Files\Data_Structures">
+      <UniqueIdentifier>{80412e69-dc0d-473d-ab50-72f1a5a62e2d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Data_Structures">
+      <UniqueIdentifier>{c4205fd6-21fc-4ca0-8cd6-25a692382252}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -52,22 +58,22 @@
       <Filter>Source Files\Tests</Filter>
     </ClCompile>
     <ClCompile Include="GMM.cpp">
-      <Filter>Source Files\Segmentation</Filter>
+      <Filter>Source Files\Segmentation_Tests</Filter>
     </ClCompile>
     <ClCompile Include="Otsu.cpp">
-      <Filter>Source Files\Segmentation</Filter>
+      <Filter>Source Files\Segmentation_Tests</Filter>
     </ClCompile>
     <ClCompile Include="Kmeans.cpp">
-      <Filter>Source Files\Segmentation</Filter>
+      <Filter>Source Files\Segmentation_Tests</Filter>
     </ClCompile>
     <ClCompile Include="edge.cpp">
-      <Filter>Source Files\Segmentation</Filter>
+      <Filter>Source Files\Segmentation_Tests</Filter>
     </ClCompile>
     <ClCompile Include="activeContour.cpp">
-      <Filter>Source Files\Segmentation</Filter>
+      <Filter>Source Files\Segmentation_Tests</Filter>
     </ClCompile>
     <ClCompile Include="graphCut.cpp">
-      <Filter>Source Files\Segmentation</Filter>
+      <Filter>Source Files\Segmentation_Tests</Filter>
     </ClCompile>
     <ClCompile Include="interpolation.cpp">
       <Filter>Source Files</Filter>
@@ -99,22 +105,22 @@
       <Filter>Header Files\Tests</Filter>
     </ClInclude>
     <ClInclude Include="Otsu.hpp">
-      <Filter>Header Files\Segmentation</Filter>
+      <Filter>Header Files\Segmentation_Tests</Filter>
     </ClInclude>
     <ClInclude Include="GMM.hpp">
-      <Filter>Header Files\Segmentation</Filter>
+      <Filter>Header Files\Segmentation_Tests</Filter>
     </ClInclude>
     <ClInclude Include="Kmeans.hpp">
-      <Filter>Header Files\Segmentation</Filter>
+      <Filter>Header Files\Segmentation_Tests</Filter>
     </ClInclude>
     <ClInclude Include="edge.hpp">
-      <Filter>Header Files\Segmentation</Filter>
+      <Filter>Header Files\Segmentation_Tests</Filter>
     </ClInclude>
     <ClInclude Include="ActiveContour.hpp">
-      <Filter>Header Files\Segmentation</Filter>
+      <Filter>Header Files\Segmentation_Tests</Filter>
     </ClInclude>
     <ClInclude Include="graphCut.hpp">
-      <Filter>Header Files\Segmentation</Filter>
+      <Filter>Header Files\Segmentation_Tests</Filter>
     </ClInclude>
     <ClInclude Include="interpolation.hpp">
       <Filter>Header Files</Filter>

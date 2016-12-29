@@ -321,6 +321,8 @@ void elasticDeformation(cv::Mat* image, cv::Mat* label, int gridSize, double sig
 		std::cout << "Interpolation: Row " << y << " of " << numCellY - 1 << " done" << std::endl;
 	}
 
+	std::cout << std::endl;
+
 	// assign changes to input matrices
 	*image = imageElastic;
 	*label = labelElastic;

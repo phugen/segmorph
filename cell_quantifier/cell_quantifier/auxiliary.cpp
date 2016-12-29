@@ -544,13 +544,11 @@ void augmentImageAndLabel(std::string imagePath, std::string labelPath, double m
 
 
 	// extract samples from augmented image
-	int sample_width = 10;
-	int sample_height = 7;
+	int sample_width = 200;
+	int sample_height = 100;
 
-
-	extractSamples(&rotatedImage, sample_width, sample_height); // TODO: extract non-masked areas first because they're the same for original/image
-
-
+	extractSamples(&rotatedImage, imagePath, sample_width, sample_height);
+	extractSamples(&rotatedLabel, labelPath, sample_width, sample_height); 
 
 
 	// save augmented image

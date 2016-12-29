@@ -1,8 +1,9 @@
-﻿Build started 27.12.2016 21:33:14.
+﻿Build started 29.12.2016 00:35:37.
      1>Project "G:\CDEF_2013\CF\F_GNAGNA\Stuff\Studium\Master\WS_2016\Masterarbeit\cell_quantifier\cell_quantifier\cell_quantifier\cell_quantifier.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
-         G:\CDEF_2013\CF\F_GNAGNA\Programme\Microsoft_Visual_Studio_13.0_Pro\VC\bin\x86_amd64\CL.exe /c /IG:\CDEF_2013\CF\F_GNAGNA\Programme\openCV\build\include /Zi /nologo /W3 /WX- /sdl /Od /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"x64\Debug\\" /Fd"x64\Debug\vc120.pdb" /Gd /TP /errorReport:prompt extractSamples.cpp
-         extractSamples.cpp
+         G:\CDEF_2013\CF\F_GNAGNA\Programme\Microsoft_Visual_Studio_13.0_Pro\VC\bin\x86_amd64\CL.exe /c /IG:\CDEF_2013\CF\F_GNAGNA\Programme\openCV\build\include /Zi /nologo /W3 /WX- /sdl /Od /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"x64\Debug\\" /Fd"x64\Debug\vc120.pdb" /Gd /TP /errorReport:prompt auxiliary.cpp
+         auxiliary.cpp
+     1>auxiliary.cpp(393): warning C4800: 'BOOL' : forcing value to bool 'true' or 'false' (performance warning)
        Link:
          G:\CDEF_2013\CF\F_GNAGNA\Programme\Microsoft_Visual_Studio_13.0_Pro\VC\bin\x86_amd64\link.exe /ERRORREPORT:PROMPT /OUT:"G:\CDEF_2013\CF\F_GNAGNA\Stuff\Studium\Master\WS_2016\Masterarbeit\cell_quantifier\cell_quantifier\x64\Debug\cell_quantifier.exe" /INCREMENTAL /NOLOGO /LIBPATH:G:\CDEF_2013\CF\F_GNAGNA\Programme\openCV\build\x64\vc12\lib opencv_world300.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"G:\CDEF_2013\CF\F_GNAGNA\Stuff\Studium\Master\WS_2016\Masterarbeit\cell_quantifier\cell_quantifier\x64\Debug\cell_quantifier.pdb" /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"G:\CDEF_2013\CF\F_GNAGNA\Stuff\Studium\Master\WS_2016\Masterarbeit\cell_quantifier\cell_quantifier\x64\Debug\cell_quantifier.lib" /MACHINE:X64 x64\Debug\elasticDeformation.obj
          x64\Debug\extractSamples.obj
@@ -23,4 +24,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:01.49
+Time Elapsed 00:00:01.92

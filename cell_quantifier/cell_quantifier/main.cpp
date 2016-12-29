@@ -110,8 +110,8 @@ int main(int argc, char* argv)
 	//segmented = segmentGraphcut(matInput, 5);
 	//overlayFoundBorders(GTPath, segmented, std::string("graphcut overlay"));
 
-	std::string ipath = "G:/CDEF_2013/CF/F_GNAGNA/Stuff/Studium/Master/WS_2016/Masterarbeit/Test_Data/WT.bmp";
-	std::string labelPath = "G:/CDEF_2013/CF/F_GNAGNA/Stuff/Studium/Master/WS_2016/Masterarbeit/Test_Data/WT_label.bmp";
+	std::string ipath = "G:/CDEF_2013/CF/F_GNAGNA/Stuff/Studium/Master/WS_2016/Masterarbeit/Test_Data/vincent_van_gogh.jpg";
+	std::string labelPath = "G:/CDEF_2013/CF/F_GNAGNA/Stuff/Studium/Master/WS_2016/Masterarbeit/Test_Data/vincent_van_gogh_label.jpg";
 
 	augmentImageAndLabel(ipath, labelPath, 0, 0);
 
