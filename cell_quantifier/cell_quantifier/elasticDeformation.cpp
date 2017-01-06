@@ -241,6 +241,7 @@ void elasticDeformation(cv::Mat* image, cv::Mat* label, int gridSize, double sig
 						std::cout << "GOT EM" << std::endl;
 
 					// if grid only 1x1: don't interpolate
+					// TODO: VECTORIZE THIS
 					if (gridSize == 1)
 					{
 						imageElastic.at<cv::Vec3d>(y, x) = readSafe<cv::Vec3d>(image, p.y, p.x);

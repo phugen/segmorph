@@ -90,11 +90,12 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(OPENCV_DIR)\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(OPENCV_DIR)\include;G:\CDEF_2013\CF\F_GNAGNA\Programme\Caffe\caffe\include;G:\CDEF_2013\CF\F_GNAGNA\Programme\Caffe\caffe\libraries\include;G:\CDEF_2013\CF\F_GNAGNA\Programme\CUDA\Toolkit\include</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32_LEAN_AND_MEAN;NO_STRICT;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(OPENCV_DIR)\x64\vc12\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(OPENCV_DIR)\x64\vc12\lib;G:\CDEF_2013\CF\F_GNAGNA\Programme\Caffe\caffe\scripts\build\lib\Release;G:\CDEF_2013\CF\F_GNAGNA\Stuff\Studium\Master\WS_2016\Masterarbeit\cell_quantifier\cell_quantifier\cell_quantifier;G:\CDEF_2013\CF\F_GNAGNA\Programme\Nvidia_cuDNN\bin</AdditionalLibraryDirectories>
       <AdditionalDependencies>opencv_world300.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -152,6 +153,7 @@
     <ClCompile Include="Otsu.cpp" />
     <ClCompile Include="edge.cpp" />
     <ClCompile Include="activeContour.cpp" />
+    <ClCompile Include="unet.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ActiveContour.hpp" />
@@ -175,6 +177,7 @@
     </ClInclude>
     <ClInclude Include="Otsu.hpp" />
     <ClInclude Include="SegmentationTest.hpp" />
+    <ClInclude Include="unet.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

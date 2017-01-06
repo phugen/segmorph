@@ -456,7 +456,7 @@ void overlayFoundBorders(std::string GTPath, cv::Mat segmented, std::string wind
 	The "iterations" variable controls how many distorted versions of the input
 	image are created.
 */
-void augmentImageAndLabel(std::string imagePath, std::string labelPath, double magnitude, int iterations)
+std::vector<std::string> augmentImageAndLabel(std::string imagePath, std::string labelPath, double magnitude, int iterations)
 {
 	cv::Mat imageNew, labelNew;
 
@@ -529,6 +529,8 @@ void augmentImageAndLabel(std::string imagePath, std::string labelPath, double m
 
 	// random rotation (keep aspect ratio; cut off image and fill blank
 	// space with special mask color to keep it from being processed
+
+
 	std::uniform_real_distribution<double> uniangle(0, 359);
 	cv::Mat rotatedImage = cv::Mat(elasticImage.size(), elasticImage.type(), cv::Scalar(0, 255, 255));
 	cv::Mat rotatedLabel = cv::Mat(elasticLabel.size(), elasticLabel.type(), cv::Scalar(0, 255, 255));
@@ -536,19 +538,19 @@ void augmentImageAndLabel(std::string imagePath, std::string labelPath, double m
 	double r_angle = uniangle(rng);
 	cv::Point2d imageCenter(flipped.cols * 0.5, flipped.rows * 0.5);
 	cv::Mat M = cv::getRotationMatrix2D(imageCenter, r_angle, 1.0); 
-	cv::warpAffine(elasticImage, rotatedImage, M, elasticImage.size(), cv::INTER_NEAREST, cv::BORDER_CONSTANT, cv::Scalar(255, 255, 0)); // NN interpolation for clear borders
+	cv::warpAffine(elasticImage, rotatedImage, M, rotatedImage.size(), cv::INTER_NEAREST, cv::BORDER_CONSTANT, cv::Scalar(255, 255, 0)); // NN interpolation for clear borders
 
 	cv::Point2d labelCenter(flippedLabel.cols * 0.5, flippedLabel.rows * 0.5);
 	M = cv::getRotationMatrix2D(labelCenter, r_angle, 1.0);
-	cv::warpAffine(elasticLabel, rotatedLabel, M, elasticLabel.size(), cv::INTER_NEAREST, cv::BORDER_CONSTANT, cv::Scalar(255, 255, 0));
+	cv::warpAffine(elasticLabel, rotatedLabel, M, rotatedLabel.size(), cv::INTER_NEAREST, cv::BORDER_CONSTANT, cv::Scalar(255, 255, 0));
 
 
 	// extract samples from augmented image
 	int sample_width = 200;
 	int sample_height = 100;
 
-	extractSamples(&rotatedImage, imagePath, sample_width, sample_height);
-	extractSamples(&rotatedLabel, labelPath, sample_width, sample_height); 
+	/* extractSamples(&rotatedImage, imagePath, sample_width, sample_height);
+	extractSamples(&rotatedLabel, labelPath, sample_width, sample_height); */
 
 
 	// save augmented image
@@ -558,5 +560,8 @@ void augmentImageAndLabel(std::string imagePath, std::string labelPath, double m
 	cv::imwrite(imageOutputPath, rotatedImage);
 	cv::imwrite(labelOutputPath, rotatedLabel);
 
-	//cv::waitKey(0);
+	// return paths of augmented image and label
+	std::vector<std::string> augPaths = { imageOutputPath, labelOutputPath };
+	 
+	return augPaths;
 }

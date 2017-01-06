@@ -6,6 +6,7 @@
 #include "Kmeans.hpp"
 #include "edge.hpp"
 #include "graphCut.hpp"
+#include "unet.hpp"
 
 
 int main(int argc, char* argv)
@@ -110,10 +111,18 @@ int main(int argc, char* argv)
 	//segmented = segmentGraphcut(matInput, 5);
 	//overlayFoundBorders(GTPath, segmented, std::string("graphcut overlay"));
 
-	std::string ipath = "G:/CDEF_2013/CF/F_GNAGNA/Stuff/Studium/Master/WS_2016/Masterarbeit/Test_Data/vincent_van_gogh.jpg";
-	std::string labelPath = "G:/CDEF_2013/CF/F_GNAGNA/Stuff/Studium/Master/WS_2016/Masterarbeit/Test_Data/vincent_van_gogh_label.jpg";
+	std::string ipath = "G:/CDEF_2013/CF/F_GNAGNA/Stuff/Studium/Master/WS_2016/Masterarbeit/Test_Data/WT.bmp";
+	std::string labelPath = "G:/CDEF_2013/CF/F_GNAGNA/Stuff/Studium/Master/WS_2016/Masterarbeit/Test_Data/WT_label.bmp";
 
-	augmentImageAndLabel(ipath, labelPath, 0, 0);
+	// perform data augmentation to increase number
+	// of training samples
+	std::vector<std::string> augPaths = augmentImageAndLabel(ipath, labelPath, 0, 0);
+
+	// train U-Net
+	trainUnet(images, labels);
+
+	// segment cells using trained U-Net
+	segmentImage(images);
 
 	cv::waitKey(0);
 	return 0;
