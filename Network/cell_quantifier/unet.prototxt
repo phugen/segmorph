@@ -1,7 +1,6 @@
-name: 'phseg_v5'
+name: 'unet'
 force_backward: true
 layer { top: 'data' top: 'label'  name: 'loaddata'       type: "HDF5Data"  hdf5_data_param { source: 'aug_cell_input.txt' batch_size: 1 } include: { phase: TRAIN }}
-
 
 layer { bottom: 'data'              top: 'd0b'   name: 'conv_d0a-b'     type: "Convolution" param {lr_mult: 1 decay_mult: 1} param {lr_mult: 2 decay_mult: 0}  convolution_param { num_output: 64 pad: 0 kernel_size: 3 engine: CAFFE weight_filler { type: 'xavier' }} }
 layer { bottom: 'd0b'               top: 'd0b'   name: 'relu_d0b'       type: "ReLU" }
@@ -71,4 +70,4 @@ layer { bottom: 'u0c'               top: 'u0d'   name: 'conv_u0c-d'     type: "C
 layer { bottom: 'u0d'               top: 'u0d'   name: 'relu_u0d'       type: "ReLU" }
 
 layer { bottom: 'u0d'               top: 'score' name: 'conv_u0d-score' type: "Convolution"  param {lr_mult: 1 decay_mult: 1} param {lr_mult: 2 decay_mult: 0}  convolution_param { engine: CAFFE num_output: 4 pad: 0 kernel_size: 1 weight_filler { type: 'xavier' }} }
-layer { bottom: 'score' bottom: 'label' top: 'loss'  name: 'loss'   type: "SoftmaxWithLoss" loss_param { ignore_label: 2 }include: { phase: TRAIN }}
+layer { bottom: 'score' bottom: 'label' top: 'loss'  name: 'loss'   type: "SoftmaxWithLoss" loss_param { ignore_label: 4 } include: { phase: TRAIN }}

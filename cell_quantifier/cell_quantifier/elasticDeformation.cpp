@@ -6,7 +6,7 @@ Implements elastic deformation of an image as described in
 
 Alpha controls the strength of the deformation, while sigma changes the smoothing
 factor of the Gaussian distribution. The grid size determines how many
-grides nodes there will be; gridSize = 3 would result in a 3x3 grid on the image.
+grid nodes there will be; gridSize = 3 would result in a 3x3 grid on the image.
 */
 void elasticDeformation(cv::Mat* image, cv::Mat* label, int gridSize, double sigma, double alpha)
 {
@@ -28,13 +28,6 @@ void elasticDeformation(cv::Mat* image, cv::Mat* label, int gridSize, double sig
 
 	// fill both fields with random uniformly distributed
 	// numbers in the range [-1, 1]
-
-
-
-	// TODO: CHANGE THIS SO IT BECOMES RANDOM AGAIN
-
-
-
 	std::random_device rdev;
 	uint64_t seed = (uint64_t(rdev()) << 32) | rdev();
 	cv::RNG randomgen = cv::RNG::RNG(seed);

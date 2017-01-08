@@ -546,19 +546,19 @@ std::vector<std::string> augmentImageAndLabel(std::string imagePath, std::string
 
 
 	// extract samples from augmented image
-	int sample_width = 200;
+	int sample_width = 100;
 	int sample_height = 100;
 
-	/* extractSamples(&rotatedImage, imagePath, sample_width, sample_height);
-	extractSamples(&rotatedLabel, labelPath, sample_width, sample_height); */
+	extractSamples(&rotatedImage, imagePath, sample_width, sample_height);
+	extractSamples(&rotatedLabel, labelPath, sample_width, sample_height);
 
 
 	// save augmented image
 	std::string imageOutputPath = imagePath.replace(imagePath.cend() - 4, imagePath.cend(), "") + "_AUGMENTED.bmp";
 	std::string labelOutputPath = labelPath.replace(labelPath.cend() - 4, labelPath.cend(), "") + "_AUGMENTED.bmp";
 
-	cv::imwrite(imageOutputPath, rotatedImage);
-	cv::imwrite(labelOutputPath, rotatedLabel);
+	cv::imwrite(imageOutputPath, elasticImage);
+	cv::imwrite(labelOutputPath, elasticLabel);
 
 	// return paths of augmented image and label
 	std::vector<std::string> augPaths = { imageOutputPath, labelOutputPath };

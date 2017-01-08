@@ -111,18 +111,18 @@ int main(int argc, char* argv)
 	//segmented = segmentGraphcut(matInput, 5);
 	//overlayFoundBorders(GTPath, segmented, std::string("graphcut overlay"));
 
-	std::string ipath = "G:/CDEF_2013/CF/F_GNAGNA/Stuff/Studium/Master/WS_2016/Masterarbeit/Test_Data/WT.bmp";
-	std::string labelPath = "G:/CDEF_2013/CF/F_GNAGNA/Stuff/Studium/Master/WS_2016/Masterarbeit/Test_Data/WT_label.bmp";
+	std::string ipath = "G:/CDEF_2013/CF/F_GNAGNA/Stuff/Studium/Master/WS_2016/Masterarbeit/Test_Data/WT_(2).bmp";
+	std::string labelPath = "G:/CDEF_2013/CF/F_GNAGNA/Stuff/Studium/Master/WS_2016/Masterarbeit/Test_Data/WT_(2)_label.png";
 
 	// perform data augmentation to increase number
 	// of training samples
 	std::vector<std::string> augPaths = augmentImageAndLabel(ipath, labelPath, 0, 0);
 
 	// train U-Net
-	trainUnet(images, labels);
+	//trainUnet(images, labels);
 
 	// segment cells using trained U-Net
-	segmentImage(images);
+	//segmentImage(images);
 
 	cv::waitKey(0);
 	return 0;
