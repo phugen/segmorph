@@ -141,7 +141,7 @@ print "output_size: " + str(output_size)
 
 # create zero-padded data array using
 # padding values calculated above
-border = np.around(np.subtract(input_size, output_size)) / 2;
+border = np.around(np.subtract(input_size, output_size)) / 2; # equal padding on both sides
 paddedFullVolume = np.zeros((data_array.shape[0], \
                             data_array.shape[1], \
                             data_array.shape[2] + 2 * border[0], \
@@ -155,19 +155,33 @@ paddedFullVolume[:, \
                  border[0]:border[0] + data_array.shape[2], \
                  border[1]:border[1] + data_array.shape[3]] = data_array;
 
-# fill zero-padded areas with meaningful data.
-# in this case: mirror the present data
-xpad  = border[0];
-xfrom = border[0] + 1;
-xto   = border[0] + size(data,1);
-paddedFullVolume(1:xfrom - 1,:,:) = paddedFullVolume( xfrom + xpad:-1:xfrom + 1,:,:);
-paddedFullVolume(xto + 1:end,:,:) = paddedFullVolume( xto - 1:-1:xto - xpad,:,:);
 
-ypad  = border(2);
-yfrom = border(2)+1;
-yto   = border(2)+size(data,2);
-paddedFullVolume(:, 1:yfrom-1,:) = paddedFullVolume( :, yfrom+ypad:-1:yfrom+1,:);
-paddedFullVolume(:, yto+1:end,:) = paddedFullVolume( :, yto-1:-1:yto-ypad,    :);
+# fill zero-padded areas with meaningful data
+# (in this case: mirror the available image data at the borders)
+
+xpad  = border[0] - 1 # last padding element before image data
+xfrom = border[0] # first image element
+xto   = border[0] + data_array.shape[3] # first padding element after image data
+
+ypad  = border[1] - 1
+yfrom = border[1]
+yto   = border[1] + data_array.shape[2]
+
+
+# fill areas left, right, above and below the actual image data
+#paddedFullVolume[:, :, 0:yfrom, 0:xfrom] = paddedFullVolume[:, :, yfrom:yfrom+ypad+1, xfrom + xpad:xfrom-1:-1] # use negative step for "reverse" slicing
+#paddedFullVolume[:, :, 0:yfrom, xto-1:xto + xpad] = paddedFullVolume[:, :, yfrom:yfrom+ypad+1, xto:xto + 1 - xpad:-1]
+
+# use negative step for "reverse" slicing -> mirroring at axis
+paddedFullVolume[:, :, yfrom:yto, 0:xfrom] = paddedFullVolume[:, :, yfrom:yto, xfrom + xpad + 1:xfrom:-1] #left
+paddedFullVolume[:, :, yfrom:yto, xto:xto + xpad + 1] = paddedFullVolume[:, :, yfrom:yto, xto - 1:xto - xpad - 2:-1] #right
+paddedFullVolume[:, :, 0:yfrom, xfrom:xto] = paddedFullVolume[:, :, yfrom + ypad + 1:yfrom:-1, xfrom:xto] # above
+paddedFullVolume[:, :, yto:yto + ypad + 1, xfrom:xto] = paddedFullVolume[:, :, yto - 1:yto - ypad - 2:-1, xfrom:xto] # below
+
+paddedFullVolume[:, :, 0:yfrom, 0:xfrom] = paddedFullVolume[:, :, yfrom + ypad + 1:yfrom:-1, xfrom + xpad + 1:xfrom:-1] # top left
+paddedFullVolume[:, :, 0:yfrom, xto:xto + xpad + 1] = paddedFullVolume[:, :, yfrom + ypad + 1:yfrom:-1, xto - 1:xto - xpad - 2:-1] # top right
+paddedFullVolume[:, :, yto:yto + ypad + 1, 0:xfrom] = paddedFullVolume[:, :, yto:yto - ypad - 1:-1, xfrom + xpad + 1:xfrom:-1] # bottom left <-- one pixel too low?
+paddedFullVolume[:, :, yto:yto + ypad + 1, xto:xto + xpad + 1] = paddedFullVolume[:, :, yto:yto - ypad - 1:-1, xto - 1:xto - xpad - 2:-1] # bottom right
 
 
 start = timeit.default_timer()

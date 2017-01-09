@@ -256,10 +256,10 @@ pInclusionAnchor p_inc_anchor;
 //            =0 for P2  on the line
 //            <0 for P2  right of the line
 //    See: Algorithm 1 "Area of Triangles and Polygons"
-double isLeft(cv::Point2d P0, cv::Point2d P1, cv::Point2d P2)
+double isLeft(cv::Point2d* P0, cv::Point2d* P1, cv::Point2d* P2)
 {
 	double eps = 1e-10;
-	double val = (P1.x - P0.x) * (P2.y - P0.y) - (P2.x - P0.x) * (P1.y - P0.y);
+	double val = (P1->x - P0->x) * (P2->y - P0->y) - (P2->x - P0->x) * (P1->y - P0->y);
 
 	// small error area around 0 counts as
 	// zero instead of left or right
@@ -274,20 +274,20 @@ double isLeft(cv::Point2d P0, cv::Point2d P1, cv::Point2d P2)
 //      Input:   P = a point,
 //               V[] = vertex points of a polygon V[n+1] with V[n]=V[0]
 //      Return:  wn = the winding number (=0 only when P is outside)
-bool winding_isInPolygon(cv::Point2d P, std::vector<cv::Point2d> V)
+bool winding_isInPolygon(cv::Point2d* P, std::vector<cv::Point2d*> V)
 {
 	size_t n = V.size() - 1;
 	int    wn = 0;    // the  winding number counter
 
 	// loop through all edges of the polygon
 	for (size_t i = 0; i<n; i++) {   // edge from V[i] to  V[i+1]
-		if (V[i].y <= P.y) {          // start y <= P.y
-			if (V[i + 1].y  > P.y)      // an upward crossing
+		if (V[i]->y <= P->y) {          // start y <= P.y
+			if (V[i + 1]->y  > P->y)      // an upward crossing
 			if (isLeft(V[i], V[i + 1], P) > 0)  // P left of  edge
 				++wn;            // have  a valid up intersect
 		}
 		else {                        // start y > P.y (no test needed)
-			if (V[i + 1].y <= P.y)     // a downward crossing
+			if (V[i + 1]->y <= P->y)     // a downward crossing
 			if (isLeft(V[i], V[i + 1], P) < 0)  // P right of  edge
 				--wn;            // have  a valid down intersect
 		}
@@ -299,9 +299,9 @@ bool winding_isInPolygon(cv::Point2d P, std::vector<cv::Point2d> V)
 
 
 // Calculates the absolute area of a triangle.
-double triangleArea(cv::Point2d a, cv::Point2d b, cv::Point2d c)
+double triangleArea(cv::Point2d* a, cv::Point2d* b, cv::Point2d* c)
 {
-	double area = fabs((a.x * (b.y - c.y) + b.x * (c.y - a.y) + c.x * (a.y - b.y)) / 2.);
+	double area = fabs((a->x * (b->y - c->y) + b->x * (c->y - a->y) + c->x * (a->y - b->y)) / 2.);
 
 	return area;
 }
@@ -313,7 +313,7 @@ double triangleArea(cv::Point2d a, cv::Point2d b, cv::Point2d c)
 	otherwise returns false.
 	Points on the boundary count as inside.
 */
-bool isInsideConvexQuadrilateral(cv::Point2d p, cv::Point2d q1, cv::Point2d q2, cv::Point2d q3, cv::Point2d q4)
+bool isInsideConvexQuadrilateral(cv::Point2d* p, cv::Point2d* q1, cv::Point2d* q2, cv::Point2d* q3, cv::Point2d* q4)
 {
 	double eps = 1.1; // use error instead of == because we're comparing floating-point numbers!
 
@@ -347,19 +347,19 @@ bool isInsideConvexQuadrilateral(cv::Point2d p, cv::Point2d q1, cv::Point2d q2, 
 	// the quadrilateral area, then p is outside the quadrilateral.
 
 	// find lengths of sides:
-	double l_a = sqrt(pow(q4.x - q3.x, 2) + pow(q4.y - q3.y, 2));
-	double l_b = sqrt(pow(q3.x - q2.x, 2) + pow(q3.y - q2.y, 2));
-	double l_c = sqrt(pow(q2.x - q1.x, 2) + pow(q2.y - q1.y, 2));
-	double l_d = sqrt(pow(q1.x - q4.x, 2) + pow(q1.y - q4.y, 2));
+	double l_a = sqrt(pow(q4->x - q3->x, 2) + pow(q4->y - q3->y, 2));
+	double l_b = sqrt(pow(q3->x - q2->x, 2) + pow(q3->y - q2->y, 2));
+	double l_c = sqrt(pow(q2->x - q1->x, 2) + pow(q2->y - q1->y, 2));
+	double l_d = sqrt(pow(q1->x - q4->x, 2) + pow(q1->y - q4->y, 2));
 
 	// semiperimeter of a quadrilateral:
 	double semi = (l_a + l_b + l_c + l_d) / 2;
 
 	// angles between a/d and b/c:
-	cv::Vec2d a = cv::Vec2d(q3.x - q4.x, q3.y - q4.y);
-	cv::Vec2d d = cv::Vec2d(q1.x - q4.x, q1.y - q4.y);
-	cv::Vec2d b = cv::Vec2d(q3.x - q2.x, q3.y - q2.y);
-	cv::Vec2d c = cv::Vec2d(q1.x - q2.x, q1.y - q2.y);
+	cv::Vec2d a = cv::Vec2d(q3->x - q4->x, q3->y - q4->y);
+	cv::Vec2d d = cv::Vec2d(q1->x - q4->x, q1->y - q4->y);
+	cv::Vec2d b = cv::Vec2d(q3->x - q2->x, q3->y - q2->y);
+	cv::Vec2d c = cv::Vec2d(q1->x - q2->x, q1->y - q2->y);
 
 	// get opposite angles between vectors AD and BC in radians
 	double alpha = acos(a.dot(d) / (cv::norm(a) * cv::norm(d)));
@@ -523,7 +523,7 @@ std::vector<std::string> augmentImageAndLabel(std::string imagePath, std::string
 
 	int gridSize = 1;
 	int sigma = 20;
-	int alpha = 2000;
+	int alpha = 1500;
 	elasticDeformation(&elasticImage, &elasticLabel, gridSize, sigma, alpha);
 
 
@@ -531,7 +531,7 @@ std::vector<std::string> augmentImageAndLabel(std::string imagePath, std::string
 	// space with special mask color to keep it from being processed
 
 
-	std::uniform_real_distribution<double> uniangle(0, 359);
+	std::uniform_real_distribution<double> uniangle(0, 0); // change this
 	cv::Mat rotatedImage = cv::Mat(elasticImage.size(), elasticImage.type(), cv::Scalar(0, 255, 255));
 	cv::Mat rotatedLabel = cv::Mat(elasticLabel.size(), elasticLabel.type(), cv::Scalar(0, 255, 255));
 
@@ -546,8 +546,8 @@ std::vector<std::string> augmentImageAndLabel(std::string imagePath, std::string
 
 
 	// extract samples from augmented image
-	int sample_width = 100;
-	int sample_height = 100;
+	int sample_width = rotatedImage.cols;
+	int sample_height = rotatedImage.rows;
 
 	extractSamples(&rotatedImage, imagePath, sample_width, sample_height);
 	extractSamples(&rotatedLabel, labelPath, sample_width, sample_height);
@@ -557,8 +557,8 @@ std::vector<std::string> augmentImageAndLabel(std::string imagePath, std::string
 	std::string imageOutputPath = imagePath.replace(imagePath.cend() - 4, imagePath.cend(), "") + "_AUGMENTED.bmp";
 	std::string labelOutputPath = labelPath.replace(labelPath.cend() - 4, labelPath.cend(), "") + "_AUGMENTED.bmp";
 
-	cv::imwrite(imageOutputPath, elasticImage);
-	cv::imwrite(labelOutputPath, elasticLabel);
+	//cv::imwrite(imageOutputPath, elasticImage);
+	//cv::imwrite(labelOutputPath, elasticLabel);
 
 	// return paths of augmented image and label
 	std::vector<std::string> augPaths = { imageOutputPath, labelOutputPath };

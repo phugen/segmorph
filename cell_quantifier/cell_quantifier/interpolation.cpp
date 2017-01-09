@@ -14,17 +14,17 @@ double cross(cv::Point2d a, cv::Point2d b)
 // Find color of point p by checking which
 // of the four quad points is closest to it
 // and taking the color of that point.
-cv::Vec3d nearestNeighborInterpolation(cv::Mat image, cv::Point2d p, cv::Point2d a, cv::Point2d b, cv::Point2d c, cv::Point2d d)
+cv::Vec3d nearestNeighborInterpolation(cv::Mat image, cv::Point2d* p, cv::Point2d* a, cv::Point2d* b, cv::Point2d* c, cv::Point2d* d)
 {
 	// sort points a to d by their distance from p
-	std::vector<cv::Point2d> sortedByDist = {a, b, c, d};
-	std::sort(sortedByDist.begin(), sortedByDist.end(), [p](const cv::Point2d &a, const cv::Point2d &b)
+	std::vector<cv::Point2d*> sortedByDist = {a, b, c, d};
+	std::sort(sortedByDist.begin(), sortedByDist.end(), [p](const cv::Point2d* a, const cv::Point2d* b)
 		{ 
-			return (cv::norm(p - a) < cv::norm(p - b)); // euclidean distance
+			return (cv::norm(*p - *a) < cv::norm(*p - *b)); // euclidean distance
 	});
 
 	// return color of closest point
-	cv::Point2d closest = sortedByDist.front();
+	cv::Point2d closest = *sortedByDist.front();
 	cv::Vec3d color = readSafe<cv::Vec3d>(&image, closest.y, closest.x);
 		
 
@@ -35,7 +35,7 @@ cv::Vec3d nearestNeighborInterpolation(cv::Mat image, cv::Point2d p, cv::Point2d
 // Interpolates the color of a point p in a triangle
 // that is defined by the three points a, b and c. The area
 // of the sub-triangles ABP, BCP and CAP weights the color of p.
-cv::Vec3d barycentricInterpolation(cv::Mat image, cv::Point2d p, cv::Point2d a, cv::Point2d b, cv::Point2d c)
+cv::Vec3d barycentricInterpolation(cv::Mat image, cv::Point2d* p, cv::Point2d* a, cv::Point2d* b, cv::Point2d* c)
 {
 	// get weight coefficients from triangle areas
 	double tri_area = triangleArea(a, b, c);
@@ -45,9 +45,9 @@ cv::Vec3d barycentricInterpolation(cv::Mat image, cv::Point2d p, cv::Point2d a, 
 	double alpha_c = triangleArea(a, b, p) / tri_area;
 
 	// alpha_a + alpha_b + alpha_c = 1, get interpolated color
-	cv::Vec3d pixelVal = readSafe<cv::Vec3d>(&image, a.y, a.x) * alpha_a 
-					   + readSafe<cv::Vec3d>(&image, b.y, b.x) * alpha_b 
-					   + readSafe<cv::Vec3d>(&image, c.y, c.x) * alpha_c;
+	cv::Vec3d pixelVal = readSafe<cv::Vec3d>(&image, a->y, a->x) * alpha_a
+					   + readSafe<cv::Vec3d>(&image, b->y, b->x) * alpha_b
+					   + readSafe<cv::Vec3d>(&image, c->y, c->x) * alpha_c;
 
 	return pixelVal;
 }

@@ -54,7 +54,7 @@ void elasticDeformation(cv::Mat* image, cv::Mat* label, int gridSize, double sig
 	cv::Mat imageElastic = cv::Mat(image->size(), CV_64FC3);
 	cv::Mat labelElastic = cv::Mat(label->size(), CV_64FC3);
 
-	labelElastic = cv::Vec3f(0, 255, 0);
+	labelElastic = cv::Vec3f(255, 255, 0);
 
 	//std::cout << "Channels = " << imageElastic.channels() << ", Type = " << imageElastic.type() << std::endl;
 	std::cout << "cols = " << imageElastic.cols << ", rows = " << imageElastic.rows << std::endl << std::endl;
@@ -189,31 +189,8 @@ void elasticDeformation(cv::Mat* image, cv::Mat* label, int gridSize, double sig
 			//q1.y = cvRound(q1.y); q2.y = cvRound(q2.y); q3.y = cvRound(q3.y); q4.y = cvRound(q4.y);
 
 
-			//#define CIRCLES 1
-#ifdef CIRCLES
-			cv::namedWindow("progress", cv::WINDOW_NORMAL);
-
-			// draw grid corners.
-			std::cout << q1 << std::endl;
-			std::cout << q2 << std::endl;
-			std::cout << q3 << std::endl;
-			std::cout << q4 << std::endl << std::endl;
-
-			cv::circle(imageElastic, q1, 1, cv::Scalar(0, 0, 255), 2);
-			cv::circle(imageElastic, q2, 1, cv::Scalar(255, 0, 0), 2);
-			cv::circle(imageElastic, q3, 1, cv::Scalar(0, 255, 0), 2);
-			cv::circle(imageElastic, q4, 1, cv::Scalar(255, 0, 255), 2);
-#endif
-
 #define INTERPOLATE 1
 #ifdef INTERPOLATE
-			std::vector<cv::Point2d> cell = { q1, q2, q3, q4, q1 }; // contour of tri1
-
-			// split quad into two triangles
-			// TODO: split intelligently?
-			std::vector<cv::Point2d> tri1 = { q1, q2, q3, q1 };
-			std::vector<cv::Point2d> tri2 = { q1, q3, q4, q1 };
-
 			// get MBR of current grid cell
 			double minX = fmin(q1.x, fmin(q2.x, fmin(q3.x, q4.x)));
 			double maxX = fmax(q1.x, fmax(q2.x, fmax(q3.x, q4.x)));
@@ -227,35 +204,41 @@ void elasticDeformation(cv::Mat* image, cv::Mat* label, int gridSize, double sig
 			{
 				for (double grid_x = minX; grid_x < maxX; grid_x++)
 				{
-					cv::Point2d p = cv::Point2d(grid_x, grid_y); // interpolation point
+					//cv::Point2d p = cv::Point2d(grid_x, grid_y); // interpolation point
 					cv::Vec3d pixelVal; // pixel color
 
-					if (p.x == 317 && p.y == 127)
-						std::cout << "GOT EM" << std::endl;
-
 					// if grid only 1x1: don't interpolate
-					// TODO: VECTORIZE THIS
 					if (gridSize == 1)
 					{
-						imageElastic.at<cv::Vec3d>(y, x) = readSafe<cv::Vec3d>(image, p.y, p.x);
-						labelElastic.at<cv::Vec3d>(y, x) = readSafe<cv::Vec3d>(label, p.y, p.x);
+ 						imageElastic.at<cv::Vec3d>(y, x) = readSafe<cv::Vec3d>(image, grid_y, grid_x);
+						labelElastic.at<cv::Vec3d>(y, x) = readSafe<cv::Vec3d>(label, grid_y, grid_x);
 
 						continue;
 					}
 
+					cv::Point2d p = cv::Point2d(grid_x, grid_y);
+
+
 //#define BARYCENTRIC
 #ifdef BARYCENTRIC
+					std::vector<cv::Point2d*> cell = { &q1, &q2, &q3, &q4, &q1 }; // contour of tri1
+
+					// split quad into two triangles
+					// TODO: split intelligently?
+					std::vector<cv::Point2d*> tri1 = { &q1, &q2, &q3, &q1 };
+					std::vector<cv::Point2d*> tri2 = { &q1, &q3, &q4, &q1 };
+
 					// Is p inside triangle 1 or 2? If yes,
 					// perform barycentric interpolation for p
 					// (Points on the boundary count as inside the triangle)
-					if (winding_isInPolygon(p, tri1))
+					if (winding_isInPolygon(&p, tri1))
 					{
-						pixelVal = barycentricInterpolation(*image, p, q1, q2, q3);
+						pixelVal = barycentricInterpolation(*image, &p, &q1, &q2, &q3);
 					}
 
-					else if (winding_isInPolygon(p, tri2))
+					else if (winding_isInPolygon(&p, tri2))
 					{
-						pixelVal = barycentricInterpolation(*image, p, q1, q3, q4);
+						pixelVal = barycentricInterpolation(*image, &p, &q1, &q3, &q4);
 					}
 
 					// If not, don't interpolate
@@ -267,9 +250,9 @@ void elasticDeformation(cv::Mat* image, cv::Mat* label, int gridSize, double sig
 
 
 
-					#define BILINEAR
+					
 #ifdef BILINEAR
-					if (!winding_isInPolygon(p, cell))
+					if (!winding_isInPolygon(&p, cell))
 					{
 						continue;
 					}
@@ -296,20 +279,15 @@ void elasticDeformation(cv::Mat* image, cv::Mat* label, int gridSize, double sig
 #endif
 
 					// apply chosen color to output image
-					writeSafe<cv::Vec3d>(&imageElastic, p.y, p.x, pixelVal);
+					writeSafe<cv::Vec3d>(&imageElastic, grid_y, grid_x, pixelVal);
 
 					// Nearest-neighbor interpolation for label image so labels
 					// remain solid colors instead of becoming gradients
-					pixelVal = nearestNeighborInterpolation(*label, p, q1, q2, q3, q4);
-					writeSafe<cv::Vec3d>(&labelElastic, p.y, p.x, pixelVal);
+					pixelVal = nearestNeighborInterpolation(*label, &p, &q1, &q2, &q3, &q4);
+					writeSafe<cv::Vec3d>(&labelElastic, grid_y, grid_x, pixelVal);
 				}
 			}
 #endif 
-
-#ifdef CIRCLES
-			cv::imshow("progress", imageElastic);
-			cv::waitKey(0);
-#endif
 		}
 
 		std::cout << "Interpolation: Row " << y << " of " << numCellY - 1 << " done" << std::endl;
@@ -324,9 +302,9 @@ void elasticDeformation(cv::Mat* image, cv::Mat* label, int gridSize, double sig
 	imageElastic.convertTo(imageElastic, CV_8UC3);
 	labelElastic.convertTo(labelElastic, CV_8UC3);
 
-	cv::namedWindow("elasticImage", cv::WINDOW_NORMAL);
+	/*cv::namedWindow("elasticImage", cv::WINDOW_NORMAL);
 	cv::imshow("elasticImage", imageElastic);
 
 	cv::namedWindow("elasticLabel", cv::WINDOW_NORMAL);
-	cv::imshow("elasticLabel", labelElastic);
+	cv::imshow("elasticLabel", labelElastic);*/
 }
