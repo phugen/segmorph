@@ -9,6 +9,7 @@ max_iter: 40000 # total number of training iterations
 momentum: 0.9 # weight of previous update
 weight_decay: 0.0005
 
+test_initialization: false # determines whether net is tested at iteration 0
 #test_iter: 1000 # total number of test iterations
 #test_interval: 1000 # test every <test_interval> iterations
 
