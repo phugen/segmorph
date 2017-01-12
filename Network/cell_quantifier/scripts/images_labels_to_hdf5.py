@@ -11,6 +11,8 @@ import numpy as np
 import glob
 import caffe
 import timeit
+import math
+import scipy
 from PIL import Image
 
 
@@ -84,7 +86,6 @@ print ""
 
 # translate label colors to integer labels in vectorized fashion
 print "Translating colored label pixels to integers ..."
-start = timeit.default_timer()
 label_array_int = np.zeros((IMG_NO/2, IMG_HEIGHT, IMG_WIDTH), dtype=np.uint8)
 #label_array_hot = np.zeros((IMG_NO/2, IMG_HEIGHT, IMG_WIDTH, 4), dtype=np.uint8)
 
@@ -109,7 +110,6 @@ for index in range(IMG_NO/2):
     #label_array_int[index] = (intmask == label_array_int[:,:,:,np.newaxis]).astype(int)
     #label_array_hot[index] = np.eye(num_labels + 1)[label_array_int[index]]
 
-print "Translating labels took " + str(timeit.default_timer() - start) + " ms."
 print ""
 
 
@@ -143,9 +143,6 @@ border = np.around(np.subtract(input_size, output_size)) / 2; # equal padding on
 
 # TODO: (d4a_size + 124) % 16 == 0, dimension condition?
 
-for i in range (0, 960):
-    if (i + 124) % 16 == 0:
-        print i
 
 print "Image dims: " + str(data_array.shape[2:4])
 print "padInput: " + str(padInput)
@@ -195,25 +192,73 @@ paddedFullVolume[:, :, yto:yto + ypad + 1, 0:xfrom] = paddedFullVolume[:, :, yto
 paddedFullVolume[:, :, yto:yto + ypad + 1, xto:xto + xpad + 1] = paddedFullVolume[:, :, yto - 1:yto - ypad - 2:-1, xto - 1:xto - xpad - 2:-1] # bottom right
 
 
-start = timeit.default_timer()
+print "Computing weighted label image(s) ... "
+# TODO: base on average distribution of classes in training data
+
+w_c = (1.0, 2.0, 2.0, 2.0) # weight map label->weight to counter uneven distribution of labels
+w_0 = 10.0 # weight multiplicator, tune as necessary; def = 10
+sigma = 5.0 # distance influence dampening, tune as necessary; def = 5
+
+weighted_labels = np.zeros((IMG_NO, \
+                           IMG_HEIGHT, \
+                           IMG_WIDTH), \
+                           dtype=np.float32)
+
+# get matrix of point coordinates
+gradient = np.array([[i, j] for i in range (0, IMG_HEIGHT) for j in range (0, IMG_WIDTH)])
+
+for index in range(0, IMG_NO/2):
+    print "     Calculating weighted label image " + str(index + 1) + "/" + str(IMG_NO/2)
+
+    # find all label pixels in this image
+    labelmask = np.reshape([(label_array_int[index,:,:] == 1) |
+                            (label_array_int[index,:,:] == 2) |
+                            (label_array_int[index,:,:] == 3)], (IMG_HEIGHT * IMG_WIDTH))
+
+    # put label pixels into KD-tree for fast kNN-lookups
+    tree = scipy.spatial.cKDTree(gradient[labelmask == True])
+
+    for y in range(0, IMG_HEIGHT):
+        print "         Row " + str(y+1) + "/" + str(IMG_HEIGHT)
+
+        for x in range(0, IMG_WIDTH):
+
+            val = label_array_int[index, y, x]
+
+            # if pixel has a cell label ignore distance weighting
+            if  val == 1 or val == 2 or val == 3:
+                d1 = 10 # high enough to render exponential term void
+                d2 = 10
+
+            # pixel is labelled as background
+            else:
+                # look for the two nearest neighbors of current pixel, using Manhattan distance
+                closest, indices = tree.query(np.array([y, x]), k=2, p=1, eps=0.1)
+
+                d1 = closest[0]
+                d2 = closest[1]
+
+            # calculate weighted label value for current pixel
+            weighted_labels[index, y, x] = w_c[val] + w_0 * math.exp(-(((d1 + d2)**2) / (2*(sigma)**2)))
+
+
+
 
 # assign data to according HDF dataset and write HDF file to HDD
 print "Writing HDF5 file to " + hdf5path + " ..."
 with h5py.File(hdf5path, "w", libver="latest") as f:
 
     f.create_dataset("data", dtype=np.float32, data=paddedFullVolume)
-    f.create_dataset("label", dtype=np.uint8, data=label_array_int)
+    f.create_dataset("label", dtype=np.float32, data=weighted_labels)
 
     f.attrs["CLASS"] = "IMAGE"
     f.attrs["IMAGE_VERSION"] = "1.2"
     f.attrs["IMAGE_SUBCLASS"] =  "IMAGE_TRUECOLOR"
 
 
-print "Writing to HDF5 took " + str(timeit.default_timer() - start) + " ms."
-
 # Write test network definition to file
 print "Writing test network definition to ../unet-test.prototxt ..."
-with open("../unet.prototxt", "r") as net, open("../unet-test.prototxt", "w") as test_net:
+with open("unet.prototxt", "r") as net, open("unet-test.prototxt", "w") as test_net:
     test_net.write("input: \"data\"\n"); # batch size
     test_net.write("input_dim: " + str(data_array.shape[1]) + "\n"); # channels
     test_net.write("input_dim: " + str(input_size[0]) + "\n"); # height
@@ -223,10 +268,6 @@ with open("../unet.prototxt", "r") as net, open("../unet-test.prototxt", "w") as
 
 
 print "Done!"
-
-#with h5py.File("../training/drosophila_training.h5", "r", libver="latest") as f:
-#    print f["data"].shape
-#    print f["label"].shape
 
 
 
