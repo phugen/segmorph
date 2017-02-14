@@ -115,7 +115,8 @@ class SoftmaxWithLossWeighted(caffe.Layer):
                     # set gradient dCE/dProbs = pred_prob_i - true_prob_i
                     # i.e. the partial derivatives with respect to the inputs
                     # (here, the inputs are the class scores)
-                    bottom[0].diff[bt, range(0, channel_num), i, j] = self.inputs[bt, range(0, channel_num), i, j] - one_hot[range(0, channel_num)]
+                    bottom[0].diff[bt, range(0, channel_num), i, j] = self.inputs[bt, range(0, channel_num), i, j] \
+                                                                      - one_hot[range(0, channel_num)]
 
                     # weigh pixel using the weight map
                     weight = bottom[2].data[bt, i, j]
@@ -127,8 +128,8 @@ class SoftmaxWithLossWeighted(caffe.Layer):
                     # collect sum of weights for gradient normalization
                     # should prevent problems with having to change learning params every time
                     # weights are changed
-                    weightsum += weight
+                    #weightsum += weight
 
             # gradient normalization
-            bottom[0].diff[bt, :, :, :] /= ysize * xsize
+            bottom[0].diff[bt, :, :, :] /= batchsize * ysize * xsize
             #bottom[0].diff[bt, :, :, :] /= weightsum

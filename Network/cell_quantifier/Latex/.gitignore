@@ -1,0 +1,16 @@
+.idea/*
+*.tps
+*.aux
+*.bbl
+*.blg
+*.lof
+*.log
+*.lot
+*.out
+main.pdf
+*.synctex
+*.tcp
+*.toc
+*.tps
+CMakeLists.txt
+*.kilepr

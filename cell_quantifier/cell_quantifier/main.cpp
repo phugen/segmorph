@@ -9,71 +9,16 @@
 #include "unet.hpp"
 
 
+
 int main(int argc, char* argv)
 {
 	std::vector<cv::Mat> grayscaleImages;
 	cv::Mat matInput, matGrayscale, matHist, matHistNorm; // image matrix variables
-	const std::string path = std::string("G:/CDEF_2013/CF/F_GNAGNA/Stuff/Studium/Master/WS_2016/Masterarbeit/Test_Data/"); // path to input images
+	const std::string path = std::string("G:/CDEF_2013/CF/F_GNAGNA/Stuff/Studium/Master/WS_2016/Masterarbeit/cell_quantifier/Network/cell_quantifier/training_2png/"); // path to input images
 	
 	// load all images in folder specified by path
 	std::vector<std::string> fileNames = listFilesInDirectory(path);
 
-
-	// Create intensity value histogram
-	// from all images
-	/*int nimages = 1; // one image
-	int dims = 1; // only one channel
-	int channels[] = { 0 }; // which channel? -> intensity channel
-	int histSize[] = { 256 }; // 256 bins
-	float hranges[] = { 0, 256 }; // value range
-	const float *ranges[] = { hranges };
-
-	
-
-	for (auto name = fileNames.begin(); name != fileNames.end(); name++)
-	{
-		std::cout << *name << std::endl;
-
-		matInput = cv::imread(*name, CV_LOAD_IMAGE_COLOR);
-		if (!matInput.data)
-		{
-			std::cout << "Could not open or find the image" << std::endl;
-			cv::waitKey(0);
-			exit(-1);
-		}
-
-		//cv::namedWindow("Initial image", cv::WINDOW_NORMAL);
-		//cv::imshow("Initial image", matInput);
-		//cv::waitKey(0);
-
-		
-		cv::cvtColor(matInput, matGrayscale, cv::COLOR_BGR2GRAY, 0); // convert to grayscale image
-		cv::calcHist(&matGrayscale, nimages, channels, cv::Mat(), matHist, dims, histSize, ranges, true, true); // accumulation histogram
-	}*/
-
-
-	// histogram specs
-	/*int hist_w = 512; // width
-	int hist_h = 400; // height 
-	int bin_w = cvRound((double) hist_w / histSize[0]);
-
-	cv::Mat histImage(hist_h, hist_w, CV_8UC3, cv::Scalar(255, 255, 255));
-
-	// normalize the result to fit histogram width
-	normalize(matHist, matHistNorm, 0, histImage.rows, cv::NORM_MINMAX, -1, cv::Mat());
-
-	// draw histogram bars
-	for (int i = 1; i < histSize[0]; i++)
-	{
-		float value = matHistNorm.at<float>(i);
-		line(histImage, cv::Point(bin_w * (i - 1), hist_h - cvRound(matHistNorm.at<float>(i - 1))),
-			cv::Point(bin_w * (i), hist_h - cvRound(value)),
-			cv::Scalar(0, 0, 0), 2, 8, 0);
-	}
-
-	// show accumulated histogram of all images
-	cv::namedWindow("Accumulated histogram", cv::WINDOW_NORMAL);
-	cv::imshow("Accumulated histogram", histImage);*/
 
 	// TODO: automatic histogram analysis here? find order of curve / number of local maxima
 	// and derive number of gaussians from it
@@ -111,12 +56,24 @@ int main(int argc, char* argv)
 	//segmented = segmentGraphcut(matInput, 5);
 	//overlayFoundBorders(GTPath, segmented, std::string("graphcut overlay"));
 
-	std::string ipath = "G:/CDEF_2013/CF/F_GNAGNA/Stuff/Studium/Master/WS_2016/Masterarbeit/Test_Data/WT_(3).png";
-	std::string labelPath = "G:/CDEF_2013/CF/F_GNAGNA/Stuff/Studium/Master/WS_2016/Masterarbeit/Test_Data/WT_(3)_label.png";
+	std::string outpath = "G:/CDEF_2013/CF/F_GNAGNA/Stuff/Studium/Master/WS_2016/Masterarbeit/cell_quantifier/Network/cell_quantifier/training_3augmented/";
 
-	// perform data augmentation to increase number
-	// of training samples
-	std::vector<std::string> augPaths = augmentImageAndLabel(ipath, labelPath, 0, 0);
+	for (auto filename = fileNames.begin(); filename != fileNames.end(); filename++)
+	{
+		// ignore labelled images
+		if ((*filename).find("label") == std::string::npos)
+		{
+			std::string replaceMe = *filename;
+			std::string labelPath = replaceMe.insert(replaceMe.length() - 4, "_label");
+
+			// perform data augmentation to increase number
+			// of training samples
+			std::vector<std::string> augPaths = augmentImageAndLabel(*filename, labelPath, outpath, 1000);
+		}
+	}
+
+
+	
 
 	// train U-Net
 	//trainUnet(images, labels);

@@ -1,0 +1,148 @@
+%---------------------------------------------------------------------------
+%
+%                          Vorlage der Arbeitsgruppe
+%             Computer Vision and Pattern Recognition Group (CVPR)
+%                           der Universität Münster
+%                         http://cvpr.uni-muenster.de
+%
+%---------------------------------------------------------------------------
+% Geeignet für:
+%  - Seminararbeiten
+%  - Bachelorarbeiten
+%  - Masterarbeiten
+%---------------------------------------------------------------------------
+% Autoren:
+%  - Daniel Tenbrinck
+%  - Fabian Gigengack
+%  - Michael Schmeing
+%  - Lucas Franek
+%---------------------------------------------------------------------------
+% Version:
+%  - 1.0.2 (09.09.2011)
+%    - Titelblatt um Matrikelnummer und Studiengang ergänzt
+%  - 1.0.1 (05.07.2011)
+%---------------------------------------------------------------------------
+% 
+% "THE BEER-WARE LICENSE" (Revision 42):
+% The above mentioned authors wrote this file. As long as you retain this
+% notice you can do whatever you want with this stuff. If we meet some day,
+% and you think this stuff is worth it, you can buy us a beer in return.
+%  --------------------------------------------------------------------------
+
+\documentclass[a4paper, twoside, 12pt, english, enabledeprecatedfontcommands]{scrbook} % Layout-Einstellungen für das Dokument
+\usepackage[utf8]{inputenc} % UTF-8 Codierung
+% \usepackage[ansinew]{inputenc} % bei Problemen mit Umlauten
+\usepackage[english]{babel} % Deutsche Beschriftung
+
+\usepackage{scrhack}
+\usepackage{graphicx} % Um Bilder einzufügen
+\usepackage{subfigure} % Um mehrere Bilder in eine figure einzufügen
+\usepackage{amssymb, amsmath} % Für Mengensymbole und über Gleichheitszeichen schreiben
+\usepackage{verbatim} % Um Quellcode in das Dokument einzufügen.
+\usepackage{xcolor} % Für Farben
+\usepackage[linkbordercolor=blue]{hyperref} % Für Links im Dokument
+\usepackage{algorithmic} % Für Pseudo-Code
+\usepackage{algorithm} % Wrapper für Pseudo-Code
+\usepackage[font={small}, labelfont=bf]{caption} % kleine Bildunterschriften
+\usepackage{geometry} % Für Feinanpassungen des Layouts
+\usepackage{soul,listings,xcolor} % einzelne Zeilen in lstling highlighten
+
+% MA
+\usepackage{multicol} % multiple columns on one page.
+
+\usepackage{mathtools} %rcases
+\usepackage{tikz} % draw lines in matrix
+\usetikzlibrary{arrows,matrix,positioning} % draw lines and arrow for matrix
+
+\usepackage{listings} % Code-Listings
+\usepackage{courier}
+\lstset{
+			 basicstyle=\footnotesize\ttfamily, % Standardschrift
+			 numbers=left,               % Ort der Zeilennummern
+			 numberstyle=\tiny,          % Stil der Zeilennummern
+			 %stepnumber=2,               % Abstand zwischen den Zeilennummern
+			 numbersep=5pt,              % Abstand der Nummern zum Text
+			 tabsize=2,                  % Groesse von Tabs
+			 extendedchars=true,         %
+			 breaklines=true,            % Zeilen werden Umgebrochen
+			 keywordstyle=\color{red},
+					frame=b,         
+%        keywordstyle=[1]\textbf,    % Stil der Keywords
+%        keywordstyle=[2]\textbf,    %
+%        keywordstyle=[3]\textbf,    %
+%        keywordstyle=[4]\textbf,   \sqrt{\sqrt{}} %
+			 stringstyle=\color{black}\ttfamily, % Farbe der String
+			 showspaces=false,           % Leerzeichen anzeigen ?
+			 showtabs=false,             % Tabs anzeigen ?
+			 xleftmargin=17pt,
+			 framexleftmargin=17pt,
+			 framexrightmargin=5pt,
+			 framexbottommargin=4pt,
+			 %backgroundcolor=\color{lightgray},
+			 showstringspaces=false      % Leerzeichen in Strings anzeigen ?        
+}
+\lstloadlanguages{% Check Dokumentation for further languages ...
+			 %[Visual]Basic
+			 %Pascal
+			 %C
+			 C++,
+			 %XML
+			 %HTML
+			 %Java
+			 Python
+}
+	%\DeclareCaptionFont{blue}{\color{blue}} 
+
+%\captionsetup[lstlisting]{singlelinecheck=false, labelfont={blue}, textfont={blue}}
+\usepackage{caption}
+\DeclareCaptionFont{white}{\color{white}}
+\DeclareCaptionFormat{listing}{\colorbox[cmyk]{0.43, 0.35, 0.35,0.01}{\parbox{\textwidth}{\hspace{15pt}#1#2#3}}}
+\captionsetup[lstlisting]{format=listing,labelfont=white,textfont=white, singlelinecheck=false, margin=0pt, font={bf,footnotesize}}
+
+\usepackage{qtree} % Bäume in LaTeX zeichnen
+\lstset{escapeinside={(*@}{@*)}}
+
+\usepackage{placeins} % FloatBarrier
+
+\setcounter{tocdepth}{3} % paragraphs im Inhaltsverzeichnis anzeigen
+
+% Einstellungen für Abstand an den Rändern
+\geometry{a4paper,left=35mm,right=35mm,top=20mm,bottom=20mm, includeheadfoot}
+
+\begin{document}
+%\lstset{
+	%captionpos=b,					% Titel von Listings unter dem Listing anzeigen,
+	%frame=single,					% einfacher Rahmen
+	%breaklines=true				% Zeilen automatisch umbrechen
+%}
+																										
+
+%\pagenumbering{arabic}
+
+% Titelblatt
+\begin{titlepage}
+\include{chapter/0_frontpage}
+\end{titlepage}
+
+\tableofcontents
+
+\include{chapter/1_abstract}
+\include{chapter/2_introduction}
+\include{chapter/3_approaches}
+\include{chapter/4_Unet}
+\include{chapter/5_training}
+\include{chapter/6_results}
+\include{chapter/7_future_work}
+\include{chapter/8_addendum}
+
+\cleardoublepage
+\pagenumbering{arabic}
+
+
+\listoffigures
+\listoftables
+
+\bibliographystyle{plain}
+\bibliography{sources}
+
+\end{document}

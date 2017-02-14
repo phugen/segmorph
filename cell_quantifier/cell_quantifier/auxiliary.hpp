@@ -39,7 +39,7 @@ std::vector<std::string> listFilesInDirectory(std::string path);
 // OpenCV-related functions
 void overlayFoundBorders(std::string GTPath, cv::Mat segmented, std::string windowName);
 
-std::vector<std::string> augmentImageAndLabel(std::string imagePath, std::string labelPath, double magnitude, int iterations);
+std::vector<std::string> augmentImageAndLabel(std::string imagePath, std::string labelPath, std::string outpath, double magnitude);
 void elasticDeformation(cv::Mat* image, cv::Mat* label, double sigma, double alpha);
 bool isInsideConvexQuadrilateral(cv::Point2d p, cv::Point2d q1, cv::Point2d q2, cv::Point2d q3, cv::Point2d q4);
 bool winding_isInPolygon(cv::Point2d* P, std::vector<cv::Point2d*> V);

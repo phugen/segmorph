@@ -456,7 +456,7 @@ void overlayFoundBorders(std::string GTPath, cv::Mat segmented, std::string wind
 	The "iterations" variable controls how many distorted versions of the input
 	image are created.
 */
-std::vector<std::string> augmentImageAndLabel(std::string imagePath, std::string labelPath, double magnitude, int iterations)
+std::vector<std::string> augmentImageAndLabel(std::string imagePath, std::string labelPath, std::string outpath, double magnitude)
 {
 	cv::Mat imageNew, labelNew;
 
@@ -523,7 +523,7 @@ std::vector<std::string> augmentImageAndLabel(std::string imagePath, std::string
 
 	int gridSize = 1;
 	int sigma = 20;
-	int alpha = 1500;
+	int alpha = magnitude;
 	elasticDeformation(&elasticImage, &elasticLabel, gridSize, sigma, alpha);
 
 
@@ -549,13 +549,13 @@ std::vector<std::string> augmentImageAndLabel(std::string imagePath, std::string
 	int sample_width = rotatedImage.cols;
 	int sample_height = rotatedImage.rows;
 
-	extractSamples(&rotatedImage, imagePath, sample_width, sample_height);
-	extractSamples(&rotatedLabel, labelPath, sample_width, sample_height);
+	extractSamples(&rotatedImage, imagePath, outpath, sample_width, sample_height);
+	extractSamples(&rotatedLabel, labelPath, outpath, sample_width, sample_height);
 
 
 	// save augmented image
-	std::string imageOutputPath = imagePath.replace(imagePath.cend() - 4, imagePath.cend(), "") + "_AUGMENTED.bmp";
-	std::string labelOutputPath = labelPath.replace(labelPath.cend() - 4, labelPath.cend(), "") + "_AUGMENTED.bmp";
+	std::string imageOutputPath = imagePath.replace(imagePath.cend() - 4, imagePath.cend(), "") + "_AUGMENTED.png";
+	std::string labelOutputPath = labelPath.replace(labelPath.cend() - 4, labelPath.cend(), "") + "_AUGMENTED.png";
 
 	//cv::imwrite(imageOutputPath, elasticImage);
 	//cv::imwrite(labelOutputPath, elasticLabel);
