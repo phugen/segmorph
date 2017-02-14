@@ -17,6 +17,8 @@ from PIL import Image
 
 
 FORMAT = "png" # set file extension of format to look for (without dot)
+DEF_PIXELWEIGHTS = True # weigh pixels with weight map?
+
 print "Format set as " + FORMAT + "."
 print ""
 
@@ -87,7 +89,6 @@ print ""
 # translate label colors to integer labels in vectorized fashion
 print "Translating colored label pixels to integers ..."
 label_array_int = np.zeros((IMG_NO/2, IMG_HEIGHT, IMG_WIDTH), dtype=np.uint8)
-#label_array_hot = np.zeros((IMG_NO/2, IMG_HEIGHT, IMG_WIDTH, 4), dtype=np.uint8)
 
 num_labels = 3 # number of labels in the data
 intmask = np.arange(num_labels + 1) # [0, 1, 2, 3]
@@ -105,10 +106,6 @@ for index in range(IMG_NO/2):
     label_array_int[index][bluemask == 1] = 3
     label_array_int[index][greenmask == 1] = 2
     label_array_int[index][redmask == 1] = 1
-
-    # labels for every pixel must be BGR one-hot encoded: [0, 0, 0, 1] = red etc.
-    #label_array_int[index] = (intmask == label_array_int[:,:,:,np.newaxis]).astype(int)
-    #label_array_hot[index] = np.eye(num_labels + 1)[label_array_int[index]]
 
 print ""
 
@@ -152,6 +149,15 @@ print "input_size: " + str(input_size)
 print "output_size: " + str(output_size)
 print "border_size: " + str(border)
 
+print "border3: " + str(np.ceil(((np.array([data_array.shape[2], np.ceil(data_array.shape[3] / n_tiles)]) - padOutput) / float(downsampleFactor*4))) \
+             .astype(dtype=np.int))
+print "border2: " + str(np.ceil(((np.array([data_array.shape[2], np.ceil(data_array.shape[3] / n_tiles)]) - padOutput) / float(downsampleFactor*2))) \
+             .astype(dtype=np.int))
+print "border1: " + str(np.ceil(((np.array([data_array.shape[2], np.ceil(data_array.shape[3] / n_tiles)]) - padOutput) / float(downsampleFactor/4))) \
+             .astype(dtype=np.int))
+print "border0: " + str(np.ceil(((np.array([data_array.shape[2], np.ceil(data_array.shape[3] / n_tiles)]) - padOutput) / float(downsampleFactor/2))) \
+             .astype(dtype=np.int))
+
 # create zero-padded data array using
 # padding values calculated above
 paddedFullVolume = np.zeros((data_array.shape[0], \
@@ -160,14 +166,13 @@ paddedFullVolume = np.zeros((data_array.shape[0], \
                             data_array.shape[3] + 2 * border[1]), \
                             dtype=np.float32)
 
+
 # fill in data, leaving the zero borders intact
 # image and channel indices have no need for padding, copy them as they are
 paddedFullVolume[:, \
                  :, \
                  border[0]:border[0] + data_array.shape[2], \
                  border[1]:border[1] + data_array.shape[3]] = data_array;
-
-print paddedFullVolume.shape
 
 
 # fill zero-padded areas with meaningful data
@@ -192,54 +197,56 @@ paddedFullVolume[:, :, yto:yto + ypad + 1, 0:xfrom] = paddedFullVolume[:, :, yto
 paddedFullVolume[:, :, yto:yto + ypad + 1, xto:xto + xpad + 1] = paddedFullVolume[:, :, yto - 1:yto - ypad - 2:-1, xto - 1:xto - xpad - 2:-1] # bottom right
 
 
-print "Computing weighted label image(s) ... "
-# TODO: base on average distribution of classes in training data
+if(DEF_PIXELWEIGHTS == True):
+    print "Computing pixel weight image(s) ... "
+    # TODO: base on average distribution of classes in training data
 
-w_c = (1.0, 2.0, 2.0, 2.0) # weight map label->weight to counter uneven distribution of labels
-w_0 = 10.0 # weight multiplicator, tune as necessary; def = 10
-sigma = 5.0 # distance influence dampening, tune as necessary; def = 5
+    w_c = (0.25, 0.5, 0.75, 1.0) # class weights to counter uneven label distributions
+    w_0 = 10.0 # weight multiplicator, tune as necessary; def = 10
+    sigma = 5.0 # distance influence dampening, tune as necessary; def = 5
 
-weighted_labels = np.zeros((IMG_NO, \
-                           IMG_HEIGHT, \
-                           IMG_WIDTH), \
-                           dtype=np.float32)
+    pixel_weights = np.zeros((int(IMG_NO/2), \
+                               IMG_HEIGHT, \
+                               IMG_WIDTH), \
+                               dtype=np.float32)
 
-# get matrix of point coordinates
-gradient = np.array([[i, j] for i in range (0, IMG_HEIGHT) for j in range (0, IMG_WIDTH)])
+    # get matrix of point coordinates
+    gradient = np.array([[i, j] for i in range (0, IMG_HEIGHT) for j in range (0, IMG_WIDTH)])
 
-for index in range(0, IMG_NO/2):
-    print "     Calculating weighted label image " + str(index + 1) + "/" + str(IMG_NO/2)
+    for index in range(0, IMG_NO/2):
+        print "     Calculating pixel weight image " + str(index + 1) + "/" + str(IMG_NO/2)
 
-    # find all label pixels in this image
-    labelmask = np.reshape([(label_array_int[index,:,:] == 1) |
-                            (label_array_int[index,:,:] == 2) |
-                            (label_array_int[index,:,:] == 3)], (IMG_HEIGHT * IMG_WIDTH))
+        # find all label pixels in this image
+        labelmask = np.reshape([(label_array_int[index,:,:] == 1) |
+                                (label_array_int[index,:,:] == 2) |
+                                (label_array_int[index,:,:] == 3)], (IMG_HEIGHT * IMG_WIDTH))
 
-    # put label pixels into KD-tree for fast kNN-lookups
-    tree = scipy.spatial.cKDTree(gradient[labelmask == True])
+        # put label pixels into KD-tree for fast kNN-lookups
+        print gradient[labelmask == True]
+        tree = scipy.spatial.cKDTree(gradient[labelmask == True])
 
-    for y in range(0, IMG_HEIGHT):
-        print "         Row " + str(y+1) + "/" + str(IMG_HEIGHT)
+        for y in range(0, IMG_HEIGHT):
+            print "         Row " + str(y+1) + "/" + str(IMG_HEIGHT)
 
-        for x in range(0, IMG_WIDTH):
+            for x in range(0, IMG_WIDTH):
 
-            val = label_array_int[index, y, x]
+                val = label_array_int[index, y, x]
 
-            # if pixel has a cell label ignore distance weighting
-            if  val == 1 or val == 2 or val == 3:
-                d1 = 10 # high enough to render exponential term void
-                d2 = 10
+                # if pixel has a cell label ignore distance weighting
+                #if val == 1 or val == 2 or val == 3:
+                #    pixel_weights[index, y, x] = 0.5 #w_c[val]
 
-            # pixel is labelled as background
-            else:
+                # pixel is labelled as background
+                #else:
                 # look for the two nearest neighbors of current pixel, using Manhattan distance
                 closest, indices = tree.query(np.array([y, x]), k=2, p=1, eps=0.1)
 
                 d1 = closest[0]
                 d2 = closest[1]
 
-            # calculate weighted label value for current pixel
-            weighted_labels[index, y, x] = w_c[val] + w_0 * math.exp(-(((d1 + d2)**2) / (2*(sigma)**2)))
+                # pixel weight = class weight + distance modifier
+                pixel_weights[index, y, x] = w_c[val] + w_0 * math.exp(-(((d1 + d2)**2) / (2*(sigma)**2)))
+
 
 
 
@@ -249,7 +256,10 @@ print "Writing HDF5 file to " + hdf5path + " ..."
 with h5py.File(hdf5path, "w", libver="latest") as f:
 
     f.create_dataset("data", dtype=np.float32, data=paddedFullVolume)
-    f.create_dataset("label", dtype=np.float32, data=weighted_labels)
+    f.create_dataset("label", dtype=np.uint8, data=label_array_int)
+
+    if(DEF_PIXELWEIGHTS == True):
+        f.create_dataset("weights", dtype=np.float32, data=pixel_weights)
 
     f.attrs["CLASS"] = "IMAGE"
     f.attrs["IMAGE_VERSION"] = "1.2"

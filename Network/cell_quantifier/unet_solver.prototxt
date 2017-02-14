@@ -1,19 +1,19 @@
-net: "unet.prototxt" # the destination of the network structure file
+net: "unet_weighted.prototxt" # the destination of the network structure file
 
 base_lr: 0.001 # base learning rate
 lr_policy: "step" # drop learning rate in steps by a factor gamma
 gamma: 0.1 # see above
-stepsize: 2500 # drop learning rate every <stepsize> steps
+stepsize: 20000 # drop learning rate every <stepsize> steps
 
-max_iter: 40000 # total number of training iterations
+iter_size: 1 # how many images are processed simultaneously in one learning step (batch size)
+max_iter: 300000 # total number of training iterations
 momentum: 0.99 # weight of previous update
-weight_decay: 0.0005
 
 test_initialization: false # determines whether net is tested at iteration 0
 #test_iter: 1000 # total number of test iterations
 #test_interval: 1000 # test every <test_interval> iterations
 
-display: 50 # show result every 50 iterations (if lots of NaN/Inf: Diverging!)
-snapshot: 1000 # create a backup of weights trained so far every 5000 iterations
+display: 1 # show result every iteration (if lots of NaN/Inf: Diverging!)
+snapshot: 5000 # create a backup of weights trained so far every 5000 iterations
 snapshot_prefix: "./snapshots/unet"
 solver_mode: GPU # train on GPU
