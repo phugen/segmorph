@@ -31,7 +31,7 @@ solver.step(1)
 
 start_time = timeit.default_timer()
 
-for step in range(500):
+for step in range(1000):
     #print solver.net.blobs['data'].data[0, 0]
     #_min, _max = solver.net.blobs['data'].data[0].min(), solver.net.blobs['data'].data[0].max()
     #ax1.imshow(solver.net.blobs['data'].data[0, 0], cmap='gray', vmin=_min, vmax=_max)
@@ -56,7 +56,7 @@ for step in range(500):
     #                      + "B: " + format(features_out[170,150,3] * 100, '.5f') + "%"
 
     features_out = features_out[1:4,:,:] # omit BG probability layer - pixel will become dark if other probabilities are low
-    print features_out.shape
+    #print features_out.shape
     minval = features_out.min()
     maxval = features_out.max()
     scipy.misc.toimage(features_out, cmin=minval, cmax=maxval).save("./visualizations/visualize_out_" + str(step) + ".png")
@@ -64,9 +64,9 @@ for step in range(500):
     #plt.imshow(features_out[:,:], interpolation='none', cmap="gray") # render plot
     #plt.savefig("./visualizations/visualize_out_" + str(step) + ".png", dpi=96) # save plot
 
-    solver.step(1)
+    solver.step(50)
 
-    s_passed = timeit.default_timer() - start_time
+    #s_passed = timeit.default_timer() - start_time
 
     #print "RUNNING FOR: " + str(int(s_passed) / 60) + "m"
 

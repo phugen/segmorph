@@ -1,7 +1,5 @@
-name: 'unet'
-force_backward: true
-layer { top: 'data' top: 'label' top: 'weights' name: 'loaddata'       type: "HDF5Data"  hdf5_data_param { source: 'aug_cell_input.txt' batch_size: 1 } include: { phase: TRAIN }}
-layer { top: 'data' top: 'label' top: 'weights' name: 'loaddata'       type: "HDF5Data"  hdf5_data_param { source: 'aug_cell_input_VALIDATION.txt' batch_size: 1 } include: { phase: TEST }}
+name: 'unet_weighted-test'
+layer { top: 'data' top: 'label' top: 'weights' name: 'loaddata'       type: "HDF5Data"  hdf5_data_param { source: 'aug_cell_input_VALIDATION.txt' batch_size: 1 } include: { phase: TRAIN }}
 
 layer { bottom: 'data'              top: 'd0b'   name: 'conv_d0a-b'     type: "Convolution" param {lr_mult: 1 decay_mult: 1} param {lr_mult: 2 decay_mult: 0}  convolution_param { num_output: 64 pad: 0 kernel_size: 3 engine: CAFFE weight_filler { type: 'xavier' }} }
 layer { bottom: 'd0b'               top: 'd0b'   name: 'relu_d0b'       type: "ReLU" }
@@ -25,14 +23,12 @@ layer { bottom: 'd3a'               top: 'd3b'   name: 'conv_d3a-b'     type: "C
 layer { bottom: 'd3b'               top: 'd3b'   name: 'relu_d3b'       type: "ReLU" }
 layer { bottom: 'd3b'               top: 'd3c'   name: 'conv_d3b-c'     type: "Convolution" param {lr_mult: 1 decay_mult: 1} param {lr_mult: 2 decay_mult: 0}  convolution_param { num_output: 512 pad: 0 kernel_size: 3 engine: CAFFE weight_filler { type: 'xavier' }} }
 layer { bottom: 'd3c'               top: 'd3c'   name: 'relu_d3c'       type: "ReLU" }
-layer { bottom: 'd3c'               top: 'd3c'   name: 'dropout_d3c'    type: "Dropout" dropout_param { dropout_ratio: 0.5 } include: { phase: TRAIN }}
 
 layer { bottom: 'd3c'               top: 'd4a'   name: 'pool_d3c-4a'    type: "Pooling" pooling_param { pool: MAX kernel_size: 2 stride: 2 } }
 layer { bottom: 'd4a'               top: 'd4b'   name: 'conv_d4a-b'     type: "Convolution" param {lr_mult: 1 decay_mult: 1} param {lr_mult: 2 decay_mult: 0}  convolution_param { num_output: 1024 pad: 0 kernel_size: 3 engine: CAFFE weight_filler { type: 'xavier' }} }
 layer { bottom: 'd4b'               top: 'd4b'   name: 'relu_d4b'       type: "ReLU" }
 layer { bottom: 'd4b'               top: 'd4c'   name: 'conv_d4b-c'     type: "Convolution" param {lr_mult: 1 decay_mult: 1} param {lr_mult: 2 decay_mult: 0}  convolution_param { num_output: 1024 pad: 0 kernel_size: 3 engine: CAFFE weight_filler { type: 'xavier' }} }
 layer { bottom: 'd4c'               top: 'd4c'   name: 'relu_d4c'       type: "ReLU" }
-layer { bottom: 'd4c'               top: 'd4c'   name: 'dropout_d4c'    type: "Dropout" dropout_param { dropout_ratio: 0.5 } include: { phase: TRAIN }}
 
 layer { bottom: 'd4c'               top: 'u3a'   name: 'upconv_d4c_u3a' type: "Deconvolution" param {lr_mult: 1 decay_mult: 1} param {lr_mult: 2 decay_mult: 0}  convolution_param { num_output: 512 pad: 0 kernel_size: 2 stride: 2 weight_filler { type: 'xavier' }} }
 layer { bottom: 'u3a'               top: 'u3a'   name: 'relu_u3a'       type: "ReLU" }
@@ -72,6 +68,3 @@ layer { bottom: 'u0d'               top: 'u0d'   name: 'relu_u0d'       type: "R
 
 layer { bottom: 'u0d'               top: 'score' name: 'conv_u0d-score' type: "Convolution"  param {lr_mult: 1 decay_mult: 1} param {lr_mult: 2 decay_mult: 0}  convolution_param { engine: CAFFE num_output: 4 pad: 0 kernel_size: 1 weight_filler { type: 'xavier' }} }
 layer { bottom: 'score' bottom: 'label' bottom: 'weights' top: 'loss'  name: 'loss'   type: 'SoftmaxWithLoss' loss_weight: 1 }
-
-layer { bottom: 'score'             top: 'visualize_out'   name: 'visualize'   type: "Softmax" include: { phase: TRAIN }}
-layer { bottom: 'visualize_out'   name: 'fake'   type: "Silence" include: { phase: TRAIN }}

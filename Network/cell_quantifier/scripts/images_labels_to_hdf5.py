@@ -1,8 +1,6 @@
 # This script takes all image and their label-image files in a folder and
-# converts them into a HDF5 database. One dataset for images and one for labels
-# is created.
-# Labels are expected to have the same name as normal images,
-# but with "_label" appended.
+# converts them into a HDF5 database. One h5 file for training and one for testing is created.
+# Labels are expected to have the same name as their corresponding images, but with "_label" appended.
 
 import sys
 import os
@@ -14,6 +12,7 @@ import timeit
 import math
 import scipy
 from PIL import Image
+import progressbar # loading bar for weightmap calc
 
 
 FORMAT = "png" # set file extension of format to look for (without dot)
@@ -66,6 +65,7 @@ label_array = np.zeros((IMG_NO/2, 3, IMG_HEIGHT, IMG_WIDTH), dtype=np.float32)
 # and store them in the HDF5 database
 index = 0
 
+bar = progressbar.ProgressBar()
 for filename in all_images:
     if not filename.endswith("_label." + FORMAT): # treat label images inside the loop
 
@@ -93,8 +93,7 @@ label_array_int = np.zeros((IMG_NO/2, IMG_HEIGHT, IMG_WIDTH), dtype=np.uint8)
 num_labels = 3 # number of labels in the data
 intmask = np.arange(num_labels + 1) # [0, 1, 2, 3]
 
-for index in range(IMG_NO/2):
-    print "    Processing label " + str(index + 1) + "/" + str(IMG_NO/2) + " ..."
+for index in bar(range(IMG_NO/2)):
 
     # get bool masks for each color component
     bluemask = label_array[index][2] == 1
@@ -138,7 +137,7 @@ input_size = downsampleFactor * d4a_size + padInput # size the image needs to be
 output_size = downsampleFactor * d4a_size + padOutput # original size of the image == size before classification
 border = np.around(np.subtract(input_size, output_size)) / 2; # equal padding on both sides
 
-# TODO: (d4a_size + 124) % 16 == 0, dimension condition?
+# (d4a_size + 124) % 16 == 0, dimension condition
 
 
 print "Image dims: " + str(data_array.shape[2:4])
@@ -201,7 +200,7 @@ if(DEF_PIXELWEIGHTS == True):
     print "Computing pixel weight image(s) ... "
     # TODO: base on average distribution of classes in training data
 
-    w_c = (0.25, 0.5, 0.75, 1.0) # class weights to counter uneven label distributions
+    w_c = (0.1, 0.75, 0.25, 1.0) # class weights to counter uneven label distributions
     w_0 = 10.0 # weight multiplicator, tune as necessary; def = 10
     sigma = 5.0 # distance influence dampening, tune as necessary; def = 5
 
@@ -213,8 +212,8 @@ if(DEF_PIXELWEIGHTS == True):
     # get matrix of point coordinates
     gradient = np.array([[i, j] for i in range (0, IMG_HEIGHT) for j in range (0, IMG_WIDTH)])
 
-    for index in range(0, IMG_NO/2):
-        print "     Calculating pixel weight image " + str(index + 1) + "/" + str(IMG_NO/2)
+    bar = progressbar.ProgressBar()
+    for index in bar(range(0, IMG_NO/2)):
 
         # find all label pixels in this image
         labelmask = np.reshape([(label_array_int[index,:,:] == 1) |
@@ -222,22 +221,14 @@ if(DEF_PIXELWEIGHTS == True):
                                 (label_array_int[index,:,:] == 3)], (IMG_HEIGHT * IMG_WIDTH))
 
         # put label pixels into KD-tree for fast kNN-lookups
-        print gradient[labelmask == True]
         tree = scipy.spatial.cKDTree(gradient[labelmask == True])
 
+        # Calculate weight map
         for y in range(0, IMG_HEIGHT):
-            print "         Row " + str(y+1) + "/" + str(IMG_HEIGHT)
-
             for x in range(0, IMG_WIDTH):
 
                 val = label_array_int[index, y, x]
 
-                # if pixel has a cell label ignore distance weighting
-                #if val == 1 or val == 2 or val == 3:
-                #    pixel_weights[index, y, x] = 0.5 #w_c[val]
-
-                # pixel is labelled as background
-                #else:
                 # look for the two nearest neighbors of current pixel, using Manhattan distance
                 closest, indices = tree.query(np.array([y, x]), k=2, p=1, eps=0.1)
 
@@ -248,37 +239,49 @@ if(DEF_PIXELWEIGHTS == True):
                 pixel_weights[index, y, x] = w_c[val] + w_0 * math.exp(-(((d1 + d2)**2) / (2*(sigma)**2)))
 
 
+# split images and labels into training and validation set
+# TRAINING: 5/6
+training_images = [paddedFullVolume[index, ...] for index in range(paddedFullVolume.shape[0]) if index % 6 != 0]
+training_labels = [label_array_int[index, ...] for index in range(label_array_int.shape[0]) if index % 6 != 0]
+training_weights = [pixel_weights[index, ...] for index in range(pixel_weights.shape[0]) if index % 6 != 0]
+# VALIDATION: 1/6
+validation_images = paddedFullVolume[::6, ...]
+validation_labels = label_array_int[::6, ...]
+validation_weights = pixel_weights[::6, ...] # actually not needed...
 
 
 
-# assign data to according HDF dataset and write HDF file to HDD
-print "Writing HDF5 file to " + hdf5path + " ..."
-with h5py.File(hdf5path, "w", libver="latest") as f:
+print "Writing HDF5 files to " + hdf5path + " ..."
 
-    f.create_dataset("data", dtype=np.float32, data=paddedFullVolume)
-    f.create_dataset("label", dtype=np.uint8, data=label_array_int)
+# write training HDF5 file
+with h5py.File(hdf5path + "/drosophila_training.h5", "w", libver="latest") as f:
+
+    f.create_dataset("data", dtype=np.float32, data=training_images)
+    f.create_dataset("label", dtype=np.uint8, data=training_labels)
 
     if(DEF_PIXELWEIGHTS == True):
-        f.create_dataset("weights", dtype=np.float32, data=pixel_weights)
+        f.create_dataset("weights", dtype=np.float32, data=training_weights)
+
+    f.attrs["CLASS"] = "IMAGE"
+    f.attrs["IMAGE_VERSION"] = "1.2"
+    f.attrs["IMAGE_SUBCLASS"] =  "IMAGE_TRUECOLOR"
+
+# write validation set HDF5 file
+with h5py.File(hdf5path + "/drosophila_validation.h5", "w", libver="latest") as f:
+
+    f.create_dataset("data", dtype=np.float32, data=validation_images)
+    f.create_dataset("label", dtype=np.uint8, data=validation_labels)
+
+    if(DEF_PIXELWEIGHTS == True):
+        f.create_dataset("weights", dtype=np.float32, data=validation_weights)
 
     f.attrs["CLASS"] = "IMAGE"
     f.attrs["IMAGE_VERSION"] = "1.2"
     f.attrs["IMAGE_SUBCLASS"] =  "IMAGE_TRUECOLOR"
 
 
-# Write test network definition to file
-print "Writing test network definition to ../unet-test.prototxt ..."
-with open("unet.prototxt", "r") as net, open("unet-test.prototxt", "w") as test_net:
-    test_net.write("input: \"data\"\n"); # batch size
-    test_net.write("input_dim: " + str(data_array.shape[1]) + "\n"); # channels
-    test_net.write("input_dim: " + str(input_size[0]) + "\n"); # height
-    test_net.write("input_dim: " + str(input_size[1]) + "\n"); # width
-    test_net.write("state: { phase: TEST }" + "\n");
-    test_net.write(net.read()); # the rest of the network definition
+# TODO: (del) Write mirrored images out for testing
+#scipy.misc.toimage(paddedFullVolume[0]).save("./training_4final/mirrored.png")
 
 
 print "Done!"
-
-
-
-# TODO: REMEMBER: even predictions need dummy labels.. apparently. See segmentAndTrack2.m
