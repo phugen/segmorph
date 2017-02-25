@@ -12,24 +12,29 @@ import timeit
 import math
 import scipy
 from PIL import Image
+
 import progressbar # loading bar for weightmap calc
+import preparation_utils as preputils # utility functions like mirroring and tiling
 
 
 FORMAT = "png" # set file extension of format to look for (without dot)
-DEF_PIXELWEIGHTS = True # weigh pixels with weight map?
+WEIGHT_MODE = "individual" # possible modes: "none", "individual", "average"
+CREATE_UNLABELED = True # create extra HDF5 container for unlabelled data to use for pseudo-labelling?
 
 print "Format set as " + FORMAT + "."
 print ""
 
-if len(sys.argv) < 3:
+if len(sys.argv) < 4:
     print "Too few arguments!"
-    print "Usage: python images_labels_to_hdf5.py /path/to/input_folder /path/to/output_folder"
+    print "Usage: python images_labels_to_hdf5.py /input_folder /unlabeled_input_folder /output_folder"
     sys.exit(-1)
 
 # paths to the image folder containing images and their labels
 # and the path to the output HDF5 file
 path = sys.argv[1]
-hdf5path = sys.argv[2]
+un_path = sys.argv[2]
+hdf5path = sys.argv[3]
+
 
 # check how many images (minus labels) there are in the folder
 # (assuming every image in the folder has a corresponding label image!)
@@ -37,7 +42,7 @@ all_images = glob.glob(path + "/*." + FORMAT)
 IMG_NO = len(all_images)
 
 if IMG_NO == 0:
-    print "No images found in path" + path + " with format ." + FORMAT + "!"
+    print "No images found in path " + path + " with format ." + FORMAT + "!"
     sys.exit(-1)
 
 if (IMG_NO % 2) != 0:
@@ -53,20 +58,15 @@ IMG_WIDTH = size[0]
 IMG_HEIGHT = size[1]
 
 # temporary arrays for image and label data
-# TODO: does Caffe NEED float32? Input images are only 16-bit uint...
 data_array = np.zeros((IMG_NO/2, 3, IMG_HEIGHT, IMG_WIDTH), dtype=np.float32)
 label_array = np.zeros((IMG_NO/2, 3, IMG_HEIGHT, IMG_WIDTH), dtype=np.float32)
 
-
-# TODO: work with resizable HDF files so data can be written in chunks!
-# TODO: split into training and validation test, e.g. 6:1 scale
-# TODO: mean substraction?
 # extract image data from all images and labels in the directory
 # and store them in the HDF5 database
 index = 0
 
 bar = progressbar.ProgressBar()
-for filename in all_images:
+for index, filename in enumerate(all_images):
     if not filename.endswith("_label." + FORMAT): # treat label images inside the loop
 
         print "Packing image " + str(index+1) + "/" + str(IMG_NO/2) + ": " + filename
@@ -80,9 +80,6 @@ for filename in all_images:
         # store current image in HDF5 output array by its index
         data_array[index,:,:,:] = imgfile
         label_array[index,:,:,:] = labelfile
-
-        # number of image/label pairs
-        index += 1
 
 print ""
 
@@ -140,114 +137,163 @@ border = np.around(np.subtract(input_size, output_size)) / 2; # equal padding on
 # (d4a_size + 124) % 16 == 0, dimension condition
 
 
-print "Image dims: " + str(data_array.shape[2:4])
-print "padInput: " + str(padInput)
-print "padOutput: " + str(padOutput)
-print "d4a_size: " + str(d4a_size)
-print "input_size: " + str(input_size)
-print "output_size: " + str(output_size)
-print "border_size: " + str(border)
+#print "Image dims: " + str(data_array.shape[2:4])
+#print "padInput: " + str(padInput)
+#print "padOutput: " + str(padOutput)
+#print "d4a_size: " + str(d4a_size)
+#print "input_size: " + str(input_size)
+#print "output_size: " + str(output_size)
+#print "border_size: " + str(border)
 
-print "border3: " + str(np.ceil(((np.array([data_array.shape[2], np.ceil(data_array.shape[3] / n_tiles)]) - padOutput) / float(downsampleFactor*4))) \
-             .astype(dtype=np.int))
-print "border2: " + str(np.ceil(((np.array([data_array.shape[2], np.ceil(data_array.shape[3] / n_tiles)]) - padOutput) / float(downsampleFactor*2))) \
-             .astype(dtype=np.int))
-print "border1: " + str(np.ceil(((np.array([data_array.shape[2], np.ceil(data_array.shape[3] / n_tiles)]) - padOutput) / float(downsampleFactor/4))) \
-             .astype(dtype=np.int))
-print "border0: " + str(np.ceil(((np.array([data_array.shape[2], np.ceil(data_array.shape[3] / n_tiles)]) - padOutput) / float(downsampleFactor/2))) \
-             .astype(dtype=np.int))
-
-# create zero-padded data array using
-# padding values calculated above
-paddedFullVolume = np.zeros((data_array.shape[0], \
-                            data_array.shape[1], \
-                            data_array.shape[2] + 2 * border[0], \
-                            data_array.shape[3] + 2 * border[1]), \
-                            dtype=np.float32)
+#print "border3: " + str(np.ceil(((np.array([data_array.shape[2], np.ceil(data_array.shape[3] / n_tiles)]) - padOutput) / float(downsampleFactor*4))) \
+#             .astype(dtype=np.int))
+#print "border2: " + str(np.ceil(((np.array([data_array.shape[2], np.ceil(data_array.shape[3] / n_tiles)]) - padOutput) / float(downsampleFactor*2))) \
+#             .astype(dtype=np.int))
+#print "border1: " + str(np.ceil(((np.array([data_array.shape[2], np.ceil(data_array.shape[3] / n_tiles)]) - padOutput) / float(downsampleFactor/4))) \
+#             .astype(dtype=np.int))
+#print "border0: " + str(np.ceil(((np.array([data_array.shape[2], np.ceil(data_array.shape[3] / n_tiles)]) - padOutput) / float(downsampleFactor/2))) \
+#             .astype(dtype=np.int))
 
 
-# fill in data, leaving the zero borders intact
-# image and channel indices have no need for padding, copy them as they are
-paddedFullVolume[:, \
-                 :, \
-                 border[0]:border[0] + data_array.shape[2], \
-                 border[1]:border[1] + data_array.shape[3]] = data_array;
+# create enlarged input image by mirroring edges
+paddedFullVolume = preputils.enlargeByMirrorBorder(data_array, border)
 
 
-# fill zero-padded areas with meaningful data
-
-xpad  = border[0] - 1 # last padding element before image data
-xfrom = border[0] # first image element
-xto   = border[0] + data_array.shape[3] # first padding element after image data
-
-ypad  = border[1] - 1
-yfrom = border[1]
-yto   = border[1] + data_array.shape[2]
-
-# fill all 8 zero-padded rectangles adjacent to image with mirrored image data
-paddedFullVolume[:, :, yfrom:yto, 0:xfrom] = paddedFullVolume[:, :, yfrom:yto, xfrom + xpad:xfrom - 1:-1] # left
-paddedFullVolume[:, :, yfrom:yto, xto:xto + xpad + 1] = paddedFullVolume[:, :, yfrom:yto, xto - 1:xto - xpad - 2:-1] # right
-paddedFullVolume[:, :, 0:yfrom, xfrom:xto] = paddedFullVolume[:, :, yfrom + ypad:yfrom - 1:-1, xfrom:xto] # above
-paddedFullVolume[:, :, yto:yto + ypad + 1, xfrom:xto] = paddedFullVolume[:, :, yto - 1:yto - ypad - 2:-1, xfrom:xto] # below
-
-paddedFullVolume[:, :, 0:yfrom, 0:xfrom] = paddedFullVolume[:, :, yfrom + ypad:yfrom - 1:-1, xfrom + xpad:xfrom - 1:-1] # top left
-paddedFullVolume[:, :, 0:yfrom, xto:xto + xpad + 1] = paddedFullVolume[:, :, yfrom + ypad:yfrom - 1:-1, xto - 1:xto - xpad - 2:-1] # top right
-paddedFullVolume[:, :, yto:yto + ypad + 1, 0:xfrom] = paddedFullVolume[:, :, yto - 1:yto - ypad - 2:-1, xfrom + xpad:xfrom - 1:-1] # bottom left
-paddedFullVolume[:, :, yto:yto + ypad + 1, xto:xto + xpad + 1] = paddedFullVolume[:, :, yto - 1:yto - ypad - 2:-1, xto - 1:xto - xpad - 2:-1] # bottom right
+input_size = 244 # actual input size without padding
+magic_number = 428 # padded input size that fits the network architecture
+PAD_HEIGHT = paddedFullVolume.shape[2]
+PAD_WIDTH = paddedFullVolume.shape[3]
 
 
-if(DEF_PIXELWEIGHTS == True):
+# tile images and labels so they fit network input size
+paddedSubImages = preputils.tileMirrorImage (IMG_NO/2, input_size, magic_number, paddedFullVolume, \
+                                             [IMG_HEIGHT, IMG_WIDTH], [PAD_HEIGHT, PAD_WIDTH])
+
+
+subLabels = preputils.tileMirrorLabel (IMG_NO/2, input_size, label_array_int, \
+                                       [IMG_HEIGHT, IMG_WIDTH])
+
+
+# total number of sub-images and labels
+SUB_NO = len(paddedSubImages)
+SUB_L_NO = len(subLabels)
+
+# convert lists to numpy array representation
+paddedSubImages = np.array(paddedSubImages)
+subLabels = np.array(subLabels)
+
+
+
+
+
+
+# TODO: add ROTATION and MEAN SUBSTRACTIOn etc
+
+
+
+
+
+
+# set class weights for weighting
+class_probs = np.zeros((SUB_NO, 4)) # BG, R, G, B
+if WEIGHT_MODE == "individual":
+
+    # calculate inverse color probability for each color in each image
+    print "Calculating INDIVIDUAL class weights:"
+
+    bar = progressbar.ProgressBar()
+    for index in bar(range(SUB_NO)):
+        for color in range(4):
+            class_probs[index, color] = 1. - float(list(subLabels[index].reshape(input_size * input_size)).count(color)) / (input_size * input_size)
+
+    print ""
+
+
+elif WEIGHT_MODE == "average":
+    temp_probs = np.zeros(4)
+
+    # calculate inverse average color probability over all images
+    print "Calculating AVERAGE class weights:"
+
+    bar = progressbar.ProgressBar()
+    for index in bar(range(SUB_NO)):
+        for color in range(4):
+            temp_probs[color] += 1. - float(list(subLabels[index].reshape(input_size * input_size)).count(color)) / (input_size * input_size)
+
+    temp_probs /= SUB_NO
+    for i in range(4):
+        class_probs[:, i] = temp_probs[i] # fill probs for all images with the same, averaged values
+
+    print ""
+
+
+
+if WEIGHT_MODE == "individual" or WEIGHT_MODE == "average":
     print "Computing pixel weight image(s) ... "
     # TODO: base on average distribution of classes in training data
 
-    w_c = (0.1, 0.75, 0.25, 1.0) # class weights to counter uneven label distributions
+    #w_c = (0.1, 0.75, 0.25, 1.0) # class weights to counter uneven label distributions
     w_0 = 10.0 # weight multiplicator, tune as necessary; def = 10
     sigma = 5.0 # distance influence dampening, tune as necessary; def = 5
 
-    pixel_weights = np.zeros((int(IMG_NO/2), \
-                               IMG_HEIGHT, \
-                               IMG_WIDTH), \
+    pixel_weights = np.zeros((SUB_NO, \
+                               input_size, \
+                               input_size), \
                                dtype=np.float32)
 
     # get matrix of point coordinates
-    gradient = np.array([[i, j] for i in range (0, IMG_HEIGHT) for j in range (0, IMG_WIDTH)])
+    gradient = np.array([[i, j] for i in range (0, input_size) for j in range (0, input_size)])
 
     bar = progressbar.ProgressBar()
-    for index in bar(range(0, IMG_NO/2)):
+    for index in bar(range(SUB_NO)):
+
+        w_c = class_probs[index, :]
 
         # find all label pixels in this image
-        labelmask = np.reshape([(label_array_int[index,:,:] == 1) |
-                                (label_array_int[index,:,:] == 2) |
-                                (label_array_int[index,:,:] == 3)], (IMG_HEIGHT * IMG_WIDTH))
+        labelmask = np.reshape([(subLabels[index,:,:] == 1) |
+                                (subLabels[index,:,:] == 2) |
+                                (subLabels[index,:,:] == 3)], (input_size * input_size))
 
         # put label pixels into KD-tree for fast kNN-lookups
         tree = scipy.spatial.cKDTree(gradient[labelmask == True])
 
         # Calculate weight map
-        for y in range(0, IMG_HEIGHT):
-            for x in range(0, IMG_WIDTH):
+        for y in range(0, input_size):
+            for x in range(0, input_size):
 
-                val = label_array_int[index, y, x]
+                val = subLabels[index, y, x]
 
                 # look for the two nearest neighbors of current pixel, using Manhattan distance
-                closest, indices = tree.query(np.array([y, x]), k=2, p=1, eps=0.1)
+                # TODO: enable tree lookups
+                #closest, indices = tree.query(np.array([y, x]), k=2, p=1, eps=0.1)
 
-                d1 = closest[0]
-                d2 = closest[1]
+                d1 = 0.00001#closest[0]
+                d2 = 0.00001#closest[1]
 
                 # pixel weight = class weight + distance modifier
                 pixel_weights[index, y, x] = w_c[val] + w_0 * math.exp(-(((d1 + d2)**2) / (2*(sigma)**2)))
 
 
+
+
 # split images and labels into training and validation set
-# TRAINING: 5/6
-training_images = [paddedFullVolume[index, ...] for index in range(paddedFullVolume.shape[0]) if index % 6 != 0]
-training_labels = [label_array_int[index, ...] for index in range(label_array_int.shape[0]) if index % 6 != 0]
-training_weights = [pixel_weights[index, ...] for index in range(pixel_weights.shape[0]) if index % 6 != 0]
-# VALIDATION: 1/6
-validation_images = paddedFullVolume[::6, ...]
-validation_labels = label_array_int[::6, ...]
-validation_weights = pixel_weights[::6, ...] # actually not needed...
+ratio = 5 # split ratio, each x-th training sample used for validation
+
+# TRAINING set:
+training_images = [paddedSubImages[index, ...] for index in range(paddedSubImages.shape[0]) if index % ratio != 0]
+training_labels = [subLabels[index, ...] for index in range(subLabels.shape[0]) if index % ratio != 0]
+
+if WEIGHT_MODE == "individual" or WEIGHT_MODE == "average":
+    training_weights = [pixel_weights[index, ...] for index in range(pixel_weights.shape[0]) if index % ratio != 0]
+
+# VALIDATION set:
+validation_images = paddedSubImages[::ratio, ...]
+validation_labels = subLabels[::ratio, ...]
+
+if WEIGHT_MODE == "individual" or WEIGHT_MODE == "average":
+    validation_weights = pixel_weights[::ratio, ...] # actually not needed...
+
+
 
 
 
@@ -259,12 +305,10 @@ with h5py.File(hdf5path + "/drosophila_training.h5", "w", libver="latest") as f:
     f.create_dataset("data", dtype=np.float32, data=training_images)
     f.create_dataset("label", dtype=np.uint8, data=training_labels)
 
-    if(DEF_PIXELWEIGHTS == True):
+    if WEIGHT_MODE == "individual" or WEIGHT_MODE == "average":
         f.create_dataset("weights", dtype=np.float32, data=training_weights)
 
-    f.attrs["CLASS"] = "IMAGE"
-    f.attrs["IMAGE_VERSION"] = "1.2"
-    f.attrs["IMAGE_SUBCLASS"] =  "IMAGE_TRUECOLOR"
+
 
 # write validation set HDF5 file
 with h5py.File(hdf5path + "/drosophila_validation.h5", "w", libver="latest") as f:
@@ -272,13 +316,46 @@ with h5py.File(hdf5path + "/drosophila_validation.h5", "w", libver="latest") as 
     f.create_dataset("data", dtype=np.float32, data=validation_images)
     f.create_dataset("label", dtype=np.uint8, data=validation_labels)
 
-    if(DEF_PIXELWEIGHTS == True):
+    if WEIGHT_MODE == "individual" or WEIGHT_MODE == "average":
         f.create_dataset("weights", dtype=np.float32, data=validation_weights)
 
-    f.attrs["CLASS"] = "IMAGE"
-    f.attrs["IMAGE_VERSION"] = "1.2"
-    f.attrs["IMAGE_SUBCLASS"] =  "IMAGE_TRUECOLOR"
 
+
+# write unlabelled data HDF5 file
+if CREATE_UNLABELED == True:
+    with h5py.File(hdf5path + "/drosophila_unlabelled.h5", "w", libver="latest") as f:
+
+        # pack unlabelled images into numpy array
+        all_un = glob.glob(un_path + "/*." + FORMAT)
+        UN_NUM = len(all_un)
+        un_data_array = np.zeros((UN_NUM, 3, IMG_HEIGHT, IMG_WIDTH), dtype=np.float32)
+
+        # get raw image data
+        for index, filename in enumerate(all_un):
+            imgfile = caffe.io.load_image(filename)
+            imgfile = np.transpose(imgfile, (2,0,1))
+            un_data_array[index, ...] = imgfile
+
+        # mirror and tile label images
+        paddedUnlabeled = preputils.enlargeByMirrorBorder(un_data_array, border)
+        subUnlabeled = preputils.tileMirrorImage (UN_NUM, input_size, magic_number, paddedUnlabeled, \
+                                                  [IMG_HEIGHT, IMG_WIDTH], [PAD_HEIGHT, PAD_WIDTH])
+
+
+        f.create_dataset("data", dtype=np.float32, data=subUnlabeled)
+
+        if WEIGHT_MODE == "individual" or WEIGHT_MODE == "average":
+            pseudo_weights = np.zeros((len(subUnlabeled), input_size, input_size), dtype=np.float32)
+            pseudo_weights[...] = 1.0
+            f.create_dataset("weights", dtype=np.float32, data=pseudo_weights)
+
+
+
+
+print "Written " + str(len(training_images)) + " training image(s), " \
+                 + str(len(validation_images)) + " validation image(s) and " \
+                 + str(len(subUnlabeled)) + " unlabelled images to " \
+                 + str(hdf5path) + "!\n"
 
 # TODO: (del) Write mirrored images out for testing
 #scipy.misc.toimage(paddedFullVolume[0]).save("./training_4final/mirrored.png")

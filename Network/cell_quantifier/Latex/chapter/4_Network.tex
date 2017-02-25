@@ -1,0 +1,86 @@
+\chapter {Network Structure}
+Although possible, it wasn't necessary to construct a fitting CNN from scratch. Since the task of image segmentation is popular, a number of propositions have been made; among them, the \textit{U-Net}. The \textit{U-Net} is a CNN architecture proposed by Ronneberger et. al\cite{unet} which aims to produce binary segmentation maps for images of cells. The network consists of a first, ``contracting'' path which is compromised by a series of convolutions, followed by max-pooling layers, and then a ``widening'' path which performs deconvolutions, giving the network a U-shape. The network also uses \textit{Dropout} layers\cite{dropout} for regularization of its weights.
+
+	\section {U-Net}
+	% Image of U-Net here
+
+	\section {Layer Types}
+	
+		\subsection{Convolution and Deconvolution}
+		\subsection{Maximum Pooling}
+		\subsection {Crop Layers}
+
+		\subsection {Dropout}
+Dropout layers implement the \textit{Dropout} technique proposed by Srivastava et. al \cite{dropout}. Dropout ``disables'' neurons it is applied to during training with a certain chance according to a user-defined Bernoulli probability. These disabled neurons are not trained on the particular training sample - an effect one could view as training only a sub-network of the original neural network. By applying Dropout repeatedly and scaling the weights by the Dropout probability $p$ during testing, one gains an approximation of averaging the outputs of all possible $2^n$ sub-networks, where $n$ is the number of neurons in the network. This lowers the amount of overfitting because neurons learn not to ``rely'' on other neurons which otherwise would lead to specialized co-adaptions that usually hurt the generalization ability of the network.
+
+The \textit{U-Net} uses $p = 0.5$ in its Dropout layers.
+
+
+
+		\subsection {Batch Normalization}
+
+
+
+
+	\section {Loss Layers}
+
+		\subsection{Softmax}
+
+The loss layer that was proposed originally for the U-Net architecture is a \textit{Softmax Loss} layer. The name \textit{Softmax Loss} can lead to misunderstandings, because the layer's internal implementation actually consists of two steps:
+
+First, the input $z$ of the layer is transformed by the softmax function
+
+\[\sigma(z) = \frac{e^{z}}{\sum \limits_{k=0}^{K} e^{z_k}},\]
+
+\noindent where $e$ is the exponential function and $z$ has a dimension of $1 \times K$. The softmax function acts as a normalizer that ``squashes'' the values of its input vector into the range $[0, 1]$ with respect to the differences between the vector values. For example, let $z = [-2.432, 1.832, 0.299]$. Then $\sigma(z) = [0.011, 0.813, 0.176]$ is the softmax output for $z$.
+
+These processed values can be interpreted as probabilities much more easily than the raw scores the loss layer receives, which in turns leads to the second step, in which the actual loss computation is done. The actual loss function the layer uses is the \textit{Cross-Entropy Loss} that compares a true probability distribution $p$ to a model probability distribution $q$. For a vector of calculated softmax probabilities $z_i$, it is defined as follows:
+
+\[CE(p, q) = -\sum \limits_{i = 0}^{K} p(i) \log q(i)\]
+
+\noindent Conveniently, the softmax function forces all input values to be positive, allowing the logarithm in the loss to be used. Even though $\log (0)$ isn't defined, the softmax function should never produce values that are exactly equal to zero or one. \textbf{TODO: WHY?} 
+
+However, the above definition of the softmax function can become numerically unstable when the exponentiation yields large values because dividing by large numbers could potentially produce zero values. To prevent this, the softmax can be made robust by defining it as
+
+\[z_{new} = z - \max \limits_{i = 0}(0, z_i)\]
+\[\sigma(z_{new}) = \frac{e^{z_{new}}}{\sum \limits_{k=0}^{K} e^{z_{new_{k}}}}\]
+
+\noindent Since each pixel of the input image belongs to one class only, this means that for a given pixel, the probability of its ground truth label is $1.0$, while all others are $0.0$. If, without loss of generality, the third class is assumed to be the ground-truth class, $p$ will be $[0.0, 0.0, 1.0, 0.0]$.  Hence, only the predicted probability of the true third class influences the loss, and all the other summands can be omitted, yielding the condensed general formula
+
+\[CE'(q) = - \log(q_{true}),\]
+
+\noindent where $q_{true}$ denotes the predicted probability for the true class. The loss of the entire image is then calculated as the sum of the losses of all pixels divided by the number of pixels.
+
+
+
+		\subsection{Weighted Softmax}
+
+Using a softmax loss function assumes that all pixels in each training sample should carry the same weight in the backpropagation process. As long as the distribution of classification classes is balanced, this works well, but if it is not, classes with lower probability are trained much more slowly.
+
+To combat this problem, Ronneberger et. al\cite{unet} introduce a pixelwise weight map for each training sample whose values depend on the ground truth class and the position of each pixel. For example, the softmax loss is changed to
+
+\[CE(p, q) = -\sum \limits_{i = 0}^{K} p(i) \log q(i) \cdot w(i),\]
+
+\noindent where $w(i)$ is the weight for pixel $i$.
+
+ The weight for each pixel is calculated as follows:
+
+\[ w(i) = w_c(i) + w_0 \cdot \exp \left (- \frac{(d_1(i) + d_2(i))^2}{2\sigma^2} \right ), \]
+
+\noindent where $w_c$ is the class-specific weight for the pixel's ground truth class, $d_1$ and $d_2$ are the euclidean distances to the nearest and second-nearest non-background pixel and $w_0$ and $\sigma$ are additional modifier terms. 
+
+		\subsection{F-Measure}
+
+An alternative to solving the problem of unbalanced classes in the training data is using the F-Measure, also called DICE similarity or $F_1$-Score, as a loss function instead. The F-Measure is a statistical similarity function which has been shown to perform well on unbalanced data\cite{fmeasure1}\cite{fmeasure2}\cite{fmeasure3} defined as
+
+\[F_1 = 2 \cdot \frac{PR \cdot RC}{PR + RC},\]
+
+\noindent where PR denotes the \textit{Precision} and RC denotes the \textit{Recall} over the training sample in comparison to its ground truth. In turn, \textit{Precision} is defined as
+
+\[PR = \frac{TP}{TP + FP}\]
+
+\noindent and \textit{Recall} is defined as
+
+\[RC = \frac{TP}{TP + FN},\]
+
+\noindent where TP is the number of true positives, FP is the number of false positives, and FN is the number of false negatives. \textbf{TODO}: Wie kann man FP etc auf ein Mehrklassen-Problem anwenden?
