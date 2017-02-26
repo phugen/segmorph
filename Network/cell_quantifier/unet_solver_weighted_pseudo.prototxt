@@ -1,4 +1,4 @@
-net: "unet.prototxt" # the destination of the network structure file
+net: "unet_weighted_pseudo.prototxt" # the destination of the network structure file
 
 base_lr: 0.001 # base learning rate, originally 0.001
 lr_policy: "step" # drop learning rate in steps by a factor gamma
@@ -16,5 +16,5 @@ test_initialization: false # determines whether net is tested at iteration 0
 
 display: 1 # show result every iteration (if lots of NaN/Inf: Diverging!)
 snapshot: 1000 # create a backup of weights trained so far every 1000 iterations
-snapshot_prefix: "./snapshots/unet"
+snapshot_prefix: "./snapshots/unet_weighted_pseudo"
 solver_mode: GPU # train on GPU

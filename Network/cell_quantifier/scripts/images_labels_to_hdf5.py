@@ -66,7 +66,7 @@ label_array = np.zeros((IMG_NO/2, 3, IMG_HEIGHT, IMG_WIDTH), dtype=np.float32)
 index = 0
 
 bar = progressbar.ProgressBar()
-for index, filename in enumerate(all_images):
+for filename in all_images:
     if not filename.endswith("_label." + FORMAT): # treat label images inside the loop
 
         print "Packing image " + str(index+1) + "/" + str(IMG_NO/2) + ": " + filename
@@ -80,6 +80,8 @@ for index, filename in enumerate(all_images):
         # store current image in HDF5 output array by its index
         data_array[index,:,:,:] = imgfile
         label_array[index,:,:,:] = labelfile
+
+        index += 1
 
 print ""
 

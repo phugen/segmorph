@@ -13,7 +13,7 @@ import caffe
 caffe.set_device(0)
 caffe.set_mode_gpu()
 print "Loading Solver... "
-solver = caffe.get_solver("unet_solver.prototxt")
+solver = caffe.get_solver("unet_solver_weighted.prototxt")
 if len(sys.argv) > 1:
     if sys.argv[1].endswith(".solverstate"):
         solver.restore(sys.argv[1])

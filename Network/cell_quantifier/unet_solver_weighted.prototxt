@@ -1,4 +1,4 @@
-net: "unet.prototxt" # the destination of the network structure file
+net: "unet_weighted.prototxt" # the destination of the network structure file
 
 base_lr: 0.001 # base learning rate, originally 0.001
 lr_policy: "step" # drop learning rate in steps by a factor gamma
