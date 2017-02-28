@@ -1,14 +1,15 @@
-\chapter {Network Structure}
+\chapter {Network Architecture}
 Although possible, it wasn't necessary to construct a fitting CNN from scratch. Since the task of image segmentation is popular, a number of propositions have been made; among them, the \textit{U-Net}. The \textit{U-Net} is a CNN architecture proposed by Ronneberger et. al\cite{unet} which aims to produce binary segmentation maps for images of cells. The network consists of a first, ``contracting'' path which is compromised by a series of convolutions, followed by max-pooling layers, and then a ``widening'' path which performs deconvolutions, giving the network a U-shape. The network also uses \textit{Dropout} layers\cite{dropout} for regularization of its weights.
 
 	\section {U-Net}
 	% Image of U-Net here
 
-	\section {Layer Types}
+	\section {Network Components and Parameters}
 	
 		\subsection{Convolution and Deconvolution}
 		\subsection{Maximum Pooling}
 		\subsection {Crop Layers}
+		\subsection{Softmax}
 
 		\subsection {Dropout}
 Dropout layers implement the \textit{Dropout} technique proposed by Srivastava et. al \cite{dropout}. Dropout ``disables'' neurons it is applied to during training with a certain chance according to a user-defined Bernoulli probability. These disabled neurons are not trained on the particular training sample - an effect one could view as training only a sub-network of the original neural network. By applying Dropout repeatedly and scaling the weights by the Dropout probability $p$ during testing, one gains an approximation of averaging the outputs of all possible $2^n$ sub-networks, where $n$ is the number of neurons in the network. This lowers the amount of overfitting because neurons learn not to ``rely'' on other neurons which otherwise would lead to specialized co-adaptions that usually hurt the generalization ability of the network.
@@ -22,7 +23,7 @@ The \textit{U-Net} uses $p = 0.5$ in its Dropout layers.
 
 
 
-	\section {Loss Layers}
+	\section {Loss Functions}
 
 		\subsection{Softmax}
 
@@ -51,9 +52,9 @@ However, the above definition of the softmax function can become numerically uns
 
 \noindent where $q_{true}$ denotes the predicted probability for the true class. The loss of the entire image is then calculated as the sum of the losses of all pixels divided by the number of pixels.
 
+		\subsection{Cross-Entropy Loss}
 
-
-		\subsection{Weighted Softmax}
+		\subsection{Weighted Cross-Entropy Loss}
 
 Using a softmax loss function assumes that all pixels in each training sample should carry the same weight in the backpropagation process. As long as the distribution of classification classes is balanced, this works well, but if it is not, classes with lower probability are trained much more slowly.
 

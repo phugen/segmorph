@@ -27,8 +27,8 @@ else:
 # As step size increases, make unlabelled data
 # loss gradually more influential regarding the combined loss
 alpha_f = 3.0
-t1 = 100.0 * 10
-t2 = 600.0 * 10
+t1 = 1.0
+t2 = 600.0
 
 def alpha (t):
     if t < t1:
@@ -44,7 +44,7 @@ def alpha (t):
 # params for manual SGD (TODO: can this be done better?)
 weight_decay = 0.0005
 lr_w_mult = 1
-lr_b_mult = 1
+lr_b_mult = 2
 
 base_lr = 0.001 # base learning rate, originally 0.001
 lr_policy = "step" # drop learning rate in steps by a factor gamma
@@ -109,15 +109,6 @@ for step in range(max_iter):
     solver.net.forward()
     normal_loss = solver.net.blobs['loss'].data[...]
 
-    # extract forward pass output image and write to file
-    if step % 50 == 0:
-        features_out = solver.net.blobs['visualize_out'].data[0, ...] # plt needs WxHxC
-        features_out = features_out[1:4,:,:] # omit BG probability layer - pixel will become dark if other probabilities are low
-
-        minval = features_out.min()
-        maxval = features_out.max()
-        scipy.misc.toimage(features_out, cmin=minval, cmax=maxval).save("./visualizations/visualize_out_" + str(step) + ".png")
-
     # pass unlabelled data through network to get pseudo-labels
     solver.net.blobs['data'].data[...] = unlabelled[step % unlabelled.shape[0], ...]
     solver.net.blobs['label'].data[...] = np.zeros(weights.shape[1:3]) # use dummy labels because we don't care about the loss at this point
@@ -137,6 +128,7 @@ for step in range(max_iter):
     solver.net.blobs['weights'].data[...] = weights[step % weights.shape[0], ...] # TODO real weights
     solver.net.forward()
     pseudo_loss = alpha(step) * solver.net.blobs['loss'].data[...]
+    print pseudo_loss
 
     # update loss as partially alpha-weighted sum of both losses
     combined_loss = (1 / batch_normal) * normal_loss + (1 / batch_pseudo) * pseudo_loss
@@ -146,11 +138,14 @@ for step in range(max_iter):
 
     # perform backpropagation with combined loss
     solver.net.backward()
+    print solver.net.blobs['score'].diff[0, 0, 0, 0]
+
 
     # manually update layer weights according
     # to backward-generated diffs
     momentum_hist = {}
     for layer in solver.net.params:
+        print solver.net.params[layer][1].data.shape
         m_w = np.zeros_like(solver.net.params[layer][0].data)
         m_b = np.zeros_like(solver.net.params[layer][1].data)
         momentum_hist[layer] = [m_w, m_b]
@@ -170,6 +165,16 @@ for step in range(max_iter):
 
     # lower learning rate if necessary
     base_lr = base_lr * np.power(gamma, (np.floor(step / stepsize)))
+
+
+    # extract forward pass output image and write to file
+    if step % 50 == 0:
+        features_out = solver.net.blobs['visualize_out'].data[0, ...] # plt needs WxHxC
+        features_out = features_out[1:4,:,:] # omit BG probability layer - pixel will become dark if other probabilities are low
+
+        minval = features_out.min()
+        maxval = features_out.max()
+        scipy.misc.toimage(features_out, cmin=minval, cmax=maxval).save("./visualizations/visualize_out_" + str(step) + ".png")
 
     # save solver state
     if step % snapshot == 0 and step != 0:

@@ -99,6 +99,7 @@
 \DeclareCaptionFormat{listing}{\colorbox[cmyk]{0.43, 0.35, 0.35,0.01}{\parbox{\textwidth}{\hspace{15pt}#1#2#3}}}
 \captionsetup[lstlisting]{format=listing,labelfont=white,textfont=white, singlelinecheck=false, margin=0pt, font={bf,footnotesize}}
 
+\DeclareMathOperator*{\argmin}{arg\,min} % define argmin operator
 \usepackage{qtree} % Bäume in LaTeX zeichnen
 \lstset{escapeinside={(*@}{@*)}}
 
@@ -129,12 +130,13 @@
 \include{chapter/declaration}
 \include{chapter/1_abstract}
 \include{chapter/2_introduction}
-\include{chapter/3_approaches}
+\include{chapter/3_concepts}
 \include{chapter/4_network}
 \include{chapter/5_training}
 \include{chapter/6_results}
-\include{chapter/7_future_work}
-\include{chapter/8_addendum}
+\include{chapter/7_conclusion}
+\include{chapter/8_future_work}
+\include{chapter/9_addendum}
 
 \cleardoublepage
 \pagenumbering{arabic}

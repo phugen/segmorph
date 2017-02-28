@@ -1,0 +1,54 @@
+\chapter{Basic Concepts}
+
+This section explains an array of concepts that can be used to segment an image into multiple areas. In the ``Results'' chapter (Ch. \ref{chapter_results}), the performance of all the mentioned algorithms is compared, using the same data set each time.
+	
+	\section{Thresholding}
+\textbf{TODO: Mehr über Otsu, Unterschied zwischen Global/Local thresholding, FIGURE}\\
+Thresholding is the simplest segmentation algorithm there is: Given an input image with dimensions $x \times y$ and intensity values $z$ (for instance, $[0, 255]$ at 8-bit color depth), defined as a function 
+
+\[I(x, y) \to z, \text{ for } x, y, z \in \mathbb{N}_0,\]
+
+\noindent the thresholding function is defined as follows:
+
+\[ T(I(x, y), \theta) =  \begin{cases}
+				1 \text{ if } I(x, y) \, \geq \, \theta \\
+			           0 \text{ otherwise}
+			     \end{cases}
+\]
+
+
+\noindent This yields a binary segmentation of the image into two classes, given that $\theta$ is chosen properly. The choice of $\theta$ is therefore crucial for the success of the segmentation. One way to find a suitable threshold parameter is (automated) image histogram analysis, such as in Otsu's method\cite{Otsu}.
+
+Otsu's method iterates through all possible values for $\theta$ and calculates the ``between-class variance'' ${\sigma^{2}}_B$ for each $\theta$, defined as
+
+\[ {\sigma^2}_{B} = W_b W_f (\mu_b - \mu_f)^2,\]
+
+\noindent where $W_b$ and $W_f$ are the weights - the sum of pixels in all bins belonging to either the background or foreground class, as determined by $\theta$, divided by the total number of pixels - and $\mu_b$ and $\mu_f$ are the statistical mean values for the background and foreground classes. The threshold with the maximum \textbf{between}-class variance corresponds to a segmentation in which the pixels of each class have minimum \textbf{within}-class variance: Intuitively, this means that the pixels of each class are very much alike.
+
+However, this approach doesn't work as well for images whose histograms are not bimodal at all - for example, due to excessive noise - and also, while possible, doesn't perform well for cases in which a large number of classes is to be segmented. 
+
+
+	\section{K-Means}
+K-Means\cite{kmeans} is a general-purpose data clustering algorithm whose aim is to create $k$ data clusters from all $n$-dimensional data points $d = (f_1, f_2, \dots, f_n)$ so that the squared distance from each data point in the cluster to the cluster mean is minimized overall. Mathematically, this means calculating
+
+\[ \argmin \limits_{C} \sum \limits_{i=1}^{k} \sum \limits_{d \in C_i} || d - \mu_i||^2 ,\]
+
+\noindent where $C_{i \dots k}$ are the $k$ clusters and $\mu_{i \dots k}$ is the mean of the respective cluster.
+
+The algorithm is initialized with $k$ either random or differently selected cluster centers, which are chosen from the given data points. Then, the algorithm executes the following two steps alternatingly until either a set number of iterations is reached or the overall difference between the current and the last iteration falls below a threshold $\epsilon$:
+
+\textbf{TODO: make this a code environment}\\
+\begin {enumerate}
+	\item Assign each data point to exactly one of the $k$ clusters by selecting the cluster that has the closest mean distance as defined above.
+	\item Calculate new cluster centers by recalculating the mean of all elements assigned to each cluster.
+\end {enumerate}
+
+	\section{Gaussian Mixture Models}
+
+	\section{Graph Cuts}
+
+	\section{Multi-layer Perceptrons}
+
+		\subsection {Gradient Descent}
+
+		\subsection{Backpropagation}

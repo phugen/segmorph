@@ -19,7 +19,7 @@ caffe.set_mode_gpu()
 
 # set paths to deployment net, trained model weights and the images to predict (in HDF5 format, e.g. validation set)
 MODEL_FILE = "G:/CDEF_2013/CF/F_GNAGNA/Stuff/Studium/Master/WS_2016/Masterarbeit/cell_quantifier/Network/cell_quantifier/unet_weighted_deploy.prototxt"
-WEIGHTS = "G:/CDEF_2013/CF/F_GNAGNA/Stuff/Studium/Master/WS_2016/Masterarbeit/cell_quantifier/Network/cell_quantifier/snapshots/unet_iter_40000.caffemodel"
+WEIGHTS = "G:/CDEF_2013/CF/F_GNAGNA/Stuff/Studium/Master/WS_2016/Masterarbeit/cell_quantifier/Network/cell_quantifier/snapshots/unet_weighted_pseudo_iter_0.caffemodel"
 INPUT_FILE = "G:/CDEF_2013/CF/F_GNAGNA/Stuff/Studium/Master/WS_2016/Masterarbeit/cell_quantifier/Network/cell_quantifier/training_4final/drosophila_validation.h5"
 
 # initialize U-Net with trained weights
