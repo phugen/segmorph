@@ -3,7 +3,7 @@
 This section explains an array of concepts that can be used to segment an image into multiple areas. In the ``Results'' chapter (Ch. \ref{chapter_results}), the performance of all the mentioned algorithms is compared, using the same data set each time.
 	
 	\section{Thresholding}
-\textbf{TODO: Mehr über Otsu, Unterschied zwischen Global/Local thresholding, FIGURE}\\
+\textbf{TODO: Mehr über Otsu, FIGURE}\\
 Thresholding is the simplest segmentation algorithm there is: Given an input image with dimensions $x \times y$ and intensity values $z$ (for instance, $[0, 255]$ at 8-bit color depth), defined as a function 
 
 \[I(x, y) \to z, \text{ for } x, y, z \in \mathbb{N}_0,\]
@@ -25,7 +25,11 @@ Otsu's method iterates through all possible values for $\theta$ and calculates t
 
 \noindent where $W_b$ and $W_f$ are the weights - the sum of pixels in all bins belonging to either the background or foreground class, as determined by $\theta$, divided by the total number of pixels - and $\mu_b$ and $\mu_f$ are the statistical mean values for the background and foreground classes. The threshold with the maximum \textbf{between}-class variance corresponds to a segmentation in which the pixels of each class have minimum \textbf{within}-class variance: Intuitively, this means that the pixels of each class are very much alike.
 
-However, this approach doesn't work as well for images whose histograms are not bimodal at all - for example, due to excessive noise - and also, while possible, doesn't perform well for cases in which a large number of classes is to be segmented. 
+However, this approach doesn't work as well for images whose histograms are not bimodal at all - for example, due to excessive noise - and also, while possible, doesn't perform well for cases in which a large number of classes is to be segmented.\\
+
+The thresholding mechanism so far is called ``global thresholding'' because the same threshold is applied to the entire image. However, there are also local thresholding algorithms which segment different parts of the image with different thresholds. The need for such algorithms often arises when the illumination of the input image is irregular, for example when cast shadows overlay part of the image (see \ref{figure_illumination}). One approach is to calculate a threshold for each pixel of the image while examining a neighborhood of size $L \times L$ around the pixel in question, using the mean, the mean of the maximum and minimum values or the median of the resulting local pixel intensity distribution to determine a local threshold.
+
+Local thresholding, however, also depends on choosing $L$ so that the local neighborhoods contain enough pixels of either class, or otherwise the local thresholds won't be chosen well\cite[pp.~84--93]{machine_vision}.
 
 
 	\section{K-Means}
@@ -33,15 +37,28 @@ K-Means\cite{kmeans} is a general-purpose data clustering algorithm whose aim is
 
 \[ \argmin \limits_{C} \sum \limits_{i=1}^{k} \sum \limits_{d \in C_i} || d - \mu_i||^2 ,\]
 
-\noindent where $C_{i \dots k}$ are the $k$ clusters and $\mu_{i \dots k}$ is the mean of the respective cluster.
+\noindent where $C_{i \dots k}$ are the $k$ clusters and $\mu_{i \dots k}$ is the mean of the respective cluster. Viewed graphically, this is equal to computing a higher-order Voronoi diagram for the data, using the $k$ cluster centers as the Voronoi cell centers.
 
-The algorithm is initialized with $k$ either random or differently selected cluster centers, which are chosen from the given data points. Then, the algorithm executes the following two steps alternatingly until either a set number of iterations is reached or the overall difference between the current and the last iteration falls below a threshold $\epsilon$:
+The algorithm is initialized with $k$ either random or differently selected cluster centers, which are chosen from the given data points. Then, the algorithm executes the two steps described in \ref{kmeans_pseudo} alternatingly until either a set number of iterations is reached or the overall difference between the current and the last iteration falls below a threshold $\epsilon$.
 
-\textbf{TODO: make this a code environment}\\
-\begin {enumerate}
-	\item Assign each data point to exactly one of the $k$ clusters by selecting the cluster that has the closest mean distance as defined above.
-	\item Calculate new cluster centers by recalculating the mean of all elements assigned to each cluster.
-\end {enumerate}
+\begin {algorithm}
+	\caption{K-Means ($\epsilon$, iter\_max)}\label{kmeans_pseudo}
+	\begin {algorithmic}[1]
+		\State iter = 0
+		\State Assign each data point to exactly one of the $k$ clusters by selecting the cluster that has the closest mean distance as defined above.
+		\State Calculate new cluster centers by recalculating the mean of all elements assigned to each cluster and calculate difference $\Delta$ compared to previous iteration.
+		\If {$\Delta < \epsilon$ \textbf{or} iter == iter\_max}
+			\State \textbf{end}
+		\Else
+			\State iter += 1
+			\State \textbf{goto} step 2
+		\EndIf
+	\end{algorithmic}
+\end{algorithm}
+
+\noindent Obviously, this algorithm can be used to segment images into $k$ different classes, but there are a few problems. Since K-Means assigns classes to data by using the distance from the mean, the algorithm output favors segmentations in which the classes have roughly the same size, which isn't necessarily the correct way to classify pixels in arbitrary image data.
+
+	\section{Canny Edge Detection}
 
 	\section{Gaussian Mixture Models}
 
