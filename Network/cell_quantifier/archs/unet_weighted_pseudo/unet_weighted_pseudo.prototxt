@@ -1,27 +1,26 @@
-name: 'unet'
+name: 'unet_weighted_pseudo'
 force_backward: true
-layer { top: 'data' top: 'label' top: 'weights' name: 'loaddata'       type: "HDF5Data"  hdf5_data_param { source: 'aug_cell_input.txt' batch_size: 1 } include: { phase: TRAIN }}
-layer { top: 'data' top: 'label' top: 'weights' name: 'loaddata'       type: "HDF5Data"  hdf5_data_param { source: 'aug_cell_input_VALIDATION.txt' batch_size: 1 } include: { phase: TEST }}
+
+layer { top: 'data' name: 'data' type: 'Input'  input_param { shape: { dim: 1 dim: 3 dim: 428 dim: 428 } } }
+layer { top: 'label' name: 'label' type: 'Input'  input_param { shape: { dim: 1 dim: 1 dim: 244 dim: 244 } } }
+layer { top: 'weights' name: 'weights' type: 'Input'  input_param { shape: { dim: 1 dim: 1 dim: 244 dim: 244 } } }
 
 layer { bottom: 'data'              top: 'd0b'   name: 'conv_d0a-b'     type: "Convolution" param {lr_mult: 1 decay_mult: 1} param {lr_mult: 2 decay_mult: 0}  convolution_param { num_output: 64 pad: 0 kernel_size: 3 engine: CAFFE weight_filler { type: 'xavier' }} }
 layer { bottom: 'd0b'               top: 'd0b'   name: 'relu_d0b'       type: "ReLU" }
 layer { bottom: 'd0b'               top: 'd0c'   name: 'conv_d0b-c'     type: "Convolution"  param {lr_mult: 1 decay_mult: 1} param {lr_mult: 2 decay_mult: 0}  convolution_param { num_output: 64 pad: 0 kernel_size: 3 engine: CAFFE weight_filler { type: 'xavier' }} }
 layer { bottom: 'd0c'               top: 'd0c'   name: 'relu_d0c'       type: "ReLU" }
-layer { bottom: 'd0c'               top: 'd0c'   name: 'dropout_d0c'    type: "Dropout" dropout_param { dropout_ratio: 0.5 } include: { phase: TRAIN }}
 
 layer { bottom: 'd0c'               top: 'd1a'   name: 'pool_d0c-1a'    type: "Pooling"  pooling_param { pool: MAX kernel_size: 2 stride: 2 } }
 layer { bottom: 'd1a'               top: 'd1b'   name: 'conv_d1a-b'     type: "Convolution"  param {lr_mult: 1 decay_mult: 1} param {lr_mult: 2 decay_mult: 0}  convolution_param { num_output: 128 pad: 0 kernel_size: 3 engine: CAFFE weight_filler { type: 'xavier' }} }
 layer { bottom: 'd1b'               top: 'd1b'   name: 'relu_d1b'       type: "ReLU" }
 layer { bottom: 'd1b'               top: 'd1c'   name: 'conv_d1b-c'     type: "Convolution" param {lr_mult: 1 decay_mult: 1} param {lr_mult: 2 decay_mult: 0}  convolution_param { num_output: 128 pad: 0 kernel_size: 3 engine: CAFFE weight_filler { type: 'xavier' }} }
 layer { bottom: 'd1c'               top: 'd1c'   name: 'relu_d1c'       type: "ReLU" }
-layer { bottom: 'd1c'               top: 'd1c'   name: 'dropout_d1c'    type: "Dropout" dropout_param { dropout_ratio: 0.5 } include: { phase: TRAIN }}
 
 layer { bottom: 'd1c'               top: 'd2a'   name: 'pool_d1c-2a'    type: "Pooling"  pooling_param { pool: MAX kernel_size: 2 stride: 2 } }
 layer { bottom: 'd2a'               top: 'd2b'   name: 'conv_d2a-b'     type: "Convolution"  param {lr_mult: 1 decay_mult: 1} param {lr_mult: 2 decay_mult: 0}  convolution_param { num_output: 256 pad: 0 kernel_size: 3 engine: CAFFE weight_filler { type: 'xavier' }} }
 layer { bottom: 'd2b'               top: 'd2b'   name: 'relu_d2b'       type: "ReLU" }
 layer { bottom: 'd2b'               top: 'd2c'   name: 'conv_d2b-c'     type: "Convolution" param {lr_mult: 1 decay_mult: 1} param {lr_mult: 2 decay_mult: 0}  convolution_param { num_output: 256 pad: 0 kernel_size: 3 engine: CAFFE weight_filler { type: 'xavier' }} }
 layer { bottom: 'd2c'               top: 'd2c'   name: 'relu_d2c'       type: "ReLU" }
-layer { bottom: 'd2c'               top: 'd2c'   name: 'dropout_d2c'    type: "Dropout" dropout_param { dropout_ratio: 0.5 } include: { phase: TRAIN }}
 
 layer { bottom: 'd2c'               top: 'd3a'   name: 'pool_d2c-3a'    type: "Pooling" pooling_param { pool: MAX kernel_size: 2 stride: 2 } }
 layer { bottom: 'd3a'               top: 'd3b'   name: 'conv_d3a-b'     type: "Convolution" param {lr_mult: 1 decay_mult: 1} param {lr_mult: 2 decay_mult: 0}  convolution_param { num_output: 512 pad: 0 kernel_size: 3 engine: CAFFE weight_filler { type: 'xavier' }} }
