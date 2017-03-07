@@ -13,7 +13,7 @@ import caffe
 caffe.set_device(0)
 caffe.set_mode_gpu()
 print "Loading Solver... "
-solver = caffe.get_solver("unet_solver_weighted_batchnorm.prototxt")
+solver = caffe.get_solver("unet_solver_weighted.prototxt")
 if len(sys.argv) > 1:
     if sys.argv[1].endswith(".solverstate"):
         solver.restore(sys.argv[1])
@@ -59,7 +59,7 @@ for step in range(1000):
     #print features_out.shape
     minval = features_out.min()
     maxval = features_out.max()
-    scipy.misc.toimage(features_out, cmin=minval, cmax=maxval).save("./visualizations/batchnorm_out_" + str(step) + ".png")
+    scipy.misc.toimage(features_out, cmin=minval, cmax=maxval).save("./visualizations/ce_weighted_" + str(step) + ".png")
     #plt.axis('off')
     #plt.imshow(features_out[:,:], interpolation='none', cmap="gray") # render plot
     #plt.savefig("./visualizations/visualize_out_" + str(step) + ".png", dpi=96) # save plot

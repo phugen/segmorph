@@ -12,9 +12,9 @@ from scipy.ndimage.filters import gaussian_filter
 from sklearn import preprocessing
 from PIL import Image
 
-if len(sys.argv) < 5:
+if len(sys.argv) < 3:
     print "Too few arguments!"
-    print "Usage: python preprocess.py /path/to/input_folder /path/to/output_folder new_height new_width startcount"
+    print "Usage: python preprocess.py /path/to/input_folder /path/to/output_folder startcount"
     print ""
 
     # display magic dimensions
@@ -32,14 +32,10 @@ if len(sys.argv) < 5:
 path = sys.argv[1]
 outpath = sys.argv[2]
 
-# desired dims after processing
-magic_height = int(sys.argv[3])
-magic_width = int(sys.argv[4])
-
 # training samples are saved as "sample_NUMBER[_label].png"
 # the startcount parameter determines at which number the
 # algorithm starts when naming all samples.
-startcount = int(sys.argv[5])
+startcount = int(sys.argv[3])
 
 # check how many images (minus labels) there are in the folder
 # (assuming every image in the folder has a corresponding label image!)

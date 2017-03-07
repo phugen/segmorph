@@ -129,3 +129,47 @@ def tileMirrorLabel (imgno, input_size, input_image, img_dims):
                                                      x:x + input_size])
 
     return subLabels
+
+
+
+def getFlipRotationCombinations(input_images, numchannels):
+    ''' Returns a numpy array that contains the original images \
+    as well as those images created by flipping the originals vertically
+    and rotating them by 90, 180 and 270 degrees.'''
+
+    vertical = np.zeros((input_images.shape))
+
+    # flip vertically
+    if numchannels > 1:
+        for x in range(input_images.shape[0]):
+            for ch in range(numchannels):
+                vertical[x, ch, ...] = np.flipud(input_images[x, ch, ...])
+
+    else:
+        for x in range(input_images.shape[0]):
+            vertical[x, ...] = np.flipud(input_images[x, ...])
+
+    origAndVertical = np.concatenate((input_images,vertical), axis=0)
+
+
+    # rotate by 90, 180 and 270 degrees
+    deg90 = np.zeros((origAndVertical.shape))
+    deg180 = np.zeros((origAndVertical.shape))
+    deg270 = np.zeros((origAndVertical.shape))
+
+    if numchannels > 1:
+        for x in range(origAndVertical.shape[0]):
+            for ch in range(numchannels):
+                deg90[x, ch, ...] = np.rot90(origAndVertical[x, ch, ...], 1)
+                deg180[x, ch, ...] = np.rot90(origAndVertical[x, ch, ...], 2)
+                deg270[x, ch, ...] = np.rot90(origAndVertical[x, ch, ...], 3)
+
+    else:
+        for x in range(origAndVertical.shape[0]):
+            deg90[x, ...] = np.rot90(origAndVertical[x, ...], 1)
+            deg180[x, ...] = np.rot90(origAndVertical[x, ...], 2)
+            deg270[x, ...] = np.rot90(origAndVertical[x, ...], 3)
+
+
+    # return originals plus all variations
+    return np.concatenate((origAndVertical, deg90, deg180, deg270), axis=0)

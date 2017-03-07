@@ -27,7 +27,7 @@ else:
 # As step size increases, make unlabelled data
 # loss gradually more influential regarding the combined loss
 alpha_f = 3.0
-t1 = 1.0
+t1 = 100.0
 t2 = 600.0
 
 def alpha (t):
@@ -41,6 +41,9 @@ def alpha (t):
         return alpha_f
 
 
+# number of classes to segment by (possible labels + 1)
+numclasses = 4
+
 # params for manual SGD (TODO: can this be done better?)
 weight_decay = 0.0005
 lr_w_mult = 1
@@ -53,7 +56,7 @@ stepsize = 20000 # drop learning rate every <stepsize> steps
 
 iter_size = 1 # how many images are processed simultaneously in one learning step (batch size)
 max_iter = 300000 # total number of training iterations
-momentum = 0.99 # weight of previous update
+momentum_weight = 0.99 # weight of previous update
 
 snapshot = 500
 
@@ -106,29 +109,29 @@ for step in range(max_iter):
     solver.net.blobs['label'].data[...] = labels[step % labels.shape[0], ...]
     solver.net.blobs['weights'].data[...] = weights[step % weights.shape[0], ...]
 
-    solver.net.forward()
+    '''solver.net.forward()
     normal_loss = solver.net.blobs['loss'].data[...]
 
-    # pass unlabelled data through network to get pseudo-labels
+    # pass unlabelled data through network to get prediction
     solver.net.blobs['data'].data[...] = unlabelled[step % unlabelled.shape[0], ...]
     solver.net.blobs['label'].data[...] = np.zeros(weights.shape[1:3]) # use dummy labels because we don't care about the loss at this point
-    solver.net.forward()
+    solver.net.forward(start=None, end='loss')
 
     # extract pseudo-labels
-    pseudo_raw = solver.net.blobs['score'].data[...]
-    pseudo_labels = np.zeros((1, 1, pseudo_raw.shape[2], pseudo_raw.shape[3]), dtype=np.uint8)
+    pseudo_scores = solver.net.blobs['score'].data[...]
+    pseudo_labels = np.zeros((batch_pseudo, 1, pseudo_scores.shape[2], pseudo_scores.shape[3]), dtype=np.uint8)
 
-    for y in range(pseudo_raw.shape[2]):
-        for x in range(pseudo_raw.shape[3]):
-            pseudo_labels[..., y, x] = np.argmax(pseudo_raw[..., :, y, x])
+    for y in range(pseudo_scores.shape[2]):
+        for x in range(pseudo_scores.shape[3]):
+            #one_hot = np.zeros((numclasses))
+            #one_hot[np.argmax(pseudo_scores[..., y, x])] #score with maximum probability becomes 1, others 0
+            pseudo_labels[..., y, x] = np.argmax(pseudo_scores[..., y, x]) #one_hot
 
-
-    # pass unlabelled data through the network again to get pseudo loss
+    # compare prediction for unlabelled image with pseudo-labels of the same image to get pseudo-loss
     solver.net.blobs['label'].data[...] = pseudo_labels[...]
     solver.net.blobs['weights'].data[...] = weights[step % weights.shape[0], ...] # TODO real weights
-    solver.net.forward()
+    solver.net.forward(start='rawscores', end=None)
     pseudo_loss = alpha(step) * solver.net.blobs['loss'].data[...]
-    print pseudo_loss
 
     # update loss as partially alpha-weighted sum of both losses
     combined_loss = (1 / batch_normal) * normal_loss + (1 / batch_pseudo) * pseudo_loss
@@ -137,44 +140,55 @@ for step in range(max_iter):
     print "Iteration=" + str(step) + " alpha=" + str(alpha(step)) + " Loss=" + str(combined_loss)
 
     # perform backpropagation with combined loss
+    solver.net.backward()'''
+
+    solver.net.forward()
     solver.net.backward()
-    print solver.net.blobs['score'].diff[0, 0, 0, 0]
+
+    print "Iteration=" + str(step) + " Loss=" + str(solver.net.blobs['loss'].data[...])
 
 
-    # manually update layer weights according
+    # create arrays for saving the (step - 1)th update
+    # to use for the "momentum" SGD optimization
+    velocity = {}
+
+    for layer in solver.net.params:
+        v_w = np.zeros(solver.net.params[layer][0].shape)
+        v_b = np.zeros(solver.net.params[layer][1].shape)
+        velocity[layer] = [v_w, v_b]
+
+    # manually update layers according
     # to backward-generated diffs
-    momentum_hist = {}
     for layer in solver.net.params:
-        print solver.net.params[layer][1].data.shape
-        m_w = np.zeros_like(solver.net.params[layer][0].data)
-        m_b = np.zeros_like(solver.net.params[layer][1].data)
-        momentum_hist[layer] = [m_w, m_b]
 
-    for layer in solver.net.params:
-        momentum_hist[layer][0] = momentum_hist[layer][0] * momentum + (solver.net.params[layer][0].diff + weight_decay * \
-                                                       solver.net.params[layer][0].data) * base_lr * lr_w_mult
-        momentum_hist[layer][1] = momentum_hist[layer][1] * momentum + (solver.net.params[layer][1].diff + weight_decay * \
-                                                       solver.net.params[layer][1].data) * base_lr * lr_b_mult
+        # calculate updates and save as current momentum.
+        # In the very first iteration, momentum will be 0 and thus
+        # not contribute to the update.
+        velocity[layer][0][...] = (momentum_weight * velocity[layer][0]) + base_lr * solver.net.params[layer][0].diff[...]
+        velocity[layer][1][...] = (momentum_weight * velocity[layer][1]) + base_lr * solver.net.params[layer][1].diff[...]
 
-        solver.net.params[layer][0].data[...] -= momentum_hist[layer][0]
-        solver.net.params[layer][1].data[...] -= momentum_hist[layer][1]
+        # apply updates to weights and biases
+        solver.net.params[layer][0].data[...] -= velocity[layer][0]
+        solver.net.params[layer][1].data[...] -= velocity[layer][1]
 
         # reset diffs; don't reset if gradient accumulation is needed
         solver.net.params[layer][0].diff[...] *= 0
         solver.net.params[layer][1].diff[...] *= 0
 
-    # lower learning rate if necessary
+    # lower learning rate if adequate
     base_lr = base_lr * np.power(gamma, (np.floor(step / stepsize)))
+
+    #solver.step(1)
 
 
     # extract forward pass output image and write to file
-    if step % 50 == 0:
+    if step % 10 == 0:
         features_out = solver.net.blobs['visualize_out'].data[0, ...] # plt needs WxHxC
         features_out = features_out[1:4,:,:] # omit BG probability layer - pixel will become dark if other probabilities are low
 
         minval = features_out.min()
         maxval = features_out.max()
-        scipy.misc.toimage(features_out, cmin=minval, cmax=maxval).save("./visualizations/visualize_out_" + str(step) + ".png")
+        scipy.misc.toimage(features_out, cmin=minval, cmax=maxval).save("./visualizations/weighted_pseudo_" + str(step) + ".png")
 
     # save solver state
     if step % snapshot == 0 and step != 0:

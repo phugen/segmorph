@@ -1,4 +1,4 @@
-# This script takes all image and their label-image files in a folder and
+# This script takes all images and their label-images in a folder and
 # converts them into a HDF5 database. One h5 file for training and one for testing is created.
 # Labels are expected to have the same name as their corresponding images, but with "_label" appended.
 
@@ -12,6 +12,7 @@ import timeit
 import math
 import scipy
 from PIL import Image
+import matplotlib.pyplot as plt
 
 import progressbar # loading bar for weightmap calc
 import preparation_utils as preputils # utility functions like mirroring and tiling
@@ -24,16 +25,16 @@ CREATE_UNLABELED = True # create extra HDF5 container for unlabelled data to use
 print "Format set as " + FORMAT + "."
 print ""
 
-if len(sys.argv) < 4:
+if len(sys.argv) < 3:
     print "Too few arguments!"
-    print "Usage: python images_labels_to_hdf5.py /input_folder /unlabeled_input_folder /output_folder"
+    print "Usage: python images_labels_to_hdf5.py /input_folder /output_folder [/unlabeled_input_folder]"
     sys.exit(-1)
 
-# paths to the image folder containing images and their labels
-# and the path to the output HDF5 file
+
+# set paths from args
 path = sys.argv[1]
-un_path = sys.argv[2]
-hdf5path = sys.argv[3]
+hdf5path = sys.argv[2]
+un_path = sys.argv[3]
 
 
 # check how many images (minus labels) there are in the folder
@@ -185,17 +186,6 @@ paddedSubImages = np.array(paddedSubImages)
 subLabels = np.array(subLabels)
 
 
-
-
-
-
-# TODO: add ROTATION and MEAN SUBSTRACTIOn etc
-
-
-
-
-
-
 # set class weights for weighting
 class_probs = np.zeros((SUB_NO, 4)) # BG, R, G, B
 if WEIGHT_MODE == "individual":
@@ -277,25 +267,68 @@ if WEIGHT_MODE == "individual" or WEIGHT_MODE == "average":
 
 
 
+# Data augmentation: Flip and rotate images
+# to get more training samples
+flippedRotatedImages = preputils.getFlipRotationCombinations(paddedSubImages, 3)
+flippedRotatedLabels = preputils.getFlipRotationCombinations(subLabels, 1)
+
+if WEIGHT_MODE == "individual" or WEIGHT_MODE == "average":
+    flippedRotatedWeights = preputils.getFlipRotationCombinations(pixel_weights, 1)
+
+
 
 # split images and labels into training and validation set
 ratio = 5 # split ratio, each x-th training sample used for validation
 
 # TRAINING set:
-training_images = [paddedSubImages[index, ...] for index in range(paddedSubImages.shape[0]) if index % ratio != 0]
-training_labels = [subLabels[index, ...] for index in range(subLabels.shape[0]) if index % ratio != 0]
+training_images = [flippedRotatedImages[index, ...] for index in range(flippedRotatedImages.shape[0]) if index % ratio != 0]
+training_labels = [flippedRotatedLabels[index, ...] for index in range(flippedRotatedLabels.shape[0]) if index % ratio != 0]
 
 if WEIGHT_MODE == "individual" or WEIGHT_MODE == "average":
-    training_weights = [pixel_weights[index, ...] for index in range(pixel_weights.shape[0]) if index % ratio != 0]
+    training_weights = [flippedRotatedWeights[index, ...] for index in range(flippedRotatedWeights.shape[0]) if index % ratio != 0]
 
 # VALIDATION set:
-validation_images = paddedSubImages[::ratio, ...]
-validation_labels = subLabels[::ratio, ...]
+validation_images = flippedRotatedImages[::ratio, ...]
+validation_labels = flippedRotatedLabels[::ratio, ...]
 
 if WEIGHT_MODE == "individual" or WEIGHT_MODE == "average":
-    validation_weights = pixel_weights[::ratio, ...] # actually not needed...
+    validation_weights = flippedRotatedWeights[::ratio, ...] # actually not needed...
 
 
+
+# Preprocessing:
+# Compute mean and standard deviation over training set ONLY
+# for each RGB channel independently and then substract from
+# validation set to prevent validation set information from biasing the network
+training_images = np.array(training_images)
+validation_images = np.array(validation_images)
+
+training_means = [np.mean(training_images[:, 0, ...]), \
+                  np.mean(training_images[:, 1, ...]), \
+                  np.mean(training_images[:, 2, ...])]
+
+training_stds = [np.std(training_images[:, 0, ...]), \
+                np.std(training_images[:, 1, ...]), \
+                np.std(training_images[:, 2, ...])]
+
+
+# center data by substracting training mean
+for i in range(3):
+    training_images[:, i, ...] -= training_means[i]
+    validation_images[:, i, ...] -= training_means[i]
+
+# normalize data by dividing by training standard deviation
+for i in range(3):
+    training_images[:, i, ...] /= training_stds[i]
+    validation_images[:, i, ...] /= training_stds[i]
+
+
+# TODO: (del) write preprocessed images out
+for x in range(training_images.shape[0]):
+    scipy.misc.toimage(training_images[x]).save("./training_4final/debug/train_" + str(x) + ".png")
+
+for x in range(validation_images.shape[0]):
+    scipy.misc.toimage(validation_images[x]).save("./training_4final/debug/valid_" + str(x) + ".png")
 
 
 
@@ -359,8 +392,6 @@ print "Written " + str(len(training_images)) + " training image(s), " \
                  + str(len(subUnlabeled)) + " unlabelled images to " \
                  + str(hdf5path) + "!\n"
 
-# TODO: (del) Write mirrored images out for testing
-#scipy.misc.toimage(paddedFullVolume[0]).save("./training_4final/mirrored.png")
 
 
 print "Done!"
