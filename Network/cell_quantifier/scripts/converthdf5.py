@@ -201,6 +201,11 @@ if WEIGHT_MODE == "individual":
         for color in range(4):
             class_probs[index, color] = 1. - float(list(subLabels[index].reshape(input_size * input_size)).count(color)) / (input_size * input_size)
 
+            # if an image only contains one class,
+            # weigh that class with a very small factor but not 0
+            # to prevent "sum of pixel losses is zero" error
+            if (abs(0. - class_probs[index, color]) < 0.00001):
+                class_probs[index, color] = 0.00001
     print ""
 
 

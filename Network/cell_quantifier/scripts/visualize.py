@@ -64,7 +64,7 @@ for step in range(1000):
     #plt.imshow(features_out[:,:], interpolation='none', cmap="gray") # render plot
     #plt.savefig("./visualizations/visualize_out_" + str(step) + ".png", dpi=96) # save plot
 
-    solver.step(50)
+    solver.step(1)
 
     #s_passed = timeit.default_timer() - start_time
 
