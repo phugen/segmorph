@@ -1,7 +1,10 @@
 # This file contains utility functions for deep learning data preparation etc.
 
 import math
+import os
+import h5py
 import numpy as np
+import progressbar
 
 
 def enlargeByMirrorBorder(input_image, border):
@@ -107,7 +110,10 @@ def tileMirrorLabel (imgno, input_size, input_image, img_dims):
 
     subLabels = []
 
-    for index in range(imgno):
+    bar = progressbar.ProgressBar()
+    print "Tiling and mirroring images/labels ..."
+
+    for index in bar(range(imgno)):
         for y in range(0, (subLab[0] + 1) * input_size, input_size):
             for x in range(0, (subLab[1] + 1) * input_size, input_size):
 
@@ -128,6 +134,8 @@ def tileMirrorLabel (imgno, input_size, input_image, img_dims):
                     subLabels.append(input_image[index, y:y + input_size, \
                                                      x:x + input_size])
 
+    print ""
+
     return subLabels
 
 
@@ -138,38 +146,85 @@ def getFlipRotationCombinations(input_images, numchannels):
     and rotating them by 90, 180 and 270 degrees.'''
 
     vertical = np.zeros((input_images.shape))
+    bar = progressbar.ProgressBar()
 
     # flip vertically
+    print "Flipping images/labels vertically ..."
+
     if numchannels > 1:
-        for x in range(input_images.shape[0]):
+        for x in bar(range(input_images.shape[0])):
             for ch in range(numchannels):
                 vertical[x, ch, ...] = np.flipud(input_images[x, ch, ...])
 
     else:
-        for x in range(input_images.shape[0]):
+        for x in bar(range(input_images.shape[0])):
             vertical[x, ...] = np.flipud(input_images[x, ...])
 
     origAndVertical = np.concatenate((input_images,vertical), axis=0)
-
+    print ""
 
     # rotate by 90, 180 and 270 degrees
     deg90 = np.zeros((origAndVertical.shape))
     deg180 = np.zeros((origAndVertical.shape))
     deg270 = np.zeros((origAndVertical.shape))
 
+    bar = progressbar.ProgressBar()
+    print "Rotating images/labels by 90, 180 and 270 degrees ..."
+
     if numchannels > 1:
-        for x in range(origAndVertical.shape[0]):
+        for x in bar(range(origAndVertical.shape[0])):
             for ch in range(numchannels):
                 deg90[x, ch, ...] = np.rot90(origAndVertical[x, ch, ...], 1)
                 deg180[x, ch, ...] = np.rot90(origAndVertical[x, ch, ...], 2)
                 deg270[x, ch, ...] = np.rot90(origAndVertical[x, ch, ...], 3)
 
     else:
-        for x in range(origAndVertical.shape[0]):
+        for x in bar(range(origAndVertical.shape[0])):
             deg90[x, ...] = np.rot90(origAndVertical[x, ...], 1)
             deg180[x, ...] = np.rot90(origAndVertical[x, ...], 2)
             deg270[x, ...] = np.rot90(origAndVertical[x, ...], 3)
 
+    print ""
 
     # return originals plus all variations
     return np.concatenate((origAndVertical, deg90, deg180, deg270), axis=0)
+
+
+
+def writeOrAppendHDF5(filePath, training_images, training_labels, training_weights=None):
+    ''' This function writes a resizable HDF5 dataset containing the passed data,
+    or, if a file with the same name already exists, resizes the dataset
+    and then appends the data.'''
+
+    if os.path.exists(filePath):
+        with h5py.File(filePath, "a", libver="latest") as f:
+
+            print str(filePath) + " exists, appending ... "
+
+            # get number of data points in file
+            # (assume that #images = #labels!)
+            startpos = f["data"].shape[0]
+
+            # change depth dimension of datasets ("grow" them)
+            f["data"].resize(((startpos + training_images.shape[0], ) + training_images.shape[1:4]))
+            f["label"].resize(((startpos + training_labels.shape[0], ) + training_labels.shape[1:3]))
+
+            # append new data
+            f["data"][startpos:startpos + training_images.shape[0], ...] = training_images
+            f["label"][startpos:startpos + training_labels.shape[0], ...] = training_labels
+
+            if training_weights != None:
+                f["weights"].resize(((startpos + training_weights.shape[0], ) + training_weights.shape[1:3]))
+                f["weights"][startpos:startpos + training_weights.shape[0], ...] = training_weights
+
+    # else, create extendable (chunked) HDF file
+    else:
+        with h5py.File(filePath, "w", libver="latest") as f:
+
+            print str(filePath) + " doesn't exist, creating ... "
+
+            f.create_dataset("data", dtype=np.float32, data=training_images, maxshape=((None, ) + training_images.shape[1:4]))
+            f.create_dataset("label", dtype=np.uint8, data=training_labels, maxshape=((None, ) + training_labels.shape[1:4]))
+
+            if training_weights != None:
+                f.create_dataset("weights", dtype=np.float32, data=training_weights, maxshape=((None, ) + training_weights.shape[1:3]))

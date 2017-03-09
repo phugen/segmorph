@@ -20,21 +20,24 @@ import preparation_utils as preputils # utility functions like mirroring and til
 
 FORMAT = "png" # set file extension of format to look for (without dot)
 WEIGHT_MODE = "individual" # possible modes: "none", "individual", "average"
-CREATE_UNLABELED = True # create extra HDF5 container for unlabelled data to use for pseudo-labelling?
 
 print "Format set as " + FORMAT + "."
 print ""
 
 if len(sys.argv) < 3:
     print "Too few arguments!"
-    print "Usage: python images_labels_to_hdf5.py /input_folder /output_folder [/unlabeled_input_folder]"
+    print "Usage: python converthdf5.py /input_folder /output_folder/filename [/unlabeled_input_folder]"
     sys.exit(-1)
 
 
 # set paths from args
 path = sys.argv[1]
 hdf5path = sys.argv[2]
-un_path = sys.argv[3]
+
+if len(sys.argv) < 4:
+    un_path = None
+else:
+    sys.argv[3]
 
 
 # check how many images (minus labels) there are in the folder
@@ -233,8 +236,9 @@ if WEIGHT_MODE == "individual" or WEIGHT_MODE == "average":
                                input_size), \
                                dtype=np.float32)
 
-    # get matrix of point coordinates
-    gradient = np.array([[i, j] for i in range (0, input_size) for j in range (0, input_size)])
+    # get matrix of point coordinate tuples
+    #gradient = np.array([[i, j] for i in range (0, input_size) for j in range (0, input_size)])
+    gradient = np.array(list(np.ndindex(input_size, input_size)))
 
     bar = progressbar.ProgressBar()
     for index in bar(range(SUB_NO)):
@@ -246,8 +250,13 @@ if WEIGHT_MODE == "individual" or WEIGHT_MODE == "average":
                                 (subLabels[index,:,:] == 2) |
                                 (subLabels[index,:,:] == 3)], (input_size * input_size))
 
+        label_pixels = gradient[labelmask == True]
+
         # put label pixels into KD-tree for fast kNN-lookups
-        tree = scipy.spatial.cKDTree(gradient[labelmask == True])
+        if label_pixels.size != 0:
+            tree = scipy.spatial.cKDTree(label_pixels)
+        else:
+            tree = None # in case the input image only has BG values
 
         # Calculate weight map
         for y in range(0, input_size):
@@ -256,14 +265,19 @@ if WEIGHT_MODE == "individual" or WEIGHT_MODE == "average":
                 val = subLabels[index, y, x]
 
                 # look for the two nearest neighbors of current pixel, using Manhattan distance
-                # TODO: enable tree lookups
-                #closest, indices = tree.query(np.array([y, x]), k=2, p=1, eps=0.1)
+                if tree != None:
+                    #closest, indices = tree.query(np.array([y, x]), k=2, p=1, eps=0.1)
 
-                d1 = 0.00001#closest[0]
-                d2 = 0.00001#closest[1]
+                    #d1 = closest[0]
+                    #d2 = closest[1]
 
-                # pixel weight = class weight + distance modifier
-                pixel_weights[index, y, x] = w_c[val] + w_0 * math.exp(-(((d1 + d2)**2) / (2*(sigma)**2)))
+                    # TODO: RE-ENABLE WEIGHTMAP
+                    # pixel weight = class weight + distance modifier
+                    # pixel_weights[index, y, x] = w_c[val] + w_0 * math.exp(-(((d1 + d2)**2) / (2*(sigma)**2)))
+                    pixel_weights[index, y, x] = w_c[val]
+
+                else:
+                    pixel_weights[index, y, x] = w_c[val]
 
 
 
@@ -301,7 +315,12 @@ if WEIGHT_MODE == "individual" or WEIGHT_MODE == "average":
 # for each RGB channel independently and then substract from
 # validation set to prevent validation set information from biasing the network
 training_images = np.array(training_images)
+training_labels = np.array(training_labels)
+training_weights = np.array(training_weights)
+
 validation_images = np.array(validation_images)
+validation_labels = np.array(validation_labels)
+validation_weights = np.array(validation_weights)
 
 training_means = [np.mean(training_images[:, 0, ...]), \
                   np.mean(training_images[:, 1, ...]), \
@@ -324,72 +343,147 @@ for i in range(3):
 
 
 # TODO: (del) write preprocessed images out
-for x in range(training_images.shape[0]):
-    scipy.misc.toimage(training_images[x]).save("./training_4final/debug/train_" + str(x) + ".png")
+#for x in range(training_images.shape[0]):
+#    scipy.misc.toimage(training_images[x]).save("./training_4final/debug/train_" + str(x) + ".png")
 
-for x in range(validation_images.shape[0]):
-    scipy.misc.toimage(validation_images[x]).save("./training_4final/debug/valid_" + str(x) + ".png")
+#for x in range(validation_images.shape[0]):
+#    scipy.misc.toimage(validation_images[x]).save("./training_4final/debug/valid_" + str(x) + ".png")
 
 
 
 print "Writing HDF5 files to " + hdf5path + " ..."
 
-# write training HDF5 file
-with h5py.File(hdf5path + "/drosophila_training.h5", "w", libver="latest") as f:
+# Create HDF5 datasets WITH weightmaps
+if WEIGHT_MODE == "individual" or WEIGHT_MODE == "average":
 
-    f.create_dataset("data", dtype=np.float32, data=training_images)
-    f.create_dataset("label", dtype=np.uint8, data=training_labels)
+    preputils.writeOrAppendHDF5(hdf5path + "_training.h5", \
+                                training_images, training_labels, training_weights)
+
+    preputils.writeOrAppendHDF5(hdf5path + "_validation.h5", \
+                                validation_images, validation_labels, validation_weights)
+
+else:
+    preputils.writeOrAppendHDF5(hdf5path + "_training.h5", \
+                                training_images, training_labels)
+
+    preputils.writeOrAppendHDF5(hdf5path + "_validation.h5", \
+                                validation_images, validation_labels)
+
+
+# create unlabelled data HDF5 file for
+# pseudo-labelling if needed
+if un_path != None:
+
+    # pack unlabelled images into numpy array
+    all_un = glob.glob(un_path + "/*." + FORMAT)
+    UN_NUM = len(all_un)
+    un_data_array = np.zeros((UN_NUM, 3, IMG_HEIGHT, IMG_WIDTH), dtype=np.float32)
+
+    # get raw image data
+    for index, filename in enumerate(all_un):
+        imgfile = caffe.io.load_image(filename)
+        imgfile = np.transpose(imgfile, (2,0,1))
+        un_data_array[index, ...] = imgfile
+
+    # mirror and tile label images
+    paddedUnlabeled = preputils.enlargeByMirrorBorder(un_data_array, border)
+    subUnlabeled = preputils.tileMirrorImage (UN_NUM, input_size, magic_number, paddedUnlabeled, \
+                                                  [IMG_HEIGHT, IMG_WIDTH], [PAD_HEIGHT, PAD_WIDTH])
 
     if WEIGHT_MODE == "individual" or WEIGHT_MODE == "average":
-        f.create_dataset("weights", dtype=np.float32, data=training_weights)
+        pseudo_weights = np.zeros((len(subUnlabeled), input_size, input_size), dtype=np.float32)
+        pseudo_weights[...] = 1.0
 
+        preputils.writeOrAppendHDF5(hdf5path + "_unlabelled.h5", \
+                                        subUnlabeled, None, pseudo_weights)
+    else:
+        preputils.writeOrAppendHDF5(hdf5path + "_unlabelled.h5", \
+                                        subUnlabeled, None)
+
+
+# If training file already exists, add data to existing file
+#if os.path.exists(hdf5path + "/drosophila_training.h5"):
+#    with h5py.File(hdf5path + "/drosophila_training.h5", "a", libver="latest") as f:
+#
+        # get number of data points in file
+        # (assume that #images = #labels!)
+#        startpos = f["data"].shape[0]
+#
+        # change depth dimension of datasets ("grow" them)
+#        f["data"].resize((startpos + training_images.shape[0], training_images.shape[1:4]))
+#        f["label"].resize((startpos + training_labels.shape[0], training_labels.shape[1:3]))
+#
+        # append new data
+#        f["data"][startpos:startpos + training_images.shape[0], ...] = training_images
+#        f["label"][startpos:startpos + training_labels.shape[0], ...] = training_labels
+#
+#        if WEIGHT_MODE == "individual" or WEIGHT_MODE == "average":
+#            f["weights"].resize((startpos + training_weights.shape[0], training_weights.shape[1:3]))
+#            f["data"][startpos:startpos + training_weights.shape[0], ...] = training_weights
+
+# else, create extendable (chunked) HDF file
+#else:
+#    with h5py.File(hdf5path + "/drosophila_training.h5", "w", libver="latest") as f:
+#
+#        f.create_dataset("data", dtype=np.float32, data=training_images, maxshape=(None, training_images.shape[1:4]))
+#        f.create_dataset("label", dtype=np.uint8, data=training_labels, maxshape=(None, training_labels.shape[1:4]))
+#
+#        if WEIGHT_MODE == "individual" or WEIGHT_MODE == "average":
+#            f.create_dataset("weights", dtype=np.float32, data=training_weights, maxshape=(None, training_weights.shape[1:3]))
+#
 
 
 # write validation set HDF5 file
-with h5py.File(hdf5path + "/drosophila_validation.h5", "w", libver="latest") as f:
-
-    f.create_dataset("data", dtype=np.float32, data=validation_images)
-    f.create_dataset("label", dtype=np.uint8, data=validation_labels)
-
-    if WEIGHT_MODE == "individual" or WEIGHT_MODE == "average":
-        f.create_dataset("weights", dtype=np.float32, data=validation_weights)
+#with h5py.File(hdf5path + "/drosophila_validation.h5", "w", libver="latest") as f:
+#
+#    f.create_dataset("data", dtype=np.float32, data=validation_images)
+#    f.create_dataset("label", dtype=np.uint8, data=validation_labels)
+#
+#    if WEIGHT_MODE == "individual" or WEIGHT_MODE == "average":
+#        f.create_dataset("weights", dtype=np.float32, data=validation_weights)
 
 
 
 # write unlabelled data HDF5 file
-if CREATE_UNLABELED == True:
-    with h5py.File(hdf5path + "/drosophila_unlabelled.h5", "w", libver="latest") as f:
-
+#if un_path != None:
+#    with h5py.File(hdf5path + "/drosophila_unlabelled.h5", "w", libver="latest") as f:
+#
         # pack unlabelled images into numpy array
-        all_un = glob.glob(un_path + "/*." + FORMAT)
-        UN_NUM = len(all_un)
-        un_data_array = np.zeros((UN_NUM, 3, IMG_HEIGHT, IMG_WIDTH), dtype=np.float32)
-
+#        all_un = glob.glob(un_path + "/*." + FORMAT)
+#        UN_NUM = len(all_un)
+#        un_data_array = np.zeros((UN_NUM, 3, IMG_HEIGHT, IMG_WIDTH), dtype=np.float32)
+#
         # get raw image data
-        for index, filename in enumerate(all_un):
-            imgfile = caffe.io.load_image(filename)
-            imgfile = np.transpose(imgfile, (2,0,1))
-            un_data_array[index, ...] = imgfile
-
+#        for index, filename in enumerate(all_un):
+#            imgfile = caffe.io.load_image(filename)
+#            imgfile = np.transpose(imgfile, (2,0,1))
+#            un_data_array[index, ...] = imgfile
+#
         # mirror and tile label images
-        paddedUnlabeled = preputils.enlargeByMirrorBorder(un_data_array, border)
-        subUnlabeled = preputils.tileMirrorImage (UN_NUM, input_size, magic_number, paddedUnlabeled, \
-                                                  [IMG_HEIGHT, IMG_WIDTH], [PAD_HEIGHT, PAD_WIDTH])
+#        paddedUnlabeled = preputils.enlargeByMirrorBorder(un_data_array, border)
+#        subUnlabeled = preputils.tileMirrorImage (UN_NUM, input_size, magic_number, paddedUnlabeled, \
+#                                                  [IMG_HEIGHT, IMG_WIDTH], [PAD_HEIGHT, PAD_WIDTH])
+#
+#
+#        f.create_dataset("data", dtype=np.float32, data=subUnlabeled)
+#
+#        if WEIGHT_MODE == "individual" or WEIGHT_MODE == "average":
+#            pseudo_weights = np.zeros((len(subUnlabeled), input_size, input_size), dtype=np.float32)
+#            pseudo_weights[...] = 1.0
+#            f.create_dataset("weights", dtype=np.float16, data=pseudo_weights)
 
 
-        f.create_dataset("data", dtype=np.float32, data=subUnlabeled)
+tr_no = len(training_images)
+val_no = len(validation_images)
 
-        if WEIGHT_MODE == "individual" or WEIGHT_MODE == "average":
-            pseudo_weights = np.zeros((len(subUnlabeled), input_size, input_size), dtype=np.float32)
-            pseudo_weights[...] = 1.0
-            f.create_dataset("weights", dtype=np.float32, data=pseudo_weights)
+if 'subUnlabeled' in globals():
+    unlab_no = len(subUnlabeled)
+else:
+    unlab_no = 0
 
-
-
-
-print "Written " + str(len(training_images)) + " training image(s), " \
-                 + str(len(validation_images)) + " validation image(s) and " \
-                 + str(len(subUnlabeled)) + " unlabelled images to " \
+print "Written " + str(tr_no) + " training image(s), " \
+                 + str(val_no) + " validation image(s) and " \
+                 + str(unlab_no) + " unlabelled images to " \
                  + str(hdf5path) + "!\n"
 
 
