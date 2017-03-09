@@ -45,10 +45,6 @@ int main(int argc, char* argv)
 	segmented = segmentEdge(matInput, 3);
 	overlayFoundBorders(GTPath, segmented, std::string("Canny w/ Otsu thresh overlay"));*/
 
-
-	// TODO: conservative segmentation, then use connected components' 
-	// central points as starting points for active contour 
-
 	
 	// TODO: Max Flow Min Cut applied to images; images as a graph.
 	// https://en.wikipedia.org/wiki/Graph_cuts_in_computer_vision : Standard vs. Iterated vs Dynamic?
@@ -58,10 +54,17 @@ int main(int argc, char* argv)
 
 	std::string outpath = "G:/CDEF_2013/CF/F_GNAGNA/Stuff/Studium/Master/WS_2016/Masterarbeit/cell_quantifier/Network/cell_quantifier/training_3augmented/";
 
+	int index = 1;
+	int imgno = fileNames.size() / 2;
+
+
 	for (auto filename = fileNames.begin(); filename != fileNames.end(); filename++)
 	{
-		// ignore labelled images
-		if ((*filename).find("label") == std::string::npos)
+		std::string checkme = *filename;
+
+		// deal with labelled images inside implicitly 
+		// in augmentImageAndLabel and therefore ignore them here
+		if (checkme.find("label") == std::string::npos)
 		{
 			std::string replaceMe = *filename;
 			std::string labelPath = replaceMe.insert(replaceMe.length() - 4, "_label");
@@ -69,18 +72,12 @@ int main(int argc, char* argv)
 			// perform data augmentation to increase number
 			// of training samples
 			std::vector<std::string> augPaths = augmentImageAndLabel(*filename, labelPath, outpath, 1000);
+
+			std::cout << "Augmented image " << index << " / " << imgno << "!\n";
+			index++;
 		}
 	}
 
 
-	
-
-	// train U-Net
-	//trainUnet(images, labels);
-
-	// segment cells using trained U-Net
-	//segmentImage(images);
-
-	//cv::waitKey(0);
 	return 0;
 }

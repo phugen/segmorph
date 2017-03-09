@@ -445,13 +445,8 @@ void overlayFoundBorders(std::string GTPath, cv::Mat segmented, std::string wind
 
 
 /*
-	Creates more training data from an image (and its ground truth label image) by applying the
-	following transformations randomly:
-		
-	- Horizontal / Vertical mirroring
-	- Rotation
-	- Scaling
-	- Elastic grid deformation by random vectors of max. strength <magnitude>
+	Creates more training data from an image (and its ground truth label image) by applying
+	elastic grid deformation by random vectors of max. strength <magnitude>
 
 	The "iterations" variable controls how many distorted versions of the input
 	image are created.
@@ -482,44 +477,10 @@ std::vector<std::string> augmentImageAndLabel(std::string imagePath, std::string
 	// in later steps which work with floating-point matrices
 	image.convertTo(image, CV_64FC3);
 	label.convertTo(label, CV_64FC3);
-
 	
-	// initialize the random number generator with time-dependent seed
-	std::mt19937_64 rng;
-	uint64_t timeSeed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
-	std::seed_seq ss{ uint32_t(timeSeed & 0xffffffff), uint32_t(timeSeed >> 32) };
-	rng.seed(ss);
-
-	// randomly flip image
-	std::uniform_int_distribution<int> uniflip(0, 1);
-	int flipVert = uniflip(rng);
-	int flipHor = uniflip(rng);
-
-	cv::Mat flipped;
-	cv::Mat flippedLabel;
-
-	if (flipVert)
-	{
-		flip(image, flipped, 1);
-		flip(label, flippedLabel, 1);
-
-		image = flipped;
-		label = flippedLabel;
-	}
-
-	if (flipHor)
-	{
-		flip(image, flipped, 0);
-		flip(label, flippedLabel, 0);
-	}
-
-	flipped = image;
-	flippedLabel = label;
-	
-
-	// perform elastic deformation ; TODO: find good values so that pixels don't swap places
-	cv::Mat elasticImage = flipped;
-	cv::Mat elasticLabel = flippedLabel;
+	// perform elastic deformation
+	cv::Mat elasticImage = image;
+	cv::Mat elasticLabel = label;
 
 	int gridSize = 1;
 	int sigma = 20;
@@ -527,38 +488,29 @@ std::vector<std::string> augmentImageAndLabel(std::string imagePath, std::string
 	elasticDeformation(&elasticImage, &elasticLabel, gridSize, sigma, alpha);
 
 
-	// random rotation (keep aspect ratio; cut off image and fill blank
-	// space with special mask color to keep it from being processed
-
-
-	std::uniform_real_distribution<double> uniangle(0, 0); // change this
-	cv::Mat rotatedImage = cv::Mat(elasticImage.size(), elasticImage.type(), cv::Scalar(0, 255, 255));
-	cv::Mat rotatedLabel = cv::Mat(elasticLabel.size(), elasticLabel.type(), cv::Scalar(0, 255, 255));
-
-	double r_angle = uniangle(rng);
-	cv::Point2d imageCenter(flipped.cols * 0.5, flipped.rows * 0.5);
-	cv::Mat M = cv::getRotationMatrix2D(imageCenter, r_angle, 1.0); 
-	cv::warpAffine(elasticImage, rotatedImage, M, rotatedImage.size(), cv::INTER_NEAREST, cv::BORDER_CONSTANT, cv::Scalar(255, 255, 0)); // NN interpolation for clear borders
-
-	cv::Point2d labelCenter(flippedLabel.cols * 0.5, flippedLabel.rows * 0.5);
-	M = cv::getRotationMatrix2D(labelCenter, r_angle, 1.0);
-	cv::warpAffine(elasticLabel, rotatedLabel, M, rotatedLabel.size(), cv::INTER_NEAREST, cv::BORDER_CONSTANT, cv::Scalar(255, 255, 0));
-
-
-	// extract samples from augmented image
-	int sample_width = rotatedImage.cols;
-	int sample_height = rotatedImage.rows;
-
-	extractSamples(&rotatedImage, imagePath, outpath, sample_width, sample_height);
-	extractSamples(&rotatedLabel, labelPath, outpath, sample_width, sample_height);
-
-
 	// save augmented image
-	std::string imageOutputPath = imagePath.replace(imagePath.cend() - 4, imagePath.cend(), "") + "_AUGMENTED.png";
-	std::string labelOutputPath = labelPath.replace(labelPath.cend() - 4, labelPath.cend(), "") + "_AUGMENTED.png";
+	//std::string imageName = imagePath.substr(imagePath.find_last_of("/\\") + 1);
+	std::string imageName = imagePath.substr(imagePath.find_last_of("/\\") + 1);
 
-	//cv::imwrite(imageOutputPath, elasticImage);
-	//cv::imwrite(labelOutputPath, elasticLabel);
+	std::string replaceImage = imageName;
+	std::string replaceLabel = imageName;
+
+	std::string augName = replaceImage.replace(replaceImage.cend() - 4, replaceImage.cend(), "") + "_AUGMENTED.png";
+	std::string augLabName = replaceLabel.replace(replaceLabel.cend() - 4, replaceLabel.cend(), "") + "_AUGMENTED_label.png";
+
+	std::string imageOutputPath = outpath + augName;
+	std::string labelOutputPath = outpath + augLabName;
+
+
+	// set compression parameters because otherwise
+	// writing PNGs crashes the program
+	std::vector<int> compression_params;
+	compression_params.push_back(CV_IMWRITE_PNG_COMPRESSION);
+	compression_params.push_back(9); // maximum quality
+
+	cv::imwrite(imageOutputPath, elasticImage, compression_params);
+	cv::imwrite(labelOutputPath, elasticLabel, compression_params);
+	
 
 	// return paths of augmented image and label
 	std::vector<std::string> augPaths = { imageOutputPath, labelOutputPath };

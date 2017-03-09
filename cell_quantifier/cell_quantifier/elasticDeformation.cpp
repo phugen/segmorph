@@ -57,7 +57,7 @@ void elasticDeformation(cv::Mat* image, cv::Mat* label, int gridSize, double sig
 	labelElastic = cv::Vec3f(255, 255, 0);
 
 	//std::cout << "Channels = " << imageElastic.channels() << ", Type = " << imageElastic.type() << std::endl;
-	std::cout << "cols = " << imageElastic.cols << ", rows = " << imageElastic.rows << std::endl << std::endl;
+	//std::cout << "cols = " << imageElastic.cols << ", rows = " << imageElastic.rows << std::endl << std::endl;
 
 	// calculate grid point displacement coordinates
 	for (int y = 0; y < numCellY; y++)
@@ -290,10 +290,10 @@ void elasticDeformation(cv::Mat* image, cv::Mat* label, int gridSize, double sig
 #endif 
 		}
 
-		std::cout << "Interpolation: Row " << y << " of " << numCellY - 1 << " done" << std::endl;
+		//std::cout << "Interpolation: Row " << y << " of " << numCellY - 1 << " done" << std::endl;
 	}
 
-	std::cout << std::endl;
+	//std::cout << std::endl;
 
 	// assign changes to input matrices
 	*image = imageElastic;
