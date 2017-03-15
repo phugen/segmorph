@@ -1,9 +1,11 @@
 \chapter{Basic Concepts}
 
-This section explains an array of concepts that can be used to segment an image into multiple areas. In the ``Results'' chapter (Ch. \ref{chapter_results}), the performance of all the mentioned algorithms is compared, using the same data set each time.
+This section explains an array of concepts that can be used to segment an image into multiple areas. In the ``Results'' chapter (\ref{ch:results}), the performance of all the mentioned algorithms is compared, using the same data set each time.
 	
 	\section{Thresholding}
 \textbf{TODO: Mehr über Otsu, FIGURE}\\
+\label{sec:thresholding}
+
 Thresholding is the simplest segmentation algorithm there is: Given an input image with dimensions $x \times y$ and intensity values $z$ (for instance, $[0, 255]$ at 8-bit color depth), defined as a function 
 
 \[I(x, y) \to z, \text{ for } x, y, z \in \mathbb{N}_0,\]
@@ -27,7 +29,7 @@ Otsu's method iterates through all possible values for $\theta$ and calculates t
 
 However, this approach doesn't work as well for images whose histograms are not bimodal at all - for example, due to excessive noise - and also, while possible, doesn't perform well for cases in which a large number of classes is to be segmented.\\
 
-The thresholding mechanism so far is called ``global thresholding'' because the same threshold is applied to the entire image. However, there are also local thresholding algorithms which segment different parts of the image with different thresholds. The need for such algorithms often arises when the illumination of the input image is irregular, for example when cast shadows overlay part of the image (see \ref{figure_illumination}). One approach is to calculate a threshold for each pixel of the image while examining a neighborhood of size $L \times L$ around the pixel in question, using the mean, the mean of the maximum and minimum values or the median of the resulting local pixel intensity distribution to determine a local threshold.
+\noindent This thresholding mechanism is called ``global thresholding'' because the same threshold is applied to the entire image. However, there are also local thresholding algorithms which segment different parts of the image with different thresholds. The need for such algorithms often arises when the illumination of the input image is irregular, for example when cast shadows overlay part of the image (see \ref{fig:illumination}). One approach is to calculate a threshold for each pixel of the image while examining a neighborhood of size $L \times L$ around the pixel in question, using the mean, the mean of the maximum and minimum values or the median of the resulting local pixel intensity distribution to determine a local threshold.
 
 Local thresholding, however, also depends on choosing $L$ so that the local neighborhoods contain enough pixels of either class, or otherwise the local thresholds won't be chosen well\cite[pp.~84--93]{machine_vision}.
 
@@ -37,12 +39,12 @@ K-Means\cite{kmeans} is a general-purpose data clustering algorithm whose aim is
 
 \[ \argmin \limits_{C} \sum \limits_{i=1}^{k} \sum \limits_{d \in C_i} || d - \mu_i||^2 ,\]
 
-\noindent where $C_{i \dots k}$ are the $k$ clusters and $\mu_{i \dots k}$ is the mean of the respective cluster. Viewed graphically, this is equal to computing a higher-order Voronoi diagram for the data, using the $k$ cluster centers as the Voronoi cell centers.
+\noindent where $C_{i \dots k}$ are the $k$ clusters and $\mu_{i \dots k}$ is the mean of the respective cluster. Viewed graphically, this is equal to computing a higher-order Voronoi diagram for the data, using the $k$ cluster centroids as the Voronoi cell centers.
 
-The algorithm is initialized with $k$ either random or differently selected cluster centers, which are chosen from the given data points. Then, the algorithm executes the two steps described in \ref{kmeans_pseudo} alternatingly until either a set number of iterations is reached or the overall difference between the current and the last iteration falls below a threshold $\epsilon$.
+The algorithm is initialized with $k$ either random or differently selected cluster centers. Then, the algorithm executes the two steps described in \ref{alg:kmeans_pseudo} alternatingly until either a set number of iterations is reached or the overall difference between the current and the last centroid positions falls below a threshold $\epsilon$.
 
 \begin {algorithm}
-	\caption{K-Means ($\epsilon$, iter\_max)}\label{kmeans_pseudo}
+	\caption{K-Means ($\epsilon$, iter\_max)}\label{alg:kmeans_pseudo}
 	\begin {algorithmic}[1]
 		\State iter = 0
 		\State Assign each data point to exactly one of the $k$ clusters by selecting the cluster that has the closest mean distance as defined above.
@@ -56,11 +58,76 @@ The algorithm is initialized with $k$ either random or differently selected clus
 	\end{algorithmic}
 \end{algorithm}
 
-\noindent Obviously, this algorithm can be used to segment images into $k$ different classes, but there are a few problems. Since K-Means assigns classes to data by using the distance from the mean, the algorithm output favors segmentations in which the classes have roughly the same size, which isn't necessarily the correct way to classify pixels in arbitrary image data.
+\noindent Obviously, this algorithm can also be used to segment images into $k$ different classes, but since K-Means assigns classes to data by using the distance from the mean, the algorithm output favors segmentations in which the classes have roughly the same size, which isn't necessarily the correct way to classify pixels in arbitrary image data.
 
 	\section{Canny Edge Detection}
+The \textit{Canny Edge Detector} \cite{canny} is one of the most famous edge-detection algorithms and actually is a composite algorithm that returns a binary segmentation of an image into edges and non-edges.\\
+
+\noindent First, a Gaussian convolution filter is applied to try and subdue noise in the image. A \textit{convolution} is a matrix operation often used in image processing: A matrix $A$, describing the pixel values of an image, is convolved pixel-wise with a convolution matrix $B$ with dimensions $n \times n$ - that is, for each pixel $p$ of $A$, the pixel's $n \times n$-neighborhood pixel values are summed up while being weighted according to corresponding value in $B$. The resulting sum is then assigned to the output matrix in place of the previous value of the center pixel, which intuitively assumes the distance-weighted average value of its neighborhood. In the case of pixels that lie on the edge of the matrix to be convoluted, out-of-bounds considerations have to be made: A constant value such as zero can be assumed for the pixels in the neighborhood that would lie ``outside'' of the image, the existing image values can be mirrored or clamped to provide a torus-like out-of-bounds handling, or the convolution can be done only on those pixels whose neighborhood fully lies inside of the image, resulting in smaller output images.
+
+The aforementioned ``Gaussian filter'' or ``kernel'' is a matrix whose values are defined so that performing a convolution using that matrix approximates the behavior of the two-dimensional Gaussian function with uniform variances for its $x$- and $y$-dimensions:
+
+\[ f(x, y) = \exp \left(- \left( \frac{\left(x - p_x \right)^2}{2\sigma^2} + \frac{ \left(y - p_y \right)^2}{2\sigma^2} \right) \right), \]
+
+\noindent where $p$ is the center pixel of the current neighborhood. Subsequently, $p_x$ and $p_y$ are the coordinates of this pixel within the matrix and $\sigma$, the standard variance, acts as the smoothing constant. The higher this constant is, the stronger the blur effect becomes.
+
+In Gaussian filters, the $\sigma$ constant is expressed through the dimensions of the matrix - the larger the filter matrix, the stronger the blur effect. An example for a $3 \times 3$ Gaussian filter is the following matrix:
+
+\[ \frac{1}{16} \left [ \begin{tabular}{ccc}
+				1& 2& 1\\
+				2& 4& 2\\
+				1& 2& 1 
+			   \end{tabular} \right ]\]
+
+\noindent The coefficient $\frac{1}{16}$ is equal to the sum of the matrix values and ensures that the convolution does not change the average image value. \cite[p. 41]{machine_vision}\\
+
+\noindent As the second step, an gradient-based edge detector filter is applied to the smoothed image. The most famous of these is the \textit{Sobel filter}\cite{sobel}, which approximates the local partial derivatives $\frac{\partial I}{\partial x}$ and $\frac{\partial I}{\partial y}$ of each pixel of the image function $I(x, y)$, using the $3 \times 3$ neighborhood of that pixel. It is given by the following matrices\cite[pp. 113 -- 114]{machine_vision}:
+
+\[ \text{Sobel}_x = \left [ \begin{tabular}{ccc}
+				-1& 0& 1\\
+				-2& 0& 2\\
+				-1& 0& 1 
+			   \end{tabular} \right ] \text{ and } 
+\text{Sobel}_y = \left [ \begin{tabular}{ccc}
+				1& 2& 1\\
+				0& 0& 0\\
+				-1& -2& 1 
+			   \end{tabular} \right ] 
+\]
+
+\noindent The result of these convolutions are two images, $G_x$ and $G_y$, which represent the partial local derivatives of each pixel. The gradient image of the original input image $I$ is then defined as
+
+\[G = |\nabla I| = \sqrt{{G_x}^2 + {G_y}^2}.\]
+
+\noindent Additionally, the gradient direction of each pixel can be calculated from the derivative images by measuring the angle between the x-axis and the gradient pixel coordinates by employing the atan2 function:
+
+\[G_\phi = \text{atan2}(G_y, G_x) \]
+
+\noindent Using $G_\phi$, edge thinning via non-maximum suppression is applied to the gradient image as the third step in the algorithm: For each pixel, the gradient direction acts as a criterion to decide which two neighboring pixels, that are each on opposite sides (positive and negative direction of the gradient), should be compared to the current pixel. If the value of the current pixel is not larger than the two neighbors' values, the pixel's value is not a local maximum and is set to zero. The gradient direction angles can either be rounded so that each angle represents one of the north-south, west-east directions and so forth, or linear interpolation can be used.
+
+In the final step, a hysteresis threshold is applied. This process consists of defining two thresholds, $\theta_{high}$ and $\theta_{low}$. The definition for the thresholding function as given in \ref{sec:thresholding} is slightly altered:
+
+\[ T(I(x, y), \theta_{high}, \theta_{low}) =  \begin{cases}
+							2 \text{ if } I(x, y) \, \geq \, \theta_{high} \\
+							1 \text{ if } I(x, y) \, \geq \, \theta_{low} \text{ and } < \theta_{high} \\
+			          				0 \text{ otherwise}
+			   			        \end{cases}
+\]
+
+\noindent Pixels that have a value of $2$ are called strong pixels because they had values larger than the high threshold, whereas pixels with a value of $1$ are called weak pixels. Finally, the algorithm checks for each pixel if an 8-connected path between that pixel and a strong pixel exists - if not, then the pixel is dropped. This can be done with the help of connected component-finding algorithms by dropping each ``$1$''-component which is not connected to at least one ``2''-value.\\
+
+\noindent The thresholds $\theta_{high}$ and $\theta_{low}$ have to be set by the user, although there exists the possibility to set these by using the Otsu threshold described in \ref{sec:thresholding} . Using this combination approach, $\theta_{high}$ is set to the Otsu threshold value for $I(x, y)$, and $\theta_{low}$ is set to $0.5 * \theta_{high}$.\cite{otsu_combine}
 
 	\section{Gaussian Mixture Models}
+Gaussian Mixtures Models are a subclass of mixture models, that is, probabilistic models which are combined with other models of the same distribution type to form a more complex model that is able to model the distribution of a data set more accurately than a simple model could. In the case of Gaussian Mixture Models, the base distributions are (often $n$-multivariate) Gaussian distributions:
+
+\[ pdf(x) = \mathcal{N}_n (x\,|\,\mu,\, \Sigma) \]
+
+\noindent Here, $pdf(x)$ denotes the probability, or density, of an $n$-dimensional piece of data $x$, while $\mu$ and $\Sigma$ are the $n$-dimensional mean vector and the $n \times n$ covariance matrix of the distribution. Since the shape such a distribution can take is limited, a single Gaussian cannot accurately model a bimodal distribution. Instead, a weighted combination of multiple Gaussians can be used instead: \cite[pp. 430]{bishop_pattern}
+
+\[ pdf_m (x) = \sum \limits_{k=1}^{K} \pi_k \, \mathcal{N}_n (x\,|\, \mu_k, \Sigma_k) \]
+
+\noindent A mixture model consists of $k$ models that each have different parameters $\mu$ and $\Sigma$ and are weighted by weights $\pi_k \in \mathbb{R}$, $1 > \pi_k > 0$, with $\sum_{i=1}^{k} \pi_i = 1$.
 
 	\section{Graph Cuts}
 

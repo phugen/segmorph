@@ -69,7 +69,8 @@ cv::Mat segmentGMM(cv::Mat image, int nGaussians, int iterations, float eps)
 												cv::noArray()) // don't output posterior likelihoods for each component
 												[1]; // first element is likelihood, second element is index*/
 
-			segmented.at<cv::Vec3b>(cv::Point(x, y)) = colors[labels.at<int>(samplesProcessed, 0)];
+			uchar color = colors[labels.at<int>(samplesProcessed, 0)];
+			segmented.at<cv::Vec3b>(cv::Point(x, y)) = cv::Vec3b(color, color, color);
 			samplesProcessed++;
 		}
 	}
@@ -91,6 +92,44 @@ cv::Mat segmentGMM(cv::Mat image, int nGaussians, int iterations, float eps)
 	cv::imshow("Eroded", eroded);
 
 	free(colors);
+
+	// write out trained means and covariance matrices
+	// of the GMM model for visualization
+	cv::Mat means = em_model->getMeans();
+	cv::Mat weights = em_model->getWeights();
+	std::vector<cv::Mat> covs; em_model->getCovs(covs);
+	
+	int feature_dims = 2; // images are two-dimensional -> 2d covariance matrix (or 3d?)
+
+		std::ofstream paramfile;
+		std::stringstream filename;
+
+		filename << "params_" << ".txt";
+		paramfile.open(filename.str());
+
+
+		paramfile << "Means: ";
+		paramfile << means << " ";
+		paramfile << "\n\n";
+		
+
+		paramfile << "Weights: ";
+		paramfile << weights << " ";
+		paramfile << "\n\n";
+
+		
+		paramfile << "Covariance matrices: " << "\n";
+
+		for (int covindex = 0; covindex < nGaussians; covindex++)
+		{
+			cv::Mat covmatrix = covs[covindex];
+			paramfile << covmatrix << " ";
+
+			paramfile << "\n\n";
+		}
+
+		paramfile.close();
+
 
 	return eroded;
 }

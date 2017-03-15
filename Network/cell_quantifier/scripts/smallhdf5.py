@@ -12,7 +12,7 @@ import subprocess # for starting python scripts from this script
 import progressbar
 
 # Number of (unaugmented/input) training samples per HDF5 file
-PERSPLIT = 2 # 1 Image (+ Label + weights) ~ 194MB training HDF5 file size => 9 * 194MB = 1746MB < 2000MB
+PERSPLIT = 9 # 1 Image (+ Label + weights) ~ 194MB training HDF5 file size => 9 * 194MB = 1746MB < 2000MB
 
 
 

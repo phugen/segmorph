@@ -20,6 +20,11 @@ int main(int argc, char* argv)
 	std::vector<std::string> fileNames = listFilesInDirectory(path);
 
 
+	std::vector<int> compression_params;
+	compression_params.push_back(CV_IMWRITE_PNG_COMPRESSION);
+	compression_params.push_back(9); // maximum quality
+
+
 	// TODO: automatic histogram analysis here? find order of curve / number of local maxima
 	// and derive number of gaussians from it
 	
@@ -27,19 +32,27 @@ int main(int argc, char* argv)
 	//cv::imshow("Original image", matGrayscale);
 
 	cv::Mat segmented;
-	std::string GTPath = std::string("G:/CDEF_2013/CF/F_GNAGNA/Stuff/Studium/Master/WS_2016/Masterarbeit/Test_Data_Labelled/WT_(2)_label.bmp"); // path to ground truth for test image
+	//std::string GTPath = std::string("latex_test.png"); // path to ground truth for test image
+	matInput = cv::imread("latex_test.png");
+
+	if (matInput.data == NULL)
+	{
+		exit(-1);
+	}
+
+	// binary segmentation by k-means (k = 4)
+	cv::Mat kmeans = segmentKmeans(matInput, 4, 1);
+	cv::imwrite("latex_test_label_kmeans.png", kmeans, compression_params);
+	//overlayFoundBorders(GTPath, segmented, std::string("k-means (5) overlay"));
 
 	// GMM segmentation
-	/*segmented = segmentGMM(matInput, 2, 300, 0.00001); // binary segmentation with two-gaussian GMM
-	overlayFoundBorders(GTPath, segmented, std::string("GMM-2 overlay")); // show GMM borders on original image
+	cv::Mat gmm = segmentGMM(matInput, 4, 300, 0.00001); // binary segmentation with two-gaussian GMM
+	cv::imwrite("latex_test_label_GMM.png", gmm, compression_params);
+	//overlayFoundBorders(GTPath, segmented, std::string("GMM-4 overlay")); // show GMM borders on original image
 
 	// binary segmentation by Otsu thresholding
-	segmented = segmentOtsu(matInput); 
+	/*segmented = segmentOtsu(matInput); 
 	overlayFoundBorders(GTPath, segmented, std::string("Otsu overlay"));
-
-	// binary segmentation by k-means (k = 2)
-	segmented = segmentKmeans(matInput, 5, 1); 
-	overlayFoundBorders(GTPath, segmented, std::string("k-means (5) overlay"));
 
 	// edge detection segmentation
 	segmented = segmentEdge(matInput, 3);
@@ -71,9 +84,9 @@ int main(int argc, char* argv)
 
 			// perform data augmentation to increase number
 			// of training samples
-			std::vector<std::string> augPaths = augmentImageAndLabel(*filename, labelPath, outpath, 1000);
+			//std::vector<std::string> augPaths = augmentImageAndLabel(*filename, labelPath, outpath, 1000);
 
-			std::cout << "Augmented image " << index << " / " << imgno << "!\n";
+			//std::cout << "Augmented image " << index << " / " << imgno << "!\n";
 			index++;
 		}
 	}
