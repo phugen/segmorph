@@ -15,6 +15,6 @@ test_initialization: false # determines whether net is tested at iteration 0
 #test_interval: 500 # test every <test_interval> iterations
 
 display: 1 # show result every iteration (if lots of NaN/Inf: Diverging!)
-snapshot: 1000 # create a backup of weights trained so far every 1000 iterations
+snapshot: 200 # create a backup of weights trained so far every 1000 iterations
 snapshot_prefix: "./snapshots/unet"
 solver_mode: GPU # train on GPU

@@ -10,6 +10,10 @@ import shutil
 import math
 import subprocess # for starting python scripts from this script
 import progressbar
+import numpy as np
+
+from converthdf5 import convert2HDF5
+from preparation_utils import getInverseAvgProbs
 
 # Number of (unaugmented/input) training samples per HDF5 file
 PERSPLIT = 9 # 1 Image (+ Label + weights) ~ 194MB training HDF5 file size => 9 * 194MB = 1746MB < 2000MB
@@ -17,9 +21,9 @@ PERSPLIT = 9 # 1 Image (+ Label + weights) ~ 194MB training HDF5 file size => 9 
 
 
 # check args
-if len(sys.argv) < 4:
+if len(sys.argv) < 3:
     print "Too few arguments!"
-    print "Usage: python smallHDF5.py path/input_folder/ path/output_file path/converthdf5.py"
+    print "Usage: python smallHDF5.py path/input_folder/ path/output_file"
     print ""
     print "NOTE: first argument is a folder ending with /, the second one is a FILE!"
     sys.exit(-1)
@@ -27,7 +31,6 @@ if len(sys.argv) < 4:
 # set paths from args
 inpath = sys.argv[1]
 outpath = sys.argv[2]
-script_path = sys.argv[3]
 
 # get file names in input folder
 imagepaths = glob.glob(inpath + "/*.png")
@@ -49,6 +52,11 @@ path_pro = inpath + "/processing"
 if not os.path.exists(path_pro):
     os.makedirs(path_pro)
 
+
+# calculate "override" weights over the entire dataset
+# to pass to HDF5 script instead of only averaging over HDF5 file contents
+avgprobs = getInverseAvgProbs(imagepaths)
+exit(-1)
 
 # write data to HDF5 files as long as
 # there are files to write left in the list
@@ -82,9 +90,11 @@ for fileindex in bar(range(maxindex)):
     convert_inpath = path_pro
     convert_outpath = outpath + "_" + str(fileindex)
 
-    subprocess.call(["python", script_path, convert_inpath, convert_outpath], \
-                     stdout=open(os.devnull, 'wb'), \
-                     stderr=open(os.devnull, 'wb')) # silence conversion script output
+    convert2HDF5(convert_inpath, convert_outpath, weight_mode="average", un_path=None, override=avgprobs)
+
+    #subprocess.call(["python", script_path, convert_inpath, convert_outpath], \
+    #                 stdout=open(os.devnull, 'wb'), \
+    #                 stderr=open(os.devnull, 'wb')) # silence conversion script output
 
 
 

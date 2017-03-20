@@ -5,6 +5,8 @@ import os
 import h5py
 import numpy as np
 import progressbar
+import scipy.ndimage
+import matplotlib.pyplot as plt
 
 
 def enlargeByMirrorBorder(input_image, border):
@@ -228,3 +230,55 @@ def writeOrAppendHDF5(filePath, training_images, training_labels, training_weigh
 
             if training_weights != None:
                 f.create_dataset("weights", dtype=np.float32, data=training_weights, maxshape=((None, ) + training_weights.shape[1:3]))
+
+
+def getInverseAvgProbs(images):
+    '''Returns the average inverse label probabilies
+    over all images in the list.'''
+
+    probs = np.zeros(4)
+
+    bar = progressbar.ProgressBar()
+    for filename in bar(images):
+        if filename.endswith("_label.png"): # only look at label images
+
+            labelfile = scipy.ndimage.imread(filename, mode='RGB')
+            #print labelfile.shape
+
+            sizex = labelfile.shape[1]
+            sizey = labelfile.shape[0]
+            labelfile = labelfile.reshape(sizey, sizex, 3)
+
+            # translate to integer labels
+            intlabels = np.zeros((sizey, sizex))
+
+            print labelfile[..., 2].shape
+            bluemask = labelfile[..., 2] == 1
+            greenmask = labelfile[..., 1] == 1
+            redmask = labelfile[..., 0] == 1
+
+            for x in bluemask.reshape(sizex * sizey):
+                if x == True:
+                    print "YEE"
+
+            intlabels[bluemask == 1] = 3
+            intlabels[greenmask == 1] = 2
+            intlabels[redmask == 1] = 1
+
+            #for i in intlabels.reshape(sizex * sizey):
+            #    if i > 0:
+            #        print i
+
+            # count label colors
+            for color in range(4):
+                print "COLOR " + str(color) + ": " + str(list(intlabels.reshape(intlabels.size)).count(color))
+                probs[color] += list(intlabels.reshape(intlabels.size)).count(color) / float(sizex * sizey)
+                #print probs[color]
+
+    # average over all images
+    probs /= (len(images) / 2)
+    probs /= 1. - float(sizex * sizey)
+    print "AVG_PROBS:" + str(probs)
+
+    # fill probs for all images with the same, averaged values
+    return probs

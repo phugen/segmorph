@@ -19,7 +19,7 @@ Thresholding is the simplest segmentation algorithm there is: Given an input ima
 \]
 
 
-\noindent This yields a binary segmentation of the image into two classes, given that $\theta$ is chosen properly. The choice of $\theta$ is therefore crucial for the success of the segmentation. One way to find a suitable threshold parameter is (automated) image histogram analysis, such as in Otsu's method\cite{Otsu}.
+\noindent This yields a binary segmentation of the image into two classes, given that $\theta$ is chosen properly. The choice of $\theta$ is therefore crucial for the success of the segmentation. One way to find a suitable threshold parameter is (automated) image histogram analysis, such as in Otsu's method.\cite{Otsu}
 
 Otsu's method iterates through all possible values for $\theta$ and calculates the ``between-class variance'' ${\sigma^{2}}_B$ for each $\theta$, defined as
 
@@ -39,7 +39,7 @@ K-Means\cite{kmeans} is a general-purpose data clustering algorithm whose aim is
 
 \[ \argmin \limits_{C} \sum \limits_{i=1}^{k} \sum \limits_{d \in C_i} || d - \mu_i||^2 ,\]
 
-\noindent where $C_{i \dots k}$ are the $k$ clusters and $\mu_{i \dots k}$ is the mean of the respective cluster. Viewed graphically, this is equal to computing a higher-order Voronoi diagram for the data, using the $k$ cluster centroids as the Voronoi cell centers.
+\noindent where $C_{i \dots k}$ are the $k$ clusters and $\mu_{i \dots k}$ is the mean of the respective cluster. Viewed graphically, this is equal to computing a higher-order Voronoi diagram for the data, using the $k$ cluster centroids as the Voronoi cell centers (see Figure \ref{fig:kmeans}).
 
 The algorithm is initialized with $k$ either random or differently selected cluster centers. Then, the algorithm executes the two steps described in \ref{alg:kmeans_pseudo} alternatingly until either a set number of iterations is reached or the overall difference between the current and the last centroid positions falls below a threshold $\epsilon$.
 
@@ -57,6 +57,12 @@ The algorithm is initialized with $k$ either random or differently selected clus
 		\EndIf
 	\end{algorithmic}
 \end{algorithm}
+
+\begin {figure}[!ht]
+	\includegraphics{img/fig_kmeans}
+	\caption{Application of the K-Means algorithm to a test image. \textbf{Top left}: Input image. \textbf{Top right}: Ground truth labels of the input image. \textbf{Bottom left}: K-means results with $k=4$,  using arbitrary colors for the labels. \textbf{Bottom right}: Results with $k=6$. It is noteworthy that while the results for $k=4$ are reasonable, the nearly transparent lamellopodium pixels are labelled as background values, while the cell proper is segmented into two parts.}
+	\label{fig:kmeans}
+\end {figure}
 
 \noindent Obviously, this algorithm can also be used to segment images into $k$ different classes, but since K-Means assigns classes to data by using the distance from the mean, the algorithm output favors segmentations in which the classes have roughly the same size, which isn't necessarily the correct way to classify pixels in arbitrary image data.
 
@@ -118,21 +124,131 @@ In the final step, a hysteresis threshold is applied. This process consists of d
 
 \noindent The thresholds $\theta_{high}$ and $\theta_{low}$ have to be set by the user, although there exists the possibility to set these by using the Otsu threshold described in \ref{sec:thresholding} . Using this combination approach, $\theta_{high}$ is set to the Otsu threshold value for $I(x, y)$, and $\theta_{low}$ is set to $0.5 * \theta_{high}$.\cite{otsu_combine}
 
+
 	\section{Gaussian Mixture Models}
-Gaussian Mixtures Models are a subclass of mixture models, that is, probabilistic models which are combined with other models of the same distribution type to form a more complex model that is able to model the distribution of a data set more accurately than a simple model could. In the case of Gaussian Mixture Models, the base distributions are (often $n$-multivariate) Gaussian distributions:
+Gaussian Mixtures Models (GMMs) are a subclass of mixture models, that is, probabilistic models which are combined with other models of the same distribution type to form a more complex model that is able to model the distribution of a data set more accurately than a simple model could. In the case of GMMs, the base distributions are often $n$-multivariate Gaussian distributions:
 
 \[ pdf(x) = \mathcal{N}_n (x\,|\,\mu,\, \Sigma) \]
 
-\noindent Here, $pdf(x)$ denotes the probability, or density, of an $n$-dimensional piece of data $x$, while $\mu$ and $\Sigma$ are the $n$-dimensional mean vector and the $n \times n$ covariance matrix of the distribution. Since the shape such a distribution can take is limited, a single Gaussian cannot accurately model a bimodal distribution. Instead, a weighted combination of multiple Gaussians can be used instead: \cite[pp. 430]{bishop_pattern}
+\noindent Here, $pdf(x)$ denotes the probability, or density, of an $n$-dimensional piece of data $x$, while $\mu$ and $\Sigma$ are the $n$-dimensional mean vector and the $n \times n$ covariance matrix of the distribution. Since the shape such a distribution can take is limited, a single Gaussian cannot accurately model a multimodal distribution (see Figure \ref{fig:normal_vs_gmm}). Instead, a weighted combination of multiple Gaussians can be used instead: \cite[pp. 430]{bishop_pattern}
 
 \[ pdf_m (x) = \sum \limits_{k=1}^{K} \pi_k \, \mathcal{N}_n (x\,|\, \mu_k, \Sigma_k) \]
 
-\noindent A mixture model consists of $k$ models that each have different parameters $\mu$ and $\Sigma$ and are weighted by weights $\pi_k \in \mathbb{R}$, $1 > \pi_k > 0$, with $\sum_{i=1}^{k} \pi_i = 1$.
+\noindent A mixture model consists of $K$ models that each have different parameters $\mu$ and $\Sigma$ and are weighted by weights $\pi_k \in \mathbb{R}$, $1 > \pi_k > 0$, with $\sum_{i=1}^{k} \pi_i = 1$.
+
+\begin {figure}[!ht]
+	\includegraphics{img/fig_normal_vs_gmm}
+	\caption{Comparison of a single Gaussian fit (upper) with a GMM fit, using $K=3$, on a two-dimensional dataset randomly sampled from three Gaussian distributions. The single Gaussian fails to capture the structure of the data, while the GMM succeeds.}
+	\label{fig:normal_vs_gmm}
+\end {figure}
+
+\noindent The parameters of such a mixture model can be calculated by applying the Expectation-Maximization (EM) algorithm, which can additionally be combined with a K-Means initialization to avoid shallow local minima.\cite{em_algorithm} GMMs can also be used for segmenting images: Grayscale images are simply three-dimensional data in which each pixel coordinate corresponds to an intensity value. If the number of components to be found in the image is known beforehand, as it is in the case of cell segmentation, the intensity values can be segmented according to the fitted GMM (see Figure \ref{fig:gmm_vs_gt}). To do this, for each pixel in the image the posterior probabilities for that pixel in respect to each of the Gaussians is calculated and the Gaussian with the highest probability is chosen as the ``source'' of the pixel:
+
+\[ label_x = \argmax \limits_{k} \, p(\mu_k, \Sigma_k\, | \, x) \]
+
+\begin {figure}[!ht]
+	\includegraphics{img/fig_gmm_vs_gt}
+	\caption{From left to right: Input image, pseudo-color labels assigned by a $K=4$ GMM fit to the input image and the ground truth labels for the input image.}
+	\label{fig:gmm_vs_gt}
+\end {figure}
+
 
 	\section{Graph Cuts}
 
-	\section{Multi-layer Perceptrons}
 
-		\subsection {Gradient Descent}
+
+	\section{Multi-layer Perceptrons}
+\textit{Multi-layer Perceptrons} (MLPs) or \textit{Feedforward Artificial Neuronal Networks} (ANNs) are mathematical functions that try to emulate the way neurons in the brain process information, typically to classify data or perform regression on it. ANNs have recently achieved impressing results on various tasks, such as image classification, sound analysis and regression, typically achieved by very deep networks that used lots of artificial neurons and were fed large datasets exceeding one million samples. In this section, the concepts behind optimization of functions via Gradient Descent, neuronal networks and training of those networks using the Backpropagation algorithm are explained. 
+
+
+
+\subsection {Gradient Descent}
+\textit{Gradient Descent} or the ``method of steepest descent'' is a standard, analytic first-order technique that can be used to minimize or maximize at least once-differentiable functions, that is, to calculate a vector of parameters $\Theta$ so that
+
+\[ \Theta = \argmax \limits_{i} f(i) \]
+
+\noindent To find values for $\Theta$, the approach takes advantage of the fact that the negative gradient vector $\nabla_f = [ \frac{\partial f}{\partial \Theta_0}, \dots, \frac{\partial f}{\partial \Theta_n} ]$, the vector of all first partial derivatives of $f$, points into the direction of the fastest change, or put graphically, the ``steepest slope''. By taking steps into the direction of this gradient, the function value is minimized step by step, while maximization works the same, only that the function is negated and then minimized, which results in parameters that maximize the original function. The parameter $\eta$ depicts the step size and is typically a value in the range $(0.0, 1.0]$. \cite[pp. 40--42]{optimization_book}
+
+The algorithm starts with a guess for the parameters in $\Theta$ and then iteratively evaluates the gradient and updates the parameters accordingly until convergence is reached (see algorithm \ref{algo:grad_desc}).
+
+\begin {algorithm}
+	\begin {algorithmic}[1]
+		\State $\Theta$ = random
+		\State $\epsilon$ = eps
+		\While {$|f(\Theta_i) - f(\Theta_{i - 1}) > \epsilon|$}
+			\State $\Theta_i = \Theta_{i-1} - \eta \nabla_f$ 
+		\EndWhile
+	\end{algorithmic}
+	\caption{Gradient Descent scheme for optimizing differentiable functions.}
+	\label{alg:grad_desc}
+\end{algorithm}
+
+
+\noindent The normal gradient descent evaluates all samples and updates the parameters with the averaged gradient of all these samples. A variation of the algorithm is the Stochastic Gradient Descent (SGD) which performs updates for each sample individually (see algorithm \ref{algo:sgd}). This has the benefit of not having to load the entire dataset into memory, but can result in strong fluctuations during training. The middle path between both algorithms is to use ''mini-batches``, i.e. performing updates for small subsets of the data each.
+
+\begin {figure}[!ht]
+	\begin{center}
+		\includegraphics[scale=0.9]{img/fig_grad_desc}
+	\end{center}
+	\caption{A contour plot of Gradient Descent minimization of $f(a, b) = \sin(a) + \cos^2(b)$. The blue line shows the search path of the algorithm along the negative gradient while estimating the optimal $\Theta$.}
+	\label{fig:grad_desc}
+\end {figure}
+
+
+	\subsection{The Perceptron Algorithm}
+A single-layer ANN is a network consisting of just one neuron, and is also called ``perceptron''. The idea for the perceptron was first proposed by Rosenblatt \cite{rosenblatt_report, rosenblatt_book}, who used it to perform binary classifications, using what is now called the ``perceptron algorithm''. Given a linearly separable set of $m$ data points of dimension $n$, one can construct a $(n+1) \times m$ input matrix $x$. The last entry in every column is set to $1$.
+
+The \textit{perceptron classifier}, the function that decides which class a given sample belongs to, then takes the form of a linear function
+
+\[ d(x) = f(w^{T}x), \]
+
+\noindent where $w$ is a vector of dimension $n+1$ and contains the $n$ \textit{weights} and the \textit{bias} value. The function $f$ is the \textit{activation function}, which is defined as 
+
+\[ f(a) =  \begin{cases}
+		+1 \text{ if } a \geq 0 \\
+	   	 -1 \text{ otherwise}
+	    \end{cases}\]
+
+\noindent and maps its input to one of two possible classes.
+
+\begin {figure}[!ht]
+	\begin{center}
+		\includegraphics[scale=0.6]{img/fig_perceptron}
+	\end{center}
+	\caption{\textbf{Left}: Separating two datasets with the perceptron algorithm in $\mathbb{R}^2$. The correct classification boundary takes the form of a line, i.e. $0 = w^{T}x = w_0 x + w_1 y + w_2$. The line pictured is given by $w = (-2.285, -2.908, 5.938)$, the weights after 19 iterations. \textbf{Right}: A not-linearly separable data set, on which the algorithm would never converge, because it is based on finding linear classifiers and thus cannot separate the data correctly.}
+	\label{fig:perceptron}
+\end {figure}
+
+
+\noindent The task of the \textit{training phase} is to find values for $w_0, \dots, w_{n+1}$ so that each data point is classified correctly by the resulting line, plane or (hyper-)plane. To this account, there needs to be a $m$-dimensional vector $t$ containing the \textit{labels} of each data point to verify the correctness of $w$. These labels are integers that indicate which class each data point belongs to. In the case of the perceptron algorithm, the labels are either $1$ for the first class $C_1$ or $-1$ for the second class, $C_2$. If all data points are classified correctly by some $w$, then it holds that
+
+\[ w^T x_n \, t_n > 0 \,\,\forall\, x_n \in x \label{eq:perceptron_label} \]
+
+\noindent Using this definition of correctness, a correctness measure or \textit{error function} can be formulated, which is known as the ``perceptron criterion''. It is given by
+
+\[ E_p(w) = - \sum \limits_{n \in \mathcal{M}} w^T x_n\, t_n, \label{eq:perc_error}\]
+
+\noindent where $\mathcal{M}$ is the set of all data points that were misclassfied, meaning that evaluating equation \ref{eq:perceptron_label} for that data yields a value $< 0$. 
+
+Applying stochastic gradient descent to the perceptron criterion \ref{eq:perc_error} yields an iterative algorithm for finding correct values for $w$ (see algorithm \ref{alg:perceptron_algorithm}). \cite[pp. 192--194]{bishop_pattern}
+
+\begin {algorithm}
+	\begin {algorithmic}[1]
+		\While {true}
+			\State $\Delta = 0$
+			\For{all $x_i$ with $wx^t_i \leq 0$}
+				\State $\Delta += x_i$
+			\EndFor
+			\State $w = w + p_k * \Delta$
+			\If {for all $x_i$, $wx^t_i > 0$}
+				\State stop
+			\EndIf
+		\EndWhile
+	\end{algorithmic}
+	\caption{Gradient descent applied to the task of finding the perceptron weights $w$.}
+	\label{alg:perceptron_algorithm}
+\end{algorithm}
+
+
 
 		\subsection{Backpropagation}
