@@ -179,13 +179,44 @@ def convert2HDF5(path, hdf5path, weight_mode="individual", un_path=None, overrid
                                            [IMG_HEIGHT, IMG_WIDTH])
 
 
-    # total number of sub-images and labels
-    SUB_NO = len(paddedSubImages)
-    SUB_L_NO = len(subLabels)
+
+    # throw out subimages and their labels
+    # that possess only samples of one class
+    print "\nDeleting images with only one class..."
+    todelete = [] # find indices of samples to delete
+    bar = progressbar.ProgressBar()
+    for index, sub in enumerate(subLabels):
+
+        justone = True
+        class1 = sub[0, 0]
+
+        for y in range(sub.shape[0]):
+            for x in range(sub.shape[1]):
+                if sub[y, x] != class1:
+                    justone = False
+                    break
+            if not justone:
+                break
+
+        if justone:
+            todelete.append(index)
+
+    # delete all marked images and labels in sorted
+    # reverse order so indices prior indices
+    # don't change and throw off deletion
+    for index in sorted(todelete, reverse=True):
+        del paddedSubImages[index]
+        del subLabels[index]
+
+    print "DELETED " + str(len(todelete)) + " images with one only class!\n"
 
     # convert lists to numpy array representation
     paddedSubImages = np.array(paddedSubImages)
     subLabels = np.array(subLabels)
+
+    # total number of sub-images and labels
+    SUB_NO = paddedSubImages.shape[0]
+    SUB_L_NO = subLabels.shape[0]
 
 
     # set class weights for weighting
@@ -208,30 +239,18 @@ def convert2HDF5(path, hdf5path, weight_mode="individual", un_path=None, overrid
         print ""
 
 
-    elif WEIGHT_MODE == "average":
-        temp_probs = np.zeros(4)
+    # use external class probabilities, for instance global average probs
+    elif WEIGHT_MODE == "override":
 
-        # calculate inverse average color probability over all images
-        print "Calculating AVERAGE class weights:"
+        if override is None:
+            raise ValueError("WEIGHT_MODE was override, but no override array was supplied!")
 
-        bar = progressbar.ProgressBar()
-        for index in bar(range(SUB_NO)):
-            for color in range(4):
-                temp_probs[color] += 1. - float(list(subLabels[index].reshape(input_size * input_size)).count(color)) / (input_size * input_size)
-
-        # average over all images
-        temp_probs /= SUB_NO
-        print "AVG_PROBS:" + str(temp_probs)
-
-        # fill probs for all images with the same, averaged values
-        for i in range(4):
-            class_probs[:, i] = temp_probs[i]
-
-        print ""
+        class_probs = np.zeros((SUB_NO, 4))
+        class_probs[:] = override
 
 
 
-    if WEIGHT_MODE == "individual" or WEIGHT_MODE == "average":
+    if WEIGHT_MODE == "individual" or WEIGHT_MODE == "override":
         print "Computing pixel weight image(s) ... "
         # TODO: base on average distribution of classes in training data
 
@@ -293,7 +312,7 @@ def convert2HDF5(path, hdf5path, weight_mode="individual", un_path=None, overrid
     flippedRotatedImages = preputils.getFlipRotationCombinations(paddedSubImages, 3)
     flippedRotatedLabels = preputils.getFlipRotationCombinations(subLabels, 1)
 
-    if WEIGHT_MODE == "individual" or WEIGHT_MODE == "average":
+    if WEIGHT_MODE == "individual" or WEIGHT_MODE == "override":
         flippedRotatedWeights = preputils.getFlipRotationCombinations(pixel_weights, 1)
 
 
@@ -305,14 +324,14 @@ def convert2HDF5(path, hdf5path, weight_mode="individual", un_path=None, overrid
     training_images = [flippedRotatedImages[index, ...] for index in range(flippedRotatedImages.shape[0]) if index % ratio != 0]
     training_labels = [flippedRotatedLabels[index, ...] for index in range(flippedRotatedLabels.shape[0]) if index % ratio != 0]
 
-    if WEIGHT_MODE == "individual" or WEIGHT_MODE == "average":
+    if WEIGHT_MODE == "individual" or WEIGHT_MODE == "override":
         training_weights = [flippedRotatedWeights[index, ...] for index in range(flippedRotatedWeights.shape[0]) if index % ratio != 0]
 
     # VALIDATION set:
     validation_images = flippedRotatedImages[::ratio, ...]
     validation_labels = flippedRotatedLabels[::ratio, ...]
 
-    if WEIGHT_MODE == "individual" or WEIGHT_MODE == "average":
+    if WEIGHT_MODE == "individual" or WEIGHT_MODE == "override":
         validation_weights = flippedRotatedWeights[::ratio, ...] # actually not needed...
 
 
@@ -361,7 +380,7 @@ def convert2HDF5(path, hdf5path, weight_mode="individual", un_path=None, overrid
     print "Writing HDF5 files to " + hdf5path + " ..."
 
     # Create HDF5 datasets WITH weightmaps
-    if WEIGHT_MODE == "individual" or WEIGHT_MODE == "average":
+    if WEIGHT_MODE == "individual" or WEIGHT_MODE == "override":
 
         preputils.writeOrAppendHDF5(hdf5path + "_training.h5", \
                                     training_images, training_labels, training_weights)
@@ -397,7 +416,7 @@ def convert2HDF5(path, hdf5path, weight_mode="individual", un_path=None, overrid
         subUnlabeled = preputils.tileMirrorImage (UN_NUM, input_size, magic_number, paddedUnlabeled, \
                                                       [IMG_HEIGHT, IMG_WIDTH], [PAD_HEIGHT, PAD_WIDTH])
 
-        if WEIGHT_MODE == "individual" or WEIGHT_MODE == "average":
+        if WEIGHT_MODE == "individual" or WEIGHT_MODE == "override":
             pseudo_weights = np.zeros((len(subUnlabeled), input_size, input_size), dtype=np.float32)
             pseudo_weights[...] = 1.0
 

@@ -56,7 +56,6 @@ if not os.path.exists(path_pro):
 # calculate "override" weights over the entire dataset
 # to pass to HDF5 script instead of only averaging over HDF5 file contents
 avgprobs = getInverseAvgProbs(imagepaths)
-exit(-1)
 
 # write data to HDF5 files as long as
 # there are files to write left in the list
@@ -90,7 +89,7 @@ for fileindex in bar(range(maxindex)):
     convert_inpath = path_pro
     convert_outpath = outpath + "_" + str(fileindex)
 
-    convert2HDF5(convert_inpath, convert_outpath, weight_mode="average", un_path=None, override=avgprobs)
+    convert2HDF5(convert_inpath, convert_outpath, weight_mode="override", un_path=None, override=avgprobs)
 
     #subprocess.call(["python", script_path, convert_inpath, convert_outpath], \
     #                 stdout=open(os.devnull, 'wb'), \

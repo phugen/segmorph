@@ -31,9 +31,29 @@ output_path = sys.argv[4]
 # initialize U-Net with trained weights
 net = caffe.Net(model_file, 1, weights=weights)
 
-# get mirrored image data from HDF5 file, ignore labels
+
+# get mirrored image and label data from HDF5 file
+input_images = None
+labels = None
+
 with h5py.File(input_file, "r") as f:
     input_images = np.array(f["data"])
+    labels = np.array(f["label"])
+
+# translate integer labels back to RGB
+tlabels = np.zeros((labels.shape[0], 3, labels.shape[1], labels.shape[2]))
+for index in range(labels.shape[0]):
+
+    # get bool masks for each label
+    bluemask = labels[index] == 3
+    greenmask = labels[index] == 2
+    redmask = labels[index] == 1
+
+    # replace old labels
+    tlabels[index, 2, ...][bluemask == 1] = 1.0
+    tlabels[index, 1, ...][greenmask == 1] = 1.0
+    tlabels[index, 0, ...][redmask == 1] = 1.0
+
 
 # predict all images in the validation set file
 transformer = caffe.io.Transformer({'data': net.blobs['data'].data.shape})
@@ -62,6 +82,7 @@ for imgno in bar(range(input_images.shape[0])):
 
     # interpret probabilities as RGB values, omit BG values
     scipy.misc.toimage(output[0, 1:4, :, :], cmin=0.0, cmax=1.0).save(output_path + "prediction_" + str(imgno) + ".png")
+    scipy.misc.toimage(tlabels[imgno, ...], cmin=0.0, cmax=1.0).save(output_path + "prediction_" + str(imgno) + "_GT.png")
 
 print "Predicted " + str(input_images.shape[0]) + " images."
 
