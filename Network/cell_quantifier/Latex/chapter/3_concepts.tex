@@ -35,7 +35,7 @@ Local thresholding, however, also depends on choosing $L$ so that the local neig
 
 
 	\section{K-Means}
-K-Means\cite{kmeans} is a general-purpose data clustering algorithm whose aim is to create $k$ data clusters from all $n$-dimensional data points $d = (f_1, f_2, \dots, f_n)$ so that the squared distance from each data point in the cluster to the cluster mean is minimized overall. Mathematically, this means calculating
+K-Means \cite{kmeans} is a general-purpose data clustering algorithm whose aim is to create $k$ data clusters from all $n$-dimensional data points $d = (f_1, f_2, \dots, f_n)$ so that the squared distance from each data point in the cluster to the cluster mean is minimized overall. Mathematically, this means calculating
 
 \[ \argmin \limits_{C} \sum \limits_{i=1}^{k} \sum \limits_{d \in C_i} || d - \mu_i||^2 ,\]
 
@@ -87,7 +87,7 @@ In Gaussian filters, the $\sigma$ constant is expressed through the dimensions o
 
 \noindent The coefficient $\frac{1}{16}$ is equal to the sum of the matrix values and ensures that the convolution does not change the average image value. \cite[p. 41]{machine_vision}\\
 
-\noindent As the second step, an gradient-based edge detector filter is applied to the smoothed image. The most famous of these is the \textit{Sobel filter}\cite{sobel}, which approximates the local partial derivatives $\frac{\partial I}{\partial x}$ and $\frac{\partial I}{\partial y}$ of each pixel of the image function $I(x, y)$, using the $3 \times 3$ neighborhood of that pixel. It is given by the following matrices\cite[pp. 113 -- 114]{machine_vision}:
+\noindent As the second step, an gradient-based edge detector filter is applied to the smoothed image. The most famous of these is the \textit{Sobel filter} \cite{sobel}, which approximates the local partial derivatives $\frac{\partial I}{\partial x}$ and $\frac{\partial I}{\partial y}$ of each pixel of the image function $I(x, y)$, using the $3 \times 3$ neighborhood of that pixel. It is given by the following matrices\cite[pp. 113 -- 114]{machine_vision}:
 
 \[ \text{Sobel}_x = \left [ \begin{tabular}{ccc}
 				-1& 0& 1\\
@@ -163,19 +163,18 @@ Gaussian Mixtures Models (GMMs) are a subclass of mixture models, that is, proba
 
 
 \subsection {Gradient Descent}
-\textit{Gradient Descent} or the ``method of steepest descent'' is a standard, analytic first-order technique that can be used to minimize or maximize at least once-differentiable functions, that is, to calculate a vector of parameters $\Theta$ so that
+\textit{Gradient Descent} or the ``method of steepest descent'' is a standard, analytic first-order technique first introduced by that can be used to minimize or maximize at least once-differentiable functions, that is, to calculate a vector of parameters $\Theta$ for a function $f$ so that
 
 \[ \Theta = \argmax \limits_{i} f(i) \]
 
 \noindent To find values for $\Theta$, the approach takes advantage of the fact that the negative gradient vector $\nabla_f = [ \frac{\partial f}{\partial \Theta_0}, \dots, \frac{\partial f}{\partial \Theta_n} ]$, the vector of all first partial derivatives of $f$, points into the direction of the fastest change, or put graphically, the ``steepest slope''. By taking steps into the direction of this gradient, the function value is minimized step by step, while maximization works the same, only that the function is negated and then minimized, which results in parameters that maximize the original function. The parameter $\eta$ depicts the step size and is typically a value in the range $(0.0, 1.0]$. \cite[pp. 40--42]{optimization_book}
 
-The algorithm starts with a guess for the parameters in $\Theta$ and then iteratively evaluates the gradient and updates the parameters accordingly until convergence is reached (see algorithm \ref{algo:grad_desc}).
+The algorithm starts with a guess for the parameters in $\Theta$ and then iteratively evaluates the gradient and updates the parameters accordingly until convergence within arbitrary precision is reached (see algorithm \ref{alg:grad_desc}).
 
 \begin {algorithm}
 	\begin {algorithmic}[1]
-		\State $\Theta$ = random
-		\State $\epsilon$ = eps
-		\While {$|f(\Theta_i) - f(\Theta_{i - 1}) > \epsilon|$}
+		\State $\Theta_0$ = random
+		\While {$|f(\Theta_i) - f(\Theta_{i - 1})| > \epsilon$}
 			\State $\Theta_i = \Theta_{i-1} - \eta \nabla_f$ 
 		\EndWhile
 	\end{algorithmic}
@@ -183,14 +182,14 @@ The algorithm starts with a guess for the parameters in $\Theta$ and then iterat
 	\label{alg:grad_desc}
 \end{algorithm}
 
+\noindent For convex functions, Gradient Descent always finds the global minimum. For non-convex functions however, the algorithm may get stuck in a local minimum or at saddle points, called ``false minima' (see figure \ref{fig:grad_desc}). Therefore, running the algorithm multiple times with random values or even informed guesses given knowledge about the form of the function to be optimized is advised. The step size $\eta$ has to be chosen depending on the shape of the function to minimize; if $\eta$ is too large, the algorithm will overshoot the minimum and never converges, even if the minimum exists, and if $\eta$ is too small, convergence will take a long time. Also, for some functions, the algorithm starts moving in a zig-zag pattern near the optimum, further increasing the number of steps the algorithm takes until covergence. To address these problems, a number of optimizations were proposed, some of which are discussed in section \ref{chapter_optimization}.
 
-\noindent The normal gradient descent evaluates all samples and updates the parameters with the averaged gradient of all these samples. A variation of the algorithm is the Stochastic Gradient Descent (SGD) which performs updates for each sample individually (see algorithm \ref{algo:sgd}). This has the benefit of not having to load the entire dataset into memory, but can result in strong fluctuations during training. The middle path between both algorithms is to use ''mini-batches``, i.e. performing updates for small subsets of the data each.
 
 \begin {figure}[!ht]
 	\begin{center}
 		\includegraphics[scale=0.9]{img/fig_grad_desc}
 	\end{center}
-	\caption{A contour plot of Gradient Descent minimization of $f(a, b) = \sin(a) + \cos^2(b)$. The blue line shows the search path of the algorithm along the negative gradient while estimating the optimal $\Theta$.}
+	\caption{\textbf{Left:} A contour plot of Gradient Descent minimization of $f(a, b) = \sin(a) + \cos^2(b)$. The blue line shows the search path of the algorithm along the negative gradient while estimating the optimal $\Theta$. \textbf{Right}: Effect of the initial guess for $\Theta$ on the optimization. The function $f(a) = \frac{1}{40}a^2 * \frac{1}{2} \cos(a)$ has multiple local minima in the interval [0, 25]. Only the third guess $a=25$ leads to finding the global minimum, while the other two optimization runs get trapped in local minima.}
 	\label{fig:grad_desc}
 \end {figure}
 
@@ -211,6 +210,39 @@ The \textit{perceptron classifier}, the function that decides which class a give
 
 \noindent and maps its input to one of two possible classes.
 
+The task of the \textit{training phase} is to find values for $w_0, \dots, w_{n+1}$ so that each data point is classified correctly by the resulting line, plane or (hyper-)plane. To this account, there needs to be a $m$-dimensional vector $t$ containing the \textit{labels} of each data point to verify the correctness of $w$. These labels are integers that indicate which class each data point belongs to. In the case of the perceptron algorithm, the labels are either $1$ for the first class $C_1$ or $-1$ for the second class, $C_2$. If all data points are classified correctly by some $w$, then it holds that
+
+\[ w^T x_n \, t_n > 0 \,\,\forall\, x_n \in x \label{eq:perceptron_label} \]
+
+\noindent Using this definition of correctness, a correctness measure or \textit{error function} can be formulated, which is known as the ``perceptron criterion''. It is given by
+
+\[ E_p(w) = - \sum \limits_{n \in \mathcal{M}} w^T x_n\, t_n, \label{eq:perc_error}\]
+
+\noindent where $\mathcal{M}$ is the set of all data points that were misclassfied, meaning that evaluating equation \ref{eq:perceptron_label} for that data yields a value $< 0$. \cite[pp. 192--194]{bishop_pattern}\\
+
+\noindent The correct perceptron weights can then be determined by some arbitrary learning algorithm, although here, the Gradient Descent scheme (see algorithm \ref{alg:grad_desc}) is applied to the error function \ref{eq:perc_error}. When optimizing functions that not only depend on the parameters $\Theta$ but also on some dataset, one can consider one of the subtypes of Gradient Descent; either, evaluating the average gradient using all available data samples (\textit{Batch Gradient Descent}) or using single data points only - as an approximation of the entire dataset - to perform the updates. This is called \textit{Stochastic Gradient Descent} (SGD) and is preferable if working with datasets that are too large to fit into memory. Alternatively, one can use the average gradient of a subset of data points - this method is often referred to as \textit{Mini-Batch} Gradient Descent.
+
+Either way, the gradient of $E_p$ has to be calculated. The perceptron criterion only depends on the weights $w$, so the gradient vector has the shape
+
+\[ \nabla_E = \left[ \frac{\partial E_p}{\partial w_0}, \frac{\partial E_p}{\partial w_1}, \dots, \frac{\partial E_p}{\partial w_{n+1}} \right ] \].
+
+Taking the partial derivatives in respect to $w$ leads to
+
+\begin{align}
+ 	\hspace{2em}&\hspace{-2em} \nabla_E = \frac{\partial E_p}{\partial w} = \frac{\partial}{\partial w} \left (- \sum \limits_{n \in \mathcal{M}} w^T x_n t_n \right ) \\
+ 	&= -\sum \limits_{n \in \mathcal{M}} x_n t_n
+\end{align}
+
+\noindent If SGD is used, this is reduced to simply
+
+\[ \nabla_E = -x_n t_n\]
+
+\noindent for some previously misclassified point $x_n \in \mathcal{M}$ in the dataset. Hence, the update rule for the perceptron becomes
+
+\[w_i = w_{i - 1} + x_n t_n * \eta\]
+
+\noindent Using this update rule leads to the training algorithm shown in \ref{alg:perceptron_algorithm}, which is applied to an example dataset in figure \ref{fig:perceptron}.
+
 \begin {figure}[!ht]
 	\begin{center}
 		\includegraphics[scale=0.6]{img/fig_perceptron}
@@ -219,36 +251,47 @@ The \textit{perceptron classifier}, the function that decides which class a give
 	\label{fig:perceptron}
 \end {figure}
 
-
-\noindent The task of the \textit{training phase} is to find values for $w_0, \dots, w_{n+1}$ so that each data point is classified correctly by the resulting line, plane or (hyper-)plane. To this account, there needs to be a $m$-dimensional vector $t$ containing the \textit{labels} of each data point to verify the correctness of $w$. These labels are integers that indicate which class each data point belongs to. In the case of the perceptron algorithm, the labels are either $1$ for the first class $C_1$ or $-1$ for the second class, $C_2$. If all data points are classified correctly by some $w$, then it holds that
-
-\[ w^T x_n \, t_n > 0 \,\,\forall\, x_n \in x \label{eq:perceptron_label} \]
-
-\noindent Using this definition of correctness, a correctness measure or \textit{error function} can be formulated, which is known as the ``perceptron criterion''. It is given by
-
-\[ E_p(w) = - \sum \limits_{n \in \mathcal{M}} w^T x_n\, t_n, \label{eq:perc_error}\]
-
-\noindent where $\mathcal{M}$ is the set of all data points that were misclassfied, meaning that evaluating equation \ref{eq:perceptron_label} for that data yields a value $< 0$. 
-
-Applying stochastic gradient descent to the perceptron criterion \ref{eq:perc_error} yields an iterative algorithm for finding correct values for $w$ (see algorithm \ref{alg:perceptron_algorithm}). \cite[pp. 192--194]{bishop_pattern}
-
 \begin {algorithm}
 	\begin {algorithmic}[1]
+		\State $w$ = random
 		\While {true}
-			\State $\Delta = 0$
-			\For{all $x_i$ with $wx^t_i \leq 0$}
-				\State $\Delta += x_i$
+			\For{$x_i$ in $x$}
+				\If{$w^T x_i t_i \leq 0$}
+					\State $w$ += $x_i t_i * \eta$
+				\EndIf
+
+				\If{$w^T x_i t_i > 0$ for all $x_i$ in $x$}
+					\State stop
+				\EndIf
 			\EndFor
-			\State $w = w + p_k * \Delta$
-			\If {for all $x_i$, $wx^t_i > 0$}
-				\State stop
-			\EndIf
 		\EndWhile
 	\end{algorithmic}
-	\caption{Gradient descent applied to the task of finding the perceptron weights $w$.}
+	\caption{Stochastic Gradient Descent applied to the task of finding the perceptron weights $w$. $x$ is assumed to be linearly separable.}
 	\label{alg:perceptron_algorithm}
 \end{algorithm}
 
 
 
-		\subsection{Backpropagation}
+		\subsection{Multiple Neurons and Backpropagation}
+While the perceptron algorithm works fine for linear problems, those are only a small subset of real-world problems: Even the simple problem of learning to classify the XOR dataset obviously cannot be solved by the perceptron. The solution to this problem is to add more neurons to the model, which form a network that consists of layers that pass the outputs of neurons in the previous layers through non-linear activation functions and then use the results as inputs. These layers are referred to as the ``input layer'', the first layer, the ``output layer'', the last layer, and ``hidden layers'', which are all the layers inbetween.
+
+The resulting networks are called \textit{Multi-Layer Perceptrons} (MLPs), \textit{Feedforward Artificial Neural Networks}(ANNs), or, in the case of a multitude of layers, \textit{Deep Neural Networks}, and are much more powerful than simple perceptrons, as they can approximate haphazard continuous functions that operate on closed and bounded subsets of $\mathbb{R}^n$ given that the network possesses at least one hidden layer of neurons. This capability makes using MLPs for learning real-life problems feasible.\cite{universal_approx}\cite{universal_approx2}\\
+
+\noindent Mathematically, the outputs $out_k$ of an MLP can be defined as follows:
+
+\[  out_k(x, w) = \sigma \left( \sum \limits_{a=1}^{D^{(n)}} w_{ka}^{(n)} \cdot h \left ( \,\dots\, h\left ( \sum \limits_{z=1}^{D^{(1)}} w_{yz}^{(1)} x_{z^{(1)}} + w^{(1)}_{0} \right ) \dots \right ) + w_{0}^{(n)} \right ) \]
+
+\noindent where \textbf{$x$} is the vector of inputs and \textbf{$w$} is a matrix of weights. \textbf{$D$} is equal to the number of inputs to a layer, while \textbf{$h$} denotes an activation function and \textbf{$\sigma$} is an output function. The superscripts denote which layer in the network a variable refers to. The weights $w$ are doubly indexed with the index of the neuron in the next layer to which the function that uses the weights is the input as well as the index of the layer they belong to. For example, a weight $w_{12}$ refers to the vector of weights of the second layer that parametrizes the input function to the first neuron in the successive, third layer. The running variables within each layer are written as \textbf{$a \dots z$}, with \textbf{$a$} denoting the variable for the inputs of the first layer and \textbf{$z$} is used for the inputs of the last layer; all layers in between are defined accordingly.\\
+
+\noindent The choice of the activation function $h(w, x)$ is different from the normal perceptron: It is not chosen to be the Heaviside function, but instead, to be a non-linear, continuous and differentiable function. Computing an output is done by passing the input vector to the first layer, which computes its activations for all its neurons, which then pass on their activations to the neurons of the next layer as inputs until the output layer is reached.
+
+The output function $\sigma$ is applied in the last layer of the network, and is dependent on the task the network is supposed to fulfill: For regression problems, fitting a function to a set of data and then predicting new values using that function, the identity function can be used, but for binary classification problems, instead of using a step function like in the original perceptron, one instead uses the continuous sigmoid function and interprets the output as
+
+\[ sigmoid(x_i, w) =  \begin{cases}
+				x_i \in C_1 \text{ if } sigmoid(x_i, w) \geq 0.5 \\
+				x_i \in C_2 \text{ else }\\
+			 \end{cases}
+\]
+
+\noindent If the classification is non-binary, using the softmax function (see section \ref{subsec:softmax}) to obtain probabilities for the likeliness of $x_i$ being in any of the classes is a solution. 
+
