@@ -163,6 +163,8 @@ Gaussian Mixtures Models (GMMs) are a subclass of mixture models, that is, proba
 
 
 \subsection {Gradient Descent}
+\label{subsec:grad_desc}
+
 \textit{Gradient Descent} or the ``method of steepest descent'' is a standard, analytic first-order technique first introduced by that can be used to minimize or maximize at least once-differentiable functions, that is, to calculate a vector of parameters $\Theta$ for a function $f$ so that
 
 \[ \Theta = \argmax \limits_{i} f(i) \]
@@ -195,26 +197,28 @@ The algorithm starts with a guess for the parameters in $\Theta$ and then iterat
 
 
 	\subsection{The Perceptron Algorithm}
-A single-layer ANN is a network consisting of just one neuron, and is also called ``perceptron''. The idea for the perceptron was first proposed by Rosenblatt \cite{rosenblatt_report, rosenblatt_book}, who used it to perform binary classifications, using what is now called the ``perceptron algorithm''. Given a linearly separable set of $m$ data points of dimension $n$, one can construct a $(n+1) \times m$ input matrix $x$. The last entry in every column is set to $1$.
+\label{subsec:perceptron_algo}
+
+A single-layer ANN is a network consisting of just one neuron, and is also called ``perceptron''. The idea for the perceptron was first proposed by Rosenblatt \cite{rosenblatt_report, rosenblatt_book}, who used it to perform binary classifications, using what is now called the ``perceptron algorithm''. Given a linearly separable set of $m$ data points of dimension $n$, one can construct a $(n+1) \times m$ input matrix $x$. The last entry in every column is set to $1$ to simplify the notation later on.
 
 The \textit{perceptron classifier}, the function that decides which class a given sample belongs to, then takes the form of a linear function
 
-\[ d(x) = f(w^{T}x), \]
+\[ d(x) = h(w^{T}x), \label{eq:perc_class} \]
 
-\noindent where $w$ is a vector of dimension $n+1$ and contains the $n$ \textit{weights} and the \textit{bias} value. The function $f$ is the \textit{activation function}, which is defined as 
+\noindent where $w$ is a vector of dimension $n+1$ and contains the $n$ \textit{weights} and the \textit{bias} value. The function $h$ is the \textit{activation function}, which is defined as 
 
-\[ f(a) =  \begin{cases}
+\[ h(a) =  \begin{cases}
 		+1 \text{ if } a \geq 0 \\
 	   	 -1 \text{ otherwise}
 	    \end{cases}\]
 
-\noindent and maps its input to one of two possible classes.
+\noindent and maps its input to one of two possible classes.\\
 
-The task of the \textit{training phase} is to find values for $w_0, \dots, w_{n+1}$ so that each data point is classified correctly by the resulting line, plane or (hyper-)plane. To this account, there needs to be a $m$-dimensional vector $t$ containing the \textit{labels} of each data point to verify the correctness of $w$. These labels are integers that indicate which class each data point belongs to. In the case of the perceptron algorithm, the labels are either $1$ for the first class $C_1$ or $-1$ for the second class, $C_2$. If all data points are classified correctly by some $w$, then it holds that
+\noindent The task of \textit{training} is defined as finding values for $w_0, \dots, w_{n+1}$ so that each data point is classified correctly by the resulting line, plane or (hyper-)plane. To this account, there needs to be a $m$-dimensional vector $t$ containing the \textit{labels} of each data point to verify the correctness of $w$. These labels are integers that indicate which class each data point belongs to. In the case of the perceptron algorithm, the labels are either $1$ for the first class $C_1$ or $-1$ for the second class, $C_2$. If all data points are classified correctly by some $w$, then it holds that
 
 \[ w^T x_n \, t_n > 0 \,\,\forall\, x_n \in x \label{eq:perceptron_label} \]
 
-\noindent Using this definition of correctness, a correctness measure or \textit{error function} can be formulated, which is known as the ``perceptron criterion''. It is given by
+\noindent Using this definition of correctness, a correctness measure can be formulated, which is known as the ``perceptron criterion''. Functions of this kind are also called \textit{error functions} or \textit{loss functions}. This particular loss function is given by
 
 \[ E_p(w) = - \sum \limits_{n \in \mathcal{M}} w^T x_n\, t_n, \label{eq:perc_error}\]
 
@@ -224,12 +228,12 @@ The task of the \textit{training phase} is to find values for $w_0, \dots, w_{n+
 
 Either way, the gradient of $E_p$ has to be calculated. The perceptron criterion only depends on the weights $w$, so the gradient vector has the shape
 
-\[ \nabla_E = \left[ \frac{\partial E_p}{\partial w_0}, \frac{\partial E_p}{\partial w_1}, \dots, \frac{\partial E_p}{\partial w_{n+1}} \right ] \].
+\[ \nabla_E = \left[ \frac{\partial E_p}{\partial w_0}, \frac{\partial E_p}{\partial w_1}, \dots, \frac{\partial E_p}{\partial w_{n+1}} \right ] \,. \]
 
-Taking the partial derivatives in respect to $w$ leads to
+\noindent Taking the partial derivatives in respect to $w$ leads to
 
 \begin{align}
- 	\hspace{2em}&\hspace{-2em} \nabla_E = \frac{\partial E_p}{\partial w} = \frac{\partial}{\partial w} \left (- \sum \limits_{n \in \mathcal{M}} w^T x_n t_n \right ) \\
+ 	\nabla_E &= \frac{\partial E_p}{\partial w} = \frac{\partial}{\partial w} \left (- \sum \limits_{n \in \mathcal{M}} w^T x_n t_n \right ) \\
  	&= -\sum \limits_{n \in \mathcal{M}} x_n t_n
 \end{align}
 
@@ -273,25 +277,103 @@ Taking the partial derivatives in respect to $w$ leads to
 
 
 		\subsection{Multiple Neurons and Backpropagation}
-While the perceptron algorithm works fine for linear problems, those are only a small subset of real-world problems: Even the simple problem of learning to classify the XOR dataset obviously cannot be solved by the perceptron. The solution to this problem is to add more neurons to the model, which form a network that consists of layers that pass the outputs of neurons in the previous layers through non-linear activation functions and then use the results as inputs. These layers are referred to as the ``input layer'', the first layer, the ``output layer'', the last layer, and ``hidden layers'', which are all the layers inbetween.
+While the perceptron algorithm works fine for linear problems, those are only a small subset of real-world problems (see figure \ref{fig:perceptron}). The solution to this problem is to add more neurons to the model, which form a network that consists of layers that pass the outputs of neurons in the previous layers through non-linear activation functions and then use the results as inputs. These layers are referred to as the ``input layer'', the initial layer, the ``output layer'', the last layer, and ``hidden layers'', which are all the layers inbetween.
 
 The resulting networks are called \textit{Multi-Layer Perceptrons} (MLPs), \textit{Feedforward Artificial Neural Networks}(ANNs), or, in the case of a multitude of layers, \textit{Deep Neural Networks}, and are much more powerful than simple perceptrons, as they can approximate haphazard continuous functions that operate on closed and bounded subsets of $\mathbb{R}^n$ given that the network possesses at least one hidden layer of neurons. This capability makes using MLPs for learning real-life problems feasible.\cite{universal_approx}\cite{universal_approx2}\\
 
-\noindent Mathematically, the outputs $out_k$ of an MLP can be defined as follows:
+\noindent Again, each neuron in the network computes a weighted sum of its $i$ inputs, just like in equation \ref{eq:perc_class}, although indexing has been added to identify neurons and weights in the entire network:
 
-\[  out_k(x, w) = \sigma \left( \sum \limits_{a=1}^{D^{(n)}} w_{ka}^{(n)} \cdot h \left ( \,\dots\, h\left ( \sum \limits_{z=1}^{D^{(1)}} w_{yz}^{(1)} x_{z^{(1)}} + w^{(1)}_{0} \right ) \dots \right ) + w_{0}^{(n)} \right ) \]
+\[ z_j^{(l)} = \sum \limits_{i} w^{(l)}_{ji}\,\, y_i + b^{(l)}_{j} \]
 
-\noindent where \textbf{$x$} is the vector of inputs and \textbf{$w$} is a matrix of weights. \textbf{$D$} is equal to the number of inputs to a layer, while \textbf{$h$} denotes an activation function and \textbf{$\sigma$} is an output function. The superscripts denote which layer in the network a variable refers to. The weights $w$ are doubly indexed with the index of the neuron in the next layer to which the function that uses the weights is the input as well as the index of the layer they belong to. For example, a weight $w_{12}$ refers to the vector of weights of the second layer that parametrizes the input function to the first neuron in the successive, third layer. The running variables within each layer are written as \textbf{$a \dots z$}, with \textbf{$a$} denoting the variable for the inputs of the first layer and \textbf{$z$} is used for the inputs of the last layer; all layers in between are defined accordingly.\\
+\noindent $y_i$ are the input values to the current neuron. Note that these either are the direct inputs $x_i$ to the network, or outputs of other neurons, depending on where in the network the term is evaluated. $w$ is the matrix of weights, and $w^{(l)}_{ji}$ denotes the weight of the connection from the $i$th neuron in the previous layer $l - 1$ to the $j$th neuron in the  layer $l$. The term $b$ is the bias weight associated with the neuron $j$. The bias can be made part of the weight matrix by introducing an additional input dimension with a value of $1$, like it was done for the perceptron algorithm in section \ref{subsec:perceptron_algo}.
 
-\noindent The choice of the activation function $h(w, x)$ is different from the normal perceptron: It is not chosen to be the Heaviside function, but instead, to be a non-linear, continuous and differentiable function. Computing an output is done by passing the input vector to the first layer, which computes its activations for all its neurons, which then pass on their activations to the neurons of the next layer as inputs until the output layer is reached.
+Afterwards, the sum $z^{(l)}_j$ is passed into an activation function $h(\cdot)$ to produce the activation of the $j$th neuron in the $l$th layer, $a_j^{(l)}$:
 
-The output function $\sigma$ is applied in the last layer of the network, and is dependent on the task the network is supposed to fulfill: For regression problems, fitting a function to a set of data and then predicting new values using that function, the identity function can be used, but for binary classification problems, instead of using a step function like in the original perceptron, one instead uses the continuous sigmoid function and interprets the output as
+\[ a_j^{(l)} = h(z^{(l)}_j) \]
 
-\[ sigmoid(x_i, w) =  \begin{cases}
-				x_i \in C_1 \text{ if } sigmoid(x_i, w) \geq 0.5 \\
+\noindent In vectorized notation, the activations of an entire layer could therefore be written as the recursive formula
+
+\[ a^{(l)} = h(w^{(l)} a^{(l-1)}) \cite{nielsen_book} \]
+
+\noindent where the activations of the input layer are simply the inputs themselves, thus ending the recursion. Expanding the term for the 2-layer network shown in figure \ref{fig:mlp} gives the following formula for a network output $out_k$:
+
+\[ out_k = \sigma \left ( \sum \limits_{j=0}^{4} w^{(2)}_{kj}\,\, h \left ( \sum \limits_{i=0}^{3} w^{(1)}_{ji} x_i \right ) \right ) \label{eq:mlp_out} \]
+
+\noindent Here, \textbf{$\sigma$} is an output function that is applied in the last layer of the network, and is dependent on the task the network is supposed to fulfill: For regression problems, fitting a function to a set of data and then predicting new values using that function, the identity function can be used, but for binary classification problems, instead of using a step function like in the original perceptron, one instead uses the continuous \textit{Sigmoid} function and interprets the output as
+
+\[ \sigma_{sig}(x_i) = \begin{cases}
+				x_i \in C_1 \text{ if } \frac{1}{1 + e^{-x_i}} \geq 0.5 \\
 				x_i \in C_2 \text{ else }\\
 			 \end{cases}
 \]
 
-\noindent If the classification is non-binary, using the softmax function (see section \ref{subsec:softmax}) to obtain probabilities for the likeliness of $x_i$ being in any of the classes is a solution. 
+\noindent Also, the choice of the activation function $h(w, x)$ is different from the perceptron: It is not chosen to be the Heaviside function, but instead, to be a non-linear, continuous and differentiable function. Computing an output is done by passing the input vector to the first layer, which computes its activations for all its neurons, which then pass on their activations to the neurons of the next layer as inputs until the output layer is reached.
+
+If the classification is non-binary, using the \textit{Softmax} function (see section \ref{subsec:softmax}) to obtain probabilities for the likeliness of $x_i$ being part of any of the classes is a solution.\\
+
+\afterpage{
+	\begin {figure}[!ht]
+		\begin{center}
+			\def\svgwidth{0.8\columnwidth}
+			\input{img/mlp.pdf_tex}
+		\end{center}
+		\caption[]{An MLP with one hidden layer, forming an acyclic directed graph, where connections are color-coded per layer by the receiving neuron. The layer count $L$ starts at the layer after the input layer\protect\footnotemark. Therefore $L = 2$, with three inputs $x_i$ and neuron counts $D^{(1)} = 4$ and $D^{(2)} = 2$. The variables $b^{(1)}$ and $b^{(2)}$ refer to the biases for the neurons in the layers $(1)$ or $(2)$, respectively. Each neuron has its own, changeable bias value, but for the sake of cleanness, the connections from the biases to each neuron of their corresponding layer are not shown.}
+		\label{fig:mlp}
+	\end {figure}
+
+	\footnotetext{There is no consensus on which method of counting is the most appropriate. Sometimes, only the number of hidden layers or even all layers are counted \cite[pp. 229]{bishop_pattern}}
+}
+
+\noindent The goal of training an MLP is - as previously for the perceptron - finding specific weights so that all inputs are classified correctly, or at least, so that the network makes only few mistakes. Therefore, a loss layer is added to the end of the network, measuring the correctness of the output. Instead of the perceptron criterion \ref{eq:perc_error}, a more general loss function is employed which compares the difference between the output $\sigma(x)$ of the network for a sample $x$ and the preferred output for $x$, the \textit{label} or \textit{ground truth} of $x$. Typically, the loss function for regression problems is based on the \textit{Least Squares Error} (LSE), which is defined as
+
+\[ LSE(w) = \frac{1}{2} \left ( out - t \right )^2, \]
+
+\noindent where the single, linear output of the network for some input $x$ and a set of weights $w$ is compared to the ground truth $t$.\footnote{The error is only given as a function of $w$ because both the input $x$ and its correct label $t$ are fixed in the particular case presented here.} Binary classification problems instead use Sigmoid outputs together with the \textit{Cross-Entropy} loss function, which is defined as 
+
+\[ CE(w) =  -t \, \ln out + (1 - t) \ln (1 - out). \]
+
+\noindent For multi-class classifications, an adaption of the Cross-Entropy loss can be used, which is further described in section \ref{subsec:cross_ent}. \cite[pp. 232-236]{bishop_pattern}\\
+
+\noindent Training a network with multiple layers is harder than training a single perceptron because the influence of each of the weights in any layer of the network on the error function has to be computed when using gradient-based optimization methods while the output of the network no longer is the result of a single function, but instead, a composition of a usually large number of functions (see equation \ref{eq:mlp_out}). Although it is possible to manually calculate the partial derivatives for the entire network, this becomes more and more cumbersome as the network grows in size.
+
+Luckily, there exists an iterative algorithm called \textit{Backpropagation} \cite{backprop} that finds the gradient of the loss with respect to each weight so that an optimization method can be applied to change every weight. The algorithm makes use of the fact that each neuron can be viewed (almost) independently from the rest of the network: Remembering that the analytic way of obtaining the gradient of a composition of functions 
+
+\[ f \circ g = f(g(x)) \]
+
+\noindent with respect to some $x$ is to apply the chain rule
+
+\[ \frac{\partial f}{\partial x} =\frac{\partial f}{\partial g} \frac{\partial g}{\partial x} \, , \]
+
+\noindent one can see that this concept can also be applied to neurons in a network, because using the output value of a neuron in a previous layer as the input for a node is nothing else than function composition.
+
+Backpropagation thus starts with a \textit{forward pass}, which means that an input vector $x$ is passed through the network and the corresponding sums $a_j$ and activations $z_j$ are calculated and stored. Comparing the final outputs to the ground truth in the loss layer, the network is then traversed in the opposite direction in what is called a \textit{backward pass}, aiming to obtain the influence of each weight in each layer on the final loss, that is, the gradient of the loss function with respect to the weights. After this first phase, the partial derivatives for each weight are known, and the weights are updated in a second phase, in which an algorithm like Gradient Descent is used as described in section \ref{subsec:grad_desc}.\\
+
+\noindent The central idea is of the backward pass that when traversing the network from the output to the input layer, the derivatives of the loss function with respect to weights of a layer depend on weights of the layers that precede them. Using the (multivariable) chain rule, this relationship can be described by the formula
+
+\begin {align}
+	\frac{\partial E}{\partial w_{ji}} &= \frac{\partial E}{z_j} \frac{\partial z_j}{\partial w_{ji}} \\
+	&= h'(z_j) \sum \limits_{k} w_{kj} \, \delta_k
+\end {align}
+
+\noindent where $E$ is the loss function of the network, and $k$ are the indices of all neurons that passed their activations to the neuron $j$ in the forward pass, and $h'$ is the derivative of the activation function $h$. This step is also the reason why $h$ is chosen to be contiunous and differentiable.\\
+
+
+
+KERNEL TRICK mentioning. translate 3d to 2d and recursively linearly classify
+
+\afterpage{
+	\begin {figure}[!ht]
+		\begin{center}
+			\def\svgwidth{0.8\columnwidth}
+			\input{img/backprop.pdf_tex}
+		\end{center}
+		\caption[]{Application of the chain rule in the Backpropagation algorithm\protect\footnotemark. Values calculated during the forward pass are shown in blue, while values calculated during the backward pass are orange. The partial derivatives of the input variables $x$ and $y$ measure the (local) influence on the output of the neuron, $z$. When the influence of $z$ on the loss function $L$ is backpropagated to the neuron, the chain rule is applied to recursively backpropagate the influence of outputs of the previous neurons on $L$, which are the inputs to the depicted neuron. This is repeated throughout the entire network until all partial derivatives are known and a single Gradient Descent step can be taken toward the loss function minimum.}
+		\label{fig:mlp}
+	\end {figure}
+
+	\footnotetext{This example is based on a visualization in \cite{karparthy_lecture}.}
+}
+
+\noindent If one considers a neuron in the network as a function with a number of inputs $x_i$ and an output $out$
+
 

@@ -32,7 +32,7 @@ The loss layer that was proposed originally for the U-Net architecture is a \tex
 
 First, the input $z$ of the layer is transformed by the softmax function
 
-\[\sigma(z) = \frac{e^{z}}{\sum \limits_{k=0}^{K} e^{z_k}},\]
+\[\sigma(z) = \frac{e^{z}}{\sum_{k=0}^{K} e^{z_k}},\]
 
 \noindent where $e$ is the exponential function and $z$ has a dimension of $1 \times K$. The softmax function acts as a normalizer that ``squashes'' the values of its input vector into the range $[0, 1]$ with respect to the differences between the vector values. For example, let $z = [-2.432, 1.832, 0.299]$. Then $\sigma(z) = [0.011, 0.813, 0.176]$ is the softmax output for $z$.
 
@@ -44,8 +44,8 @@ These processed values can be interpreted as probabilities much more easily than
 
 However, the above definition of the softmax function can become numerically unstable when the exponentiation yields large values because dividing by large numbers could potentially produce zero values. To prevent this, the softmax can be made robust by defining it as
 
-\[z_{new} = z - \max \limits_{i = 0}(0, z_i)\]
-\[\sigma(z_{new}) = \frac{e^{z_{new}}}{\sum \limits_{k=0}^{K} e^{z_{new_{k}}}}\]
+\[z' = z - \max \limits_{i = 0}(0, z_i)\]
+\[\sigma(z') = \frac{e^{z'}}{\sum_{k=0}^{K} e^{z'_{{k}}}}\]
 
 \noindent Since each pixel of the input image belongs to one class only, this means that for a given pixel, the probability of its ground truth label is $1.0$, while all others are $0.0$. If, without loss of generality, the third class is assumed to be the ground-truth class, $p$ will be $[0.0, 0.0, 1.0, 0.0]$.  Hence, only the predicted probability of the true third class influences the loss, and all the other summands can be omitted, yielding the condensed general formula
 
@@ -54,6 +54,7 @@ However, the above definition of the softmax function can become numerically uns
 \noindent where $q_{true}$ denotes the predicted probability for the true class. The loss of the entire image is then calculated as the sum of the losses of all pixels divided by the number of pixels.
 
 		\subsection{Cross-Entropy Loss}
+\label{subsec:cross_ent}
 
 		\subsection{Weighted Cross-Entropy Loss}
 
