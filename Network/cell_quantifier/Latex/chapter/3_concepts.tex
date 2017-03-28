@@ -283,17 +283,17 @@ The resulting networks are called \textit{Multi-Layer Perceptrons} (MLPs), \text
 
 \noindent Again, each neuron in the network computes a weighted sum of its $i$ inputs, just like in equation \ref{eq:perc_class}, although indexing has been added to identify neurons and weights in the entire network:
 
-\[ z_j^{(l)} = \sum \limits_{i} w^{(l)}_{ji}\,\, y_i + b^{(l)}_{j} \]
+\[ a_j^{(l)} = \sum \limits_{i} w^{(l)}_{ji}\,\, y_i + b^{(l)}_{j} \]
 
 \noindent $y_i$ are the input values to the current neuron. Note that these either are the direct inputs $x_i$ to the network, or outputs of other neurons, depending on where in the network the term is evaluated. $w$ is the matrix of weights, and $w^{(l)}_{ji}$ denotes the weight of the connection from the $i$th neuron in the previous layer $l - 1$ to the $j$th neuron in the  layer $l$. The term $b$ is the bias weight associated with the neuron $j$. The bias can be made part of the weight matrix by introducing an additional input dimension with a value of $1$, like it was done for the perceptron algorithm in section \ref{subsec:perceptron_algo}.
 
-Afterwards, the sum $z^{(l)}_j$ is passed into an activation function $h(\cdot)$ to produce the activation of the $j$th neuron in the $l$th layer, $a_j^{(l)}$:
+Afterwards, the sum $a^{(l)}_j$ is passed into an activation function $h(\cdot)$ to produce the activation of the $j$th neuron in the $l$th layer, $z_j^{(l)}$:
 
-\[ a_j^{(l)} = h(z^{(l)}_j) \]
+\[ z_j^{(l)} = h(a^{(l)}_j) \]
 
 \noindent In vectorized notation, the activations of an entire layer could therefore be written as the recursive formula
 
-\[ a^{(l)} = h(w^{(l)} a^{(l-1)}) \cite{nielsen_book} \]
+\[ z^{(l)} = h(w^{(l)} z^{(l-1)}) \cite{nielsen_book} \]
 
 \noindent where the activations of the input layer are simply the inputs themselves, thus ending the recursion. Expanding the term for the 2-layer network shown in figure \ref{fig:mlp} gives the following formula for a network output $out_k$:
 
@@ -336,7 +336,7 @@ If the classification is non-binary, using the \textit{Softmax} function (see se
 
 \noindent Training a network with multiple layers is harder than training a single perceptron because the influence of each of the weights in any layer of the network on the error function has to be computed when using gradient-based optimization methods while the output of the network no longer is the result of a single function, but instead, a composition of a usually large number of functions (see equation \ref{eq:mlp_out}). Although it is possible to manually calculate the partial derivatives for the entire network, this becomes more and more cumbersome as the network grows in size.
 
-Luckily, there exists an iterative algorithm called \textit{Backpropagation} \cite{backprop} that finds the gradient of the loss with respect to each weight so that an optimization method can be applied to change every weight. The algorithm makes use of the fact that each neuron can be viewed (almost) independently from the rest of the network: Remembering that the analytic way of obtaining the gradient of a composition of functions 
+Luckily, there exists an iterative algorithm called \textit{Backpropagation} \cite{backprop} that finds the gradient of the loss with respect to each weight so that an optimization method can be applied to change every weight. The algorithm makes use of the fact that each neuron can be viewed (almost) independently from the rest of the network. Remembering that the analytic way of obtaining the derivative of a composition of functions 
 
 \[ f \circ g = f(g(x)) \]
 
@@ -344,22 +344,32 @@ Luckily, there exists an iterative algorithm called \textit{Backpropagation} \ci
 
 \[ \frac{\partial f}{\partial x} =\frac{\partial f}{\partial g} \frac{\partial g}{\partial x} \, , \]
 
-\noindent one can see that this concept can also be applied to neurons in a network, because using the output value of a neuron in a previous layer as the input for a node is nothing else than function composition.
+\noindent one can see that this concept can also be applied to neurons in a network, because using the output value of a neuron in a previous layer as the input for a node is nothing else than function composition.\\
 
-Backpropagation thus starts with a \textit{forward pass}, which means that an input vector $x$ is passed through the network and the corresponding sums $a_j$ and activations $z_j$ are calculated and stored. Comparing the final outputs to the ground truth in the loss layer, the network is then traversed in the opposite direction in what is called a \textit{backward pass}, aiming to obtain the influence of each weight in each layer on the final loss, that is, the gradient of the loss function with respect to the weights. After this first phase, the partial derivatives for each weight are known, and the weights are updated in a second phase, in which an algorithm like Gradient Descent is used as described in section \ref{subsec:grad_desc}.\\
+\noindent Backpropagation thus starts with a \textit{forward pass}, which means that an input vector $x$ is passed through the network and the corresponding sums $a_j$ and activations $z_j$ are calculated and stored. Comparing the final outputs to the ground truth in the loss layer, the network is then traversed in the opposite direction in what is called a \textit{backward pass}, aiming to obtain the influence of each weight in each layer on the final loss, that is, the gradient of the loss function with respect to the weights. After this first phase, the partial derivatives for each weight are known, and the weights are updated in a second phase, in which an optimization algorithm like Gradient Descent is used as described in section \ref{subsec:grad_desc}.\\
 
-\noindent The central idea is of the backward pass that when traversing the network from the output to the input layer, the derivatives of the loss function with respect to weights of a layer depend on weights of the layers that precede them. Using the (multivariable) chain rule, this relationship can be described by the formula
+\noindent The central idea of the backward pass is that when traversing the network from the output layer to the input layer, the derivatives of the loss function with respect to weights of a layer depend on weights of the layers that precede them. This relationship is described by the formula
 
 \begin {align}
-	\frac{\partial E}{\partial w_{ji}} &= \frac{\partial E}{z_j} \frac{\partial z_j}{\partial w_{ji}} \\
-	&= h'(z_j) \sum \limits_{k} w_{kj} \, \delta_k
+	\frac{\partial E}{\partial w_{ji}} &= \frac{\partial E}{\partial a_j} \frac{\partial a_j}{\partial w_{ji}}
 \end {align}
 
-\noindent where $E$ is the loss function of the network, and $k$ are the indices of all neurons that passed their activations to the neuron $j$ in the forward pass, and $h'$ is the derivative of the activation function $h$. This step is also the reason why $h$ is chosen to be contiunous and differentiable.\\
+\noindent where $E$ is the loss function of the network. According to the chain rule, the influence of the weight $w_{ji}$ on the loss is equal to the influence of the weight on the sum of inputs $a_j$ times the influence of $a_j$ on the loss function. In literature, the term $\frac{\partial E}{\partial a_j}$ is often denoted as $\delta_j^{(l)}$, the ``error'' of the neuron $j$ in layer $l$. Using this notation and taking the partial derivative of the weighted sum $a_j$, the formula becomes
 
+\[ \frac{\partial E}{\partial w_{ji}} = \delta_j^{(l)} z_i .\]
 
+\noindent Since $z_i$, the activation from the input end of the connection that is modified by $w_{ji}$, is already known for all neurons due to the forward pass, the only thing that needs to be computed to figure out the loss gradient are the $\delta$-values. The computation of $\delta_j^{(l)}$ depends on the position of the neuron in the network:
 
-KERNEL TRICK mentioning. translate 3d to 2d and recursively linearly classify
+\[ \delta_j^{(l)} =  \begin{cases}
+				\frac{\partial E}{\partial a_j} \text{ if neuron } j^{(l)} \text{ is an output neuron} \\
+			           h'(a_j) \sum \limits_{k} w_{kj} \, \delta_k^{(l+1)} \text{ otherwise}
+			     \end{cases}
+\]
+
+\noindent In the case $j$ is an output neuron, the partial is calculated directly. Otherwise, $\delta_j$ depends on the $\delta$-values in the previous layers, necessitating the backward traversion (see figure \ref{fig:backprop}). The definition of $\delta$ for hidden neurons is also the reason why a differentiable function must be chosen as the activation $h(\cdot)$, as stated earlier.\\
+
+\noindent The main advantage of the algorithm is that it scales linearly with the number of weights, i.e. the algorithm is $\in \mathcal{O}(w)$. Furthermore, the fact that all $\delta$-values of a layer have to be calculated to calculate all $\delta$ values and weight derivatives in the layer that precedes it naturally leads to vectorizing the algorithm layerwise in efficient implementations. \cite{nielsen_book}\cite{ng_lecture}\cite[pp. 241-245]{bishop_pattern}
+
 
 \afterpage{
 	\begin {figure}[!ht]
@@ -367,13 +377,19 @@ KERNEL TRICK mentioning. translate 3d to 2d and recursively linearly classify
 			\def\svgwidth{0.8\columnwidth}
 			\input{img/backprop.pdf_tex}
 		\end{center}
-		\caption[]{Application of the chain rule in the Backpropagation algorithm\protect\footnotemark. Values calculated during the forward pass are shown in blue, while values calculated during the backward pass are orange. The partial derivatives of the input variables $x$ and $y$ measure the (local) influence on the output of the neuron, $z$. When the influence of $z$ on the loss function $L$ is backpropagated to the neuron, the chain rule is applied to recursively backpropagate the influence of outputs of the previous neurons on $L$, which are the inputs to the depicted neuron. This is repeated throughout the entire network until all partial derivatives are known and a single Gradient Descent step can be taken toward the loss function minimum.}
-		\label{fig:mlp}
+		\caption[]{Backpropagation algorithm, applied to a hidden layer $l$\protect\footnotemark. Steps during the forward pass are shown in blue, while steps during the backward pass are orange. The central neuron is the only neuron in the layer $l$, while there are two neurons each in the layers $l-1$ and $l+1$. These other layers could be other hidden layers, input layers, or output layers, as the computation is generalized by the definition of $\delta$. The forward pass calculates the weighted sum $a_1^{(l)}$ and the activation $h(a_1^{(l)})$. Once the backward pass reaches the neuron, it calculates $\delta_1^{(l)}$ and the partial derivatives of the weights of layer $l$, that is, the weights of the connections that flow into the central neuron in the forward pass, using the backpropagated value $\delta_k^{(l+1)}$. This is repeated throughout the entire network until the entire weight gradient is known and a single Gradient Descent step can be taken toward the loss function minimum.}
+		\label{fig:backprop}
 	\end {figure}
 
 	\footnotetext{This example is based on a visualization in \cite{karparthy_lecture}.}
 }
 
-\noindent If one considers a neuron in the network as a function with a number of inputs $x_i$ and an output $out$
+\noindent Depending on how deep the networks are, i.e. how many hidden layers there are and how many neurons there are in these hidden layers, neural networks can learn very complex classification boundaries. The role of the activation function is akin to the kernel principle of State Vector Machines (SVMs), since it maps inputs to higher-dimensional spaces in which they are linearly separable by a hyperplane (see figure \ref{fig:mlp_trick}).
 
-
+\begin {figure}[!ht]
+		\begin{center}
+			\input{img/fig_mlp_trick.pgf}
+		\end{center}
+		\caption[]{\textbf{Left:} The problem from \ref{fig:perceptron} revisited. An 2-layer MLP with 2 input neurons, 5 hidden neurons and 2 output neurons was trained on the dataset for 10000 iterations using Backpropagation and Gradient Descent and classifies it correctly using a nonlinear classification boundary. \textbf{Right:} Visualization of the transformed data with $(x, y) \Rightarrow (x, y, out(x, y))$. The transformed dataset is then linearly separable by a plane.}
+		\label{fig:mlp_trick}
+	\end {figure}

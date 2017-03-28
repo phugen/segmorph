@@ -36,7 +36,7 @@
   }%
   \providecommand\rotatebox[2]{#2}%
   \ifx\svgwidth\undefined%
-    \setlength{\unitlength}{480bp}%
+    \setlength{\unitlength}{560bp}%
     \ifx\svgscale\undefined%
       \relax%
     \else%
@@ -48,7 +48,7 @@
   \global\let\svgwidth\undefined%
   \global\let\svgscale\undefined%
   \makeatother%
-  \begin{picture}(1,0.75)%
+  \begin{picture}(1,0.64285714)%
     \put(0,0){\includegraphics[width=\unitlength,page=1]{img/backprop.pdf}}%
   \end{picture}%
 \endgroup%

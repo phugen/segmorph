@@ -86,9 +86,6 @@ d2 = np.array([[3, 0], [2, 2.24], [1, 2.83], [0, 3], \
       [-1, -2.83], [-2, -2.24], \
       [1, -2.83], [2, -2.24]])
 
-print d2[:,0]
-print d2[:,1]
-
 # add 1 in third dim for bias weights
 temp = np.concatenate((c1, c2))
 x = np.array([np.concatenate((xi, [1])) for xi in temp])
