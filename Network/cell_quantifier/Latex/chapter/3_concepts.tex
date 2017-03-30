@@ -386,7 +386,7 @@ Luckily, there exists an iterative algorithm called \textit{Backpropagation} \ci
 	\footnotetext{This example is based on a visualization in \cite{karparthy_lecture}.}
 }
 
-\noindent Depending on how deep the networks are, i.e. how many hidden layers there are and how many neurons there are in these hidden layers, neural networks can learn very complex classification boundaries. The role of the activation function is akin to the kernel principle of State Vector Machines (SVMs), since it maps inputs to higher-dimensional spaces in which they are linearly separable by a hyperplane (see figure \ref{fig:mlp_trick}).
+\noindent Depending on how deep the networks are, i.e. how many hidden layers there are and how many neurons there are in these hidden layers, neural networks can learn very complex classification boundaries. The role of the activation function is akin to the kernel principle of State Vector Machines (SVMs), since it maps inputs to a representation in which they are linearly separable by a hyperplane (see figure \ref{fig:mlp_trick}).
 
 \begin {figure}[!ht]
 		\begin{center}
@@ -396,3 +396,17 @@ Luckily, there exists an iterative algorithm called \textit{Backpropagation} \ci
 		\caption[]{\textbf{Left:} The problem from \ref{fig:perceptron} revisited. An 2-layer MLP with 2 input neurons, 5 hidden neurons and 2 output neurons was trained on the dataset for 10000 iterations using Backpropagation and Gradient Descent and classifies it correctly using a nonlinear classification boundary. \textbf{Right:} Visualization of the transformed data with $(x, y) \Rightarrow (x, y, out(x, y))$. The transformed dataset is then linearly separable by a plane.}
 		\label{fig:mlp_trick}
 	\end {figure}
+
+\noindent Choosing the number of hidden layers and the number of hidden neurons within them wisely is important because bad choices can make the network susceptible to underfitting or overfitting.
+
+\textit{Underfitting} is the term for the inability of a method to model the data correctly. For example, a linear classifier always underfits on a not-linearly separable dataset because it is not powerful enough to solve the problem. \textit{Overfitting} is the exact opposite and occurs when the model is too complex so that it doesn't model a trend in the data, but instead memorizes the dataset (see figure \ref{fig:overfit}). This is undesirable because such a model cannot generalize well and will make incorrect classifications once it is asked to classify data it hasn't been presented with during training. Therefore, a balance has to be found to equip a model with both enough power to classify correctly while also allowing leeway for generalizing when making predictions on new data.
+
+	\begin {figure}[!ht]
+		\begin{center}
+			\scalebox{0.75}{\input{img/fig_overfit.pgf}}
+		\end{center}
+		\caption[]{Overfitting on a dataset, using a 2-layer MLP with 100 hidden neurons and 100,000 iterations of training. A better model would classify the three blue outliers as orange.}
+		\label{fig:overfit}
+	\end {figure}
+
+\noindent The danger of overfitting on data increases with the complexity of the model. As MLPs are highly complex, often using millions of weights, overfitting is often a problem. Approaches that try to reduce overfitting in learning algorithms are called \textit{regularization} approaches (see also section \ref{subsec:dropout}). \textbf{TODO: continue here?}
