@@ -67,6 +67,7 @@ The algorithm is initialized with $k$ either random or differently selected clus
 \noindent Obviously, this algorithm can also be used to segment images into $k$ different classes, but since K-Means assigns classes to data by using the distance from the mean, the algorithm output favors segmentations in which the classes have roughly the same size, which isn't necessarily the correct way to classify pixels in arbitrary image data.
 
 	\section{Canny Edge Detection}
+\label{sec:canny}
 The \textit{Canny Edge Detector} \cite{canny} is one of the most famous edge-detection algorithms and actually is a composite algorithm that returns a binary segmentation of an image into edges and non-edges.\\
 
 \noindent First, a Gaussian convolution filter is applied to try and subdue noise in the image. A \textit{convolution} is a matrix operation often used in image processing: A matrix $A$, describing the pixel values of an image, is convolved pixel-wise with a convolution matrix $B$ with dimensions $n \times n$ - that is, for each pixel $p$ of $A$, the pixel's $n \times n$-neighborhood pixel values are summed up while being weighted according to corresponding value in $B$. The resulting sum is then assigned to the output matrix in place of the previous value of the center pixel, which intuitively assumes the distance-weighted average value of its neighborhood. In the case of pixels that lie on the edge of the matrix to be convoluted, out-of-bounds considerations have to be made: A constant value such as zero can be assumed for the pixels in the neighborhood that would lie ``outside'' of the image, the existing image values can be mirrored or clamped to provide a torus-like out-of-bounds handling, or the convolution can be done only on those pixels whose neighborhood fully lies inside of the image, resulting in smaller output images.
@@ -165,7 +166,7 @@ Gaussian Mixtures Models (GMMs) are a subclass of mixture models, that is, proba
 \subsection {Gradient Descent}
 \label{subsec:grad_desc}
 
-\textit{Gradient Descent} or the ``method of steepest descent'' is a standard, analytic first-order technique first introduced by that can be used to minimize or maximize at least once-differentiable functions, that is, to calculate a vector of parameters $\Theta$ for a function $f$ so that
+\textit{Gradient Descent} or the ``method of steepest descent'' is a standard, analytic first-order technique first introduced by that can be used to minimize or maximize at least once-differentiable, continuous functions, that is, to calculate a vector of parameters $\Theta$ for a function $f$ so that
 
 \[ \Theta = \argmax \limits_{i} f(i) \]
 
@@ -277,6 +278,7 @@ Either way, the gradient of $E_p$ has to be calculated. The perceptron criterion
 
 
 		\subsection{Multiple Neurons and Backpropagation}
+\label{subsec:mlp_backprop}
 While the perceptron algorithm works fine for linear problems, those are only a small subset of real-world problems (see figure \ref{fig:perceptron}). The solution to this problem is to add more neurons to the model, which form a network that consists of layers that pass the outputs of neurons in the previous layers through non-linear activation functions and then use the results as inputs. These layers are referred to as the ``input layer'', the initial layer, the ``output layer'', the last layer, and ``hidden layers'', which are all the layers inbetween.
 
 The resulting networks are called \textit{Multi-Layer Perceptrons} (MLPs), \textit{Feedforward Artificial Neural Networks}(ANNs), or, in the case of a multitude of layers, \textit{Deep Neural Networks}, and are much more powerful than simple perceptrons, as they can approximate haphazard continuous functions that operate on closed and bounded subsets of $\mathbb{R}^n$ given that the network possesses at least one hidden layer of neurons. This capability makes using MLPs for learning real-life problems feasible.\cite{universal_approx}\cite{universal_approx2}\\
@@ -334,7 +336,7 @@ If the classification is non-binary, using the \textit{Softmax} function (see se
 
 \noindent For multi-class classifications, an adaption of the Cross-Entropy loss can be used, which is further described in section \ref{subsec:cross_ent}. \cite[pp. 232-236]{bishop_pattern}\\
 
-\noindent Training a network with multiple layers is harder than training a single perceptron because the influence of each of the weights in any layer of the network on the error function has to be computed when using gradient-based optimization methods while the output of the network no longer is the result of a single function, but instead, a composition of a usually large number of functions (see equation \ref{eq:mlp_out}). Although it is possible to manually calculate the partial derivatives for the entire network, this becomes more and more cumbersome as the network grows in size.
+\noindent Training a network with multiple layers is harder than training a single perceptron because the influence of each of the weights in any layer of the network on the error function has to be computed when using gradient-based optimization methods while the output of the network no longer is the result of a single function, but instead, a composition of an usually large number of functions (see equation \ref{eq:mlp_out}). Although it is possible to manually calculate the partial derivatives for the entire network, this becomes more and more cumbersome as the network grows in size.
 
 Luckily, there exists an iterative algorithm called \textit{Backpropagation} \cite{backprop} that finds the gradient of the loss with respect to each weight so that an optimization method can be applied to change every weight. The algorithm makes use of the fact that each neuron can be viewed (almost) independently from the rest of the network. Remembering that the analytic way of obtaining the derivative of a composition of functions 
 
@@ -388,7 +390,8 @@ Luckily, there exists an iterative algorithm called \textit{Backpropagation} \ci
 
 \begin {figure}[!ht]
 		\begin{center}
-			\input{img/fig_mlp_trick.pgf}
+			\textbf{TODO: uncomment in code}
+			%\input{img/fig_mlp_trick.pgf}
 		\end{center}
 		\caption[]{\textbf{Left:} The problem from \ref{fig:perceptron} revisited. An 2-layer MLP with 2 input neurons, 5 hidden neurons and 2 output neurons was trained on the dataset for 10000 iterations using Backpropagation and Gradient Descent and classifies it correctly using a nonlinear classification boundary. \textbf{Right:} Visualization of the transformed data with $(x, y) \Rightarrow (x, y, out(x, y))$. The transformed dataset is then linearly separable by a plane.}
 		\label{fig:mlp_trick}

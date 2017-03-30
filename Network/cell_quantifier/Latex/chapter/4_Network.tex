@@ -1,13 +1,38 @@
 \chapter {Network Architecture}
-Although possible, it wasn't necessary to construct a fitting CNN from scratch. Since the task of image segmentation is popular, a number of propositions have been made; among them, the \textit{U-Net}. The \textit{U-Net} is a CNN architecture proposed by Ronneberger et al.\cite{unet} which aims to produce binary segmentation maps for images of cells. The network consists of a first, ``contracting'' path which is compromised by a series of convolutions, followed by max-pooling layers, and then a ``widening'' path which performs deconvolutions, giving the network a U-shape. The network also uses \textit{Dropout} layers\cite{dropout} for regularization of its weights.
+
 
 	\section {U-Net}
+	Since the task of image segmentation is popular, a number of network propositions have been made. Among them is the \textit{U-Net}. The U-Net is a a Convolution Neural Network (CNN) architecture proposed by Ronneberger et al.\cite{unet} which aims to produce segmentation maps for images of cells. The U-Net was implemented using Caffe\cite{caffe}, a CNN library developed by the University of California, Berkeley that allows basic building blocks to be put together to form a network. In the following sections, the principles behind CNNs and the operations in each of the network's layers are detailed.
+
 	% Image of U-Net here
 
 	\section {Network Components and Parameters}
 	
-		\subsection{Convolution and Deconvolution}
-		\subsection{Maximum Pooling}
+		\subsection{Convolutional Layers}
+CNNs are a special type of ANNs/MLPs that was popularized by LeCun \cite{lecun98} and, more recently, the successes of Krizhevsky \cite{krizhevsky2012} in the domain of image classification, although CNNs have been applied to other problems such as sound analysis as well. The rationale for their creation was that using fully-connected networks like the ones presented in section \ref{subsec:mlp_backprop} relate all elements of an input vector to every other element, which is generally a good thing to do - however, it ignores the relationship between parts of the input that is given in some datasets and doesn't scale well for very large datasets because of the large number of weights needed. Especially in image data, pixels that are close to each other by some metric such as the Euclidean distance are much more likely to be related, while pixels that lie on the other side of the image hardly are relevant in the context of operations like pixel classification. Consequently, CNNs encode this spatial relationship by using convolution operations (see section \ref{sec:canny}). Concretely, a convolution layer in a CNN typically consists of three sub-components:\\
+
+\noindent First, the data is convoluted by applying one or multiple kernels (also called filter) to all input values and their local neighborhoods.\footnote{Although the convolution in section \ref{sec:canny} describes out-of-bounds handling, the U-Net architecture used in this thesis uses only the naturally valid part of the convolution, i.e. if a $3 \times 3$ filter is used, a 1-value border of the data is lost because the local neighborhood would be partly out of bounds for these border values.} Kernels typically have a size of $k \times k \times d$, where $k$ is the filter size and $d$ is the depth of the dataset, e.g. in an RGB image dataset, the depth is 3 because there are 3 color channels. The result of these convolutions are as many outputs, called \textit{feature maps}, as there are filters in the layer. When viewed as a graph, this means that the hidden neurons represent the results of each convolution step, while all hidden neurons of the same filter share the same weights.
+
+Effectively, this means that the same kind of pattern is searched in the entire dataset, resulting in \textit{translation invariance}, i.e. it doesn't matter where the pattern is because it is still the same pattern at every position in the data.\\
+
+\noindent Then, the feature maps are passed through an non-linear activation function $h(\cdot)$, just like in normal MLPs, to generate activation maps. The U-Net uses the \textit{Rectified Linear Unit} (ReLU) function
+
+\[ ReLU(x) = \max(0, x) \]
+
+\noindent as its activation (see also section \ref{}).\\
+
+\noindent Finally, these activation maps are exposed to a \textit{Pooling} operation such as Maximum Pooling. Maximum pooling is a downsampling method that reduces the complexity of the network by replacing groups of values that are apart by a certain stride in the activation map with the maximum value within that group, resulting in a condensed activation map, while performing this calculation for each depth slice of the data independently. Intuitively, some of the information about where a pattern was detected by the filter is given up in order to make the network easier to train, although the relative positions between patterns are kept intact.\\
+
+\begin {figure}[!ht]
+	\begin{center}
+		\includegraphics[scale=0.75]{img/fig_convnet}
+	\end{center}
+	\caption{A Convolutional Neural Network with multiple filters. \textbf{a):} Input layer. The input size is $6 \times 6 \times 3$, while the kernel size is $3 \times 3 \times 3$. Neurons with valid convolution neighborhoods shown in gray. \textbf{b):} Feature maps with size $4 \times 4 \times 3$ that are the result of applying convolution filters to the input, which are then passed into the activation function $h$ to create activation maps. \textbf{c):} Results of a Maximum Pooling operation with sizes $2 \times 2$ and stride $2$ applied to the activation maps. The colors indicate the downsampled position of the maximum activation in the map. \textbf{d):} Fully-connected output layer that calculates the network outputs via applying the output function $\sigma$. The max-pooled values have been rearranged into a column for clarity, and connections are color-coded by the receiving neuron.}
+	\label{fig:convnet}
+\end {figure}
+
+\noindent The training of such a network then proceeds like in an MLP, only that the weights that the network has to learn by backpropating the loss through the network are the weights of fully-connected layer as well as the filter weights. \cite{deeplearning_book}
+
 		\subsection {Crop Layers}
 		\subsection{Softmax}
 
