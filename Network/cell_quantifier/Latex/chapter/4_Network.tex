@@ -27,31 +27,6 @@ Then, the feature maps are passed through an non-linear activation function $h(\
 \end {figure}
 
 
-		\subsection {Dropout}
-\label{subsec:dropout}
-Dropout layers implement the \textit{Dropout} regularization technique proposed by Srivastava et. al \cite{dropout}. Dropout ``disables'' neurons it is applied to during training with a certain chance according to a user-defined Bernoulli probability. These disabled neurons are not trained on the particular training sample - an effect one could view as training only a sub-network of the original neural network. By applying Dropout repeatedly and scaling the weights by the Dropout probability $p$ during testing, one gains an approximation of averaging the outputs of all possible $2^n$ sub-networks, where $n$ is the number of neurons in the network. This lowers the amount of overfitting because neurons learn not to ``rely'' on other neurons which otherwise would lead to specialized co-adaptions that usually hurt the generalization ability of the network.
-
-
-		\subsection {Batch Normalization}
-\label{subsec:batchnorm}
-\textit{Batch Normalization} (BN) \cite{batchnorm} is a method to improve training accuracy and speed while training either general MLPs or CNNs with the SGD algorithm (or other gradient-based algorithms that use mini-batches). The idea a BN layer in a network is based on is that Backpropagation works better if the inputs to the network are normalized (see also section \ref{sec:preprocessing}). However, as the input passes through the network, the repeated transformations change the distribution of the data, referred to by the authors of the BN paper as ``internal covariance shift''. Batch Normalization reduces this shift by re-normalizing data within the network so that the following layers once again work on normalized data. For this purpose, such a layer first normalizes the data by applying the formula 
-
-\[  \hat{x} = \frac{x - E[x]}{\sqrt{Var[x]} + \epsilon} \]
-
-\noindent where $E$ is the mean of an SGD mini-batch, $Var$ is the covariance and $\epsilon$ is an added constant that provides numerical stability. These calculations are done for each dimension of the input separately. Additionally, it has two variables $\gamma$ and $\beta$ which are learned by Backpropagation. These variables perform an affine transformation of the normalized data given by
-
-\[ y_i = \gamma \hat{x} + \beta \]
-
-\noindent This transformation simply provides a means to scale and shift the normalized data. In case the best operation is to not transform the data at all, the parameters can be learned to be set to 
-
-\[ \gamma = \sqrt{Var[x]} \,\,\text{ and } \,\, \beta = E[x] ,\]
-
-\noindent in which case the affine transformation simply recovers the original, un-normalized input to the BN layer.
-
-\textbf{TODO:} test time and CNN special case?
-
-
-
 	\section {Output- and Loss Functions}
 
 	\subsection{Softmax}
@@ -81,11 +56,6 @@ First, the input $z$ of the layer is transformed by the softmax function, and th
 \[CE(p, q) = -\sum \limits_{i = 0}^{K} p(i) \log q(i)\]
 
 \noindent Conveniently, the softmax function forces all input values to be positive, allowing the logarithm in the loss to be used. Even though $\log (0)$ isn't defined, the softmax function should never produce values that are exactly equal to zero or one. \textbf{TODO: WHY?} 
-
-However, the above definition of the softmax function can become numerically unstable when the exponentiation yields large values because dividing by large numbers could potentially produce zero values. To prevent this, the softmax can be made robust by defining it as
-
-\[z' = z - \max \limits_{i = 0}(0, z_i)\]
-\[\sigma(z') = \frac{e^{z'}}{\sum_{k=0}^{K} e^{z'_{{k}}}}\]
 
 \noindent Since each pixel of the input image belongs to one class only, this means that for a given pixel, the probability of its ground truth label is $1.0$, while all others are $0.0$. If, without loss of generality, the third class is assumed to be the ground-truth class, $p$ will be $[0.0, 0.0, 1.0, 0.0]$.  Hence, only the predicted probability of the true third class influences the loss, and all the other summands can be omitted, yielding the condensed general formula
 

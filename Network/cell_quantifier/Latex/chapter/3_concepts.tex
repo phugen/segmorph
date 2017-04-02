@@ -163,10 +163,10 @@ Gaussian Mixtures Models (GMMs) are a subclass of mixture models, that is, proba
 
 
 
-\subsection {Gradient Descent}
+	\subsection {Gradient Descent}
 \label{subsec:grad_desc}
 
-\textit{Gradient Descent} or the ``method of steepest descent'' is a standard, analytic first-order technique first introduced by that can be used to minimize or maximize at least once-differentiable, continuous functions, that is, to calculate a vector of parameters $\Theta$ for a function $f$ so that
+\textit{Gradient Descent} or is a standard, analytic first-order technique first introduced by that can be used to minimize or maximize at least once-differentiable, continuous functions, that is, to calculate a vector of parameters $\Theta$ for a function $f$ so that
 
 \[ \Theta = \argmax \limits_{i} f(i) \]
 
@@ -185,8 +185,7 @@ The algorithm starts with a guess for the parameters in $\Theta$ and then iterat
 	\label{alg:grad_desc}
 \end{algorithm}
 
-\noindent For convex functions, Gradient Descent always finds the global minimum. For non-convex functions however, the algorithm may get stuck in a local minimum or at saddle points, called ``false minima' (see figure \ref{fig:grad_desc}). Therefore, running the algorithm multiple times with random values or even informed guesses given knowledge about the form of the function to be optimized is advised. The step size $\eta$ has to be chosen depending on the shape of the function to minimize; if $\eta$ is too large, the algorithm will overshoot the minimum and never converges, even if the minimum exists, and if $\eta$ is too small, convergence will take a long time. Also, for some functions, the algorithm starts moving in a zig-zag pattern near the optimum, further increasing the number of steps the algorithm takes until covergence. To address these problems, a number of optimizations were proposed, some of which are discussed in section \ref{chapter_optimization}.
-
+\noindent For convex functions, Gradient Descent always finds the global minimum. For non-convex functions however, the algorithm may get stuck in a local minimum or at saddle points, called ``false minima' (see figure \ref{fig:grad_desc}). Therefore, running the algorithm multiple times with random values or even informed guesses given knowledge about the form of the function to be optimized is advised. The step size $\eta$ has to be chosen depending on the shape of the function to minimize; if $\eta$ is too large, the algorithm will overshoot the minimum and never converges, even if the minimum exists, and if $\eta$ is too small, convergence will take a long time.
 
 \begin {figure}[!ht]
 	\begin{center}
@@ -195,6 +194,49 @@ The algorithm starts with a guess for the parameters in $\Theta$ and then iterat
 	\caption{\textbf{Left:} A contour plot of Gradient Descent minimization of $f(a, b) = \sin(a) + \cos^2(b)$. The blue line shows the search path of the algorithm along the negative gradient while estimating the optimal $\Theta$. \textbf{Right}: Effect of the initial guess for $\Theta$ on the optimization. The function $f(a) = \frac{1}{40}a^2 * \frac{1}{2} \cos(a)$ has multiple local minima in the interval [0, 25]. Only the third guess $a=25$ leads to finding the global minimum, while the other two optimization runs get trapped in local minima.}
 	\label{fig:grad_desc}
 \end {figure}
+
+\noindent In a machine learning context, the function to optimize often has fixed parameters in addition to $\Theta$, such as data from a dataset that is related to the function is some way. In such cases, one can consider one of the subtypes of Gradient Descent; either, evaluating the average gradient using all available data samples (\textit{Batch Gradient Descent}) at once or using single data points only - as an approximation of the entire dataset - to perform the updates. This is called \textit{Stochastic Gradient Descent} (SGD) and is preferable if working with datasets that are too large to fit into memory. Alternatively, one can use the average gradient of a subset of data points - this method is often referred to as \textit{Mini-Batch} Gradient Descent. For example, considering the function
+
+\[ f(\Theta) =  \theta_1 x_1 + \theta_2 x_2\]
+
+\noindent with fixed $x_1$, $x_2$ from some dataset $X$. To minimize this function $f$ with respect to the variable parameters $\Theta$ using the dataset and SGD, the algorithm is modified to only take into consideration a single datapoint $x_i = [x_{i1}, x_{i2}]$ at a time chosen at random from $X$. Then, updating $\Theta$ is done by the formula
+
+\[ \Theta_i = \Theta_{i-1} - \eta \nabla_{f_i} \]
+
+\noindent where $f_i$ is the function $f$ evaluated for $x_i$ and $\Theta_{i-1}$. Similarily, to use Mini-Batch SGD with a batch size of $n$, an average over the gradients for $n$ datapoints is used:
+
+\[ \Theta_i = \Theta_{i-1} - \eta \left ( \frac{1}{n} \sum \limits_{i=1}^{n} \nabla_{f_i} \right ) \]
+
+\noindent The price that is paid for the relaxed memory cost of SGD is that the traversion towards the minimum becomes noisy for small $n$, as the algorithm approximates the gradient by using only a part of the dataset. For functions with minima in shallow ``valleys'', SGD starts moving in a wild zig-zag pattern near the optimum, further increasing the number of steps the algorithm takes until covergence. To address these problems, a number of optimizations were proposed.
+
+
+	\subsubsection {Momentum}
+\text{Momentum} is an optimization for the Gradient Descent that adds an additional factor to the update step which is dependent on the steepness of the traversed function in previous updates. Using the analogy of a marble rolling down a slope, momentum refers to the inertia of the marble that allows it to jump over saddle points or small holes (local minima) on the bowl's surface rather than stopping abruptly once such a location is reached. This changes the SGD update formula to
+
+\begin {align}
+	& v_i = \gamma v_ {i-1} + \eta \nabla_f\\ 
+	& \Theta_i = \Theta_{i-1} - v_i
+\end {align}
+
+\noindent where $v$ is the momentum vector with one entry per gradient element and $\gamma$ is a modifier that changes the influence of the momentum on the update.
+
+	\begin {figure}[!ht]
+		\begin{center}
+			\scalebox{0.75}{\input{img/fig_momentum.pgf}}
+		\end{center}
+		\caption[]{The effect of momentum on SGD, applied to fitting a line to a noisy two-dimensional dataset with $\eta = 0.1$. \textbf{Left:} Standard SGD. Near the optimum, the algorithm begins zig-zagging and takes many steps to converge. \textbf{Right:} Momentum with SGD and $\gamma = 0.85$. Although the algorithm overshoots the minimum a few times, the number of steps until convergence is much smaller.}
+		\label{fig:momentum}
+	\end {figure}
+
+
+	\subsubsection {Learning Rate Decay}
+Another optimization that is often used is \textit{Learning Rate decay}, also called \textit{Learning Rate Annealing}. It exchanges the fixed learning rate $\eta$ with a learning rate that is a function of the iteration number so that based on how long the optimization has been running, the step size becomes smaller. This has the benefit of being able to take large steps towards the minimum initially, but to allow the search to be narrowed down when near the minimum and avoid endless overshooting. The most popular of these is the step decay, which reduces the learning rate by some factor $\zeta$ every $x$ iterations. Let $i$ be a variable counting the number of iterations. The learning rate in an iteration is then given by
+
+\[ \eta_i = \eta_{i-1} * {\zeta}^{\left \lfloor \frac{i}{x} \right \rfloor} \]
+
+\noindent The SGD update then works as normal, only that after each iteration, $\eta$ is calculated anew given the above formula.
+
+
 
 
 	\subsection{The Perceptron Algorithm}
@@ -225,7 +267,7 @@ The \textit{perceptron classifier}, the function that decides which class a give
 
 \noindent where $\mathcal{M}$ is the set of all data points that were misclassfied, meaning that evaluating equation \ref{eq:perceptron_label} for that data yields a value $< 0$. \cite[pp. 192--194]{bishop_pattern}\\
 
-\noindent The correct perceptron weights can then be determined by some arbitrary learning algorithm, although here, the Gradient Descent scheme (see algorithm \ref{alg:grad_desc}) is applied to the error function \ref{eq:perc_error}. When optimizing functions that not only depend on the parameters $\Theta$ but also on some dataset, one can consider one of the subtypes of Gradient Descent; either, evaluating the average gradient using all available data samples (\textit{Batch Gradient Descent}) or using single data points only - as an approximation of the entire dataset - to perform the updates. This is called \textit{Stochastic Gradient Descent} (SGD) and is preferable if working with datasets that are too large to fit into memory. Alternatively, one can use the average gradient of a subset of data points - this method is often referred to as \textit{Mini-Batch} Gradient Descent.
+\noindent The correct perceptron weights can then be determined by some arbitrary learning algorithm, although here, the Gradient Descent scheme (see algorithm \ref{alg:grad_desc}) is applied to the error function \ref{eq:perc_error}. Either (Batch) Gradient Descent or Stochastic Gradient Descent can be used.
 
 Either way, the gradient of $E_p$ has to be calculated. The perceptron criterion only depends on the weights $w$, so the gradient vector has the shape
 
@@ -409,4 +451,33 @@ Luckily, there exists an iterative algorithm called \textit{Backpropagation} \ci
 		\label{fig:overfit}
 	\end {figure}
 
-\noindent The danger of overfitting on data increases with the complexity of the model. As MLPs are highly complex, often using millions of weights, overfitting is often a problem. Approaches that try to reduce overfitting in learning algorithms are called \textit{regularization} approaches (see also section \ref{subsec:dropout}). \textbf{TODO: continue here?}
+\noindent The danger of overfitting on data increases with the complexity of the model. As MLPs are highly complex, often using millions of weights, overfitting is often a problem. Approaches that try to reduce overfitting in learning algorithms are called \textit{regularization} approaches.
+
+
+
+
+	\subsection{Training Optimizations and Regularization}
+
+	\subsubsection {Dropout}
+\label{subsec:dropout}
+\textit{Dropout} is a regularization technique \cite{dropout} that ``disables'' neurons it is applied to during training with a certain chance according to a user-defined Bernoulli probability. These disabled neurons are not trained on the particular training sample - an effect one could view as training only a sub-network of the original neural network. By applying Dropout repeatedly and scaling the weights by the Dropout probability $p$ during testing, one gains an approximation of averaging the outputs of all possible $2^n$ sub-networks, where $n$ is the number of neurons in the network. This lowers the amount of overfitting because neurons learn not to ``rely'' on other neurons which otherwise would lead to specialized co-adaptions that usually hurt the generalization ability of the network.
+
+
+
+	\subsubsection {Batch Normalization}
+\label{subsec:batchnorm}
+\textit{Batch Normalization} (BN) \cite{batchnorm} is a method to improve training accuracy and speed while training either general MLPs or CNNs with the SGD algorithm (or other gradient-based algorithms that use mini-batches). The idea a BN layer in a network is based on is that Backpropagation works better if the inputs to the network are normalized (see also section \ref{sec:preprocessing}). However, as the input passes through the network, the repeated transformations change the distribution of the data, referred to by the authors of the BN paper as ``internal covariance shift''. Batch Normalization reduces this shift by re-normalizing data within the network so that the following layers once again work on normalized data. For this purpose, such a layer first normalizes the data by applying the formula 
+
+\[  \hat{x} = \frac{x - E[x]}{\sqrt{Var[x]} + \epsilon} \]
+
+\noindent where $E$ is the mean of an SGD mini-batch, $Var$ is the covariance and $\epsilon$ is an added constant that provides numerical stability. These calculations are done for each dimension of the input separately. Additionally, it has two variables $\gamma$ and $\beta$ which are learned by Backpropagation. These variables perform an affine transformation of the normalized data given by
+
+\[ y_i = \gamma \hat{x} + \beta \]
+
+\noindent This transformation simply provides a means to scale and shift the normalized data. In case the best operation is to not transform the data at all, the parameters can be learned to be set to 
+
+\[ \gamma = \sqrt{Var[x]} \,\,\text{ and } \,\, \beta = E[x] ,\]
+
+\noindent in which case the affine transformation simply recovers the original, un-normalized input to the BN layer.
+
+\textbf{TODO:} test time and CNN special case?
