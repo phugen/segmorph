@@ -51,13 +51,11 @@ These processed values can then be interpreted as probabilities much more natura
 
 A common loss layer in MLPs that perform multi-class classification is the \textit{Cross-Entropy Loss} layer. In many frameworks, the layer's implementation actually consists of two steps:
 
-First, the input $z$ of the layer is transformed by the softmax function, and then sent to the appended loss function, in which the actual loss computation is done. The \textit{Cross-Entropy Loss} function compares a true probability distribution $p$ to a model probability distribution $q$. For a vector of calculated softmax probabilities $z_i$, it is defined as follows:
+First, the input $z$ of the layer is transformed by the Softmax function, and then sent to the appended loss function, in which the actual loss computation is done. The \textit{Cross-Entropy Loss} function compares a true probability distribution $p$ to a model probability distribution $q$. For a vector of calculated softmax probabilities $z_i$, it is defined as follows:
 
 \[CE(p, q) = -\sum \limits_{i = 0}^{K} p(i) \log q(i)\]
 
-\noindent Conveniently, the softmax function forces all input values to be positive, allowing the logarithm in the loss to be used. Even though $\log (0)$ isn't defined, the softmax function should never produce values that are exactly equal to zero or one. \textbf{TODO: WHY?} 
-
-\noindent Since each pixel of the input image belongs to one class only, this means that for a given pixel, the probability of its ground truth label is $1.0$, while all others are $0.0$. If, without loss of generality, the third class is assumed to be the ground-truth class, $p$ will be $[0.0, 0.0, 1.0, 0.0]$.  Hence, only the predicted probability of the true third class influences the loss, and all the other summands can be omitted, yielding the condensed general formula
+\noindent Since in a pixel classifiying image, each pixel of the input image belongs to one class only, this means that for a given pixel, the probability of its ground truth label is $1.0$, while all others are $0.0$. For example, if, without loss of generality, the third class is assumed to be the ground-truth class, $p$ will be $[0.0, 0.0, 1.0, 0.0]$.  Hence, only the predicted probability of the true third class influences the loss, and all the other summands can be omitted, yielding the condensed general formula
 
 \[CE'(q) = - \log(q_{true}),\]
 
@@ -66,24 +64,28 @@ First, the input $z$ of the layer is transformed by the softmax function, and th
 
 		\subsection{Weighted Cross-Entropy Loss}
 
-Using a softmax loss function assumes that all pixels in each training sample should carry the same weight in the backpropagation process. As long as the distribution of classification classes is balanced, this works well, but if it is not, classes with lower probability are trained much more slowly.
+Using a Cross-Entropy loss function assumes that all pixels in each training sample have the same weight in the Backpropagation process, and therefore, it assumes that the distribution of classes within the samples is balanced. As long as the distribution of classification classes is balanced, this works well, but many datasets do not exhibit this property. Obviously, the assumption is also not true for microscopy images of a few moving cells, as most of the image is taken up by the background class, and thus, performance was expected to be poor.
 
-To combat this problem, one can introduce a pixelwise weight map for each training sample whose values depend on the ground truth class and the position of each pixel. For example, the softmax loss is changed to
+To combat this problem, one can introduce a pixelwise weight map for each training sample whose values depend on the ground truth class and the position of each pixel. Therefore, the Cross-Entropy loss formula changes to
 
 \[CE(p, q) = -\sum \limits_{i = 0}^{K} p(i) \log q(i) \cdot w(i),\]
 
 \noindent where $w(i)$ is the weight for pixel $i$.
 
- The weight for each pixel is calculated as follows:
+One way to construct such a weight map was given in \cite{unet}, using the weight equation
 
 \[ w(i) = w_c(i) + w_0 \cdot \exp \left (- \frac{(d_1(i) + d_2(i))^2}{2\sigma^2} \right ), \]
 
-\noindent where $w_c$ is the class-specific weight for the pixel's ground truth class, $d_1$ and $d_2$ are the euclidean distances to the nearest and second-nearest non-background pixel and $w_0$ and $\sigma$ are additional modifier terms. 
+\noindent where $w_c$ is the class-specific weight for the pixel's ground truth class, $d_1$ and $d_2$ are the euclidean distances to the nearest and second-nearest non-background pixel and $w_0$ and $\sigma$ are additional modifier terms. The class-specific weights $w_c$ can either be deduced by counting all pixels of all classes in all sample labels to perform \textit{average weighting}, in which all sample use the same class weights, or to do the same for each sample, resulting in \textit{individual weighting}. The class weights are then calculated as their inverse probability, i.e.
+
+\[ w_c = 1 - \frac{\#c}{\#all}, \]
+
+\noindent where $\#c$ is the number of pixels that belong to a class $c$ and $\#all$ is the number of pixels in the sample (or in all samples, depending on the weighting mode). This way, rarer classes influence gain a harsher penalty when misclassified, making them more important during training.  \textbf{TODO:} which values did we use? did we use class weighting at all? inverse weights..
 
 
 		\subsection{F-Measure}
 
-An alternative to solving the problem of unbalanced classes in the training data is using the F-Measure, also called DICE similarity or $F_1$-Score, as a loss function instead. The F-Measure is a statistical similarity function which has been shown to perform well on unbalanced data\cite{fmeasure1}\cite{fmeasure2}\cite{fmeasure3} defined as
+An alternative to solving the problem of unbalanced classes in the training data is using the\textit{F-Measure}, also called $F_1$\textit{-Score} or \textit{DICE similarity}, as a loss function instead. The F-Measure is a statistical similarity function which has been shown to perform well when using SGD-trained CNNs on unbalanced data\cite{fmeasure3}\cite{fmeasure4}\cite{fmeasure5} defined as
 
 \[F_1 = 2 \cdot \frac{PR \cdot RC}{PR + RC},\]
 
