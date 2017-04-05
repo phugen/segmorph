@@ -166,9 +166,9 @@ Gaussian Mixtures Models (GMMs) are a subclass of mixture models, that is, proba
 	\subsection {Gradient Descent}
 \label{subsec:grad_desc}
 
-\textit{Gradient Descent} or is a standard, analytic first-order technique first introduced by that can be used to minimize or maximize at least once-differentiable, continuous functions, that is, to calculate a vector of parameters $\Theta$ for a function $f$ so that
+\textit{Gradient Descent} or is a standard, analytic first-order technique that iteratively optimizes at least once-differentiable, continuous functions, that is, that calculates a vector of parameters $\Theta$ for a function $f$ so that
 
-\[ \Theta = \argmax \limits_{i} f(i) \]
+\[ \Theta = \argmin \limits_{i} f(i) \]
 
 \noindent To find values for $\Theta$, the approach takes advantage of the fact that the negative gradient vector $\nabla_f = [ \frac{\partial f}{\partial \Theta_0}, \dots, \frac{\partial f}{\partial \Theta_n} ]$, the vector of all first partial derivatives of $f$, points into the direction of the fastest change, or put graphically, the ``steepest slope''. By taking steps into the direction of this gradient, the function value is minimized step by step, while maximization works the same, only that the function is negated and then minimized, which results in parameters that maximize the original function. The parameter $\eta$ depicts the step size and is typically a value in the range $(0.0, 1.0]$. \cite[pp. 40--42]{optimization_book}
 
@@ -185,7 +185,7 @@ The algorithm starts with a guess for the parameters in $\Theta$ and then iterat
 	\label{alg:grad_desc}
 \end{algorithm}
 
-\noindent For convex functions, Gradient Descent always finds the global minimum. For non-convex functions however, the algorithm may get stuck in a local minimum or at saddle points, called ``false minima' (see figure \ref{fig:grad_desc}). Therefore, running the algorithm multiple times with random values or even informed guesses given knowledge about the form of the function to be optimized is advised. The step size $\eta$ has to be chosen depending on the shape of the function to minimize; if $\eta$ is too large, the algorithm will overshoot the minimum and never converges, even if the minimum exists, and if $\eta$ is too small, convergence will take a long time.
+\noindent For convex functions, Gradient Descent always finds the global minimum. For non-convex functions however, the algorithm may get stuck in a local minimum or at saddle points, called ``false minima' (see figure \ref{fig:grad_desc}). Therefore, running the algorithm multiple times with random values or even informed guesses given knowledge about the form of the function to be optimized is advised. The step size $\eta$ has to be chosen depending on the shape of the function to minimize; if $\eta$ is too large, the algorithm will overshoot the minimum and will never converge even if the minimum exists, and if $\eta$ is too small, convergence will take a long time.
 
 \begin {figure}[!ht]
 	\begin{center}
@@ -195,7 +195,7 @@ The algorithm starts with a guess for the parameters in $\Theta$ and then iterat
 	\label{fig:grad_desc}
 \end {figure}
 
-\noindent In a machine learning context, the function to optimize often has fixed parameters in addition to $\Theta$, such as data from a dataset that is related to the function is some way. In such cases, one can consider one of the subtypes of Gradient Descent; either, evaluating the average gradient using all available data samples (\textit{Batch Gradient Descent}) at once or using single data points only - as an approximation of the entire dataset - to perform the updates. This is called \textit{Stochastic Gradient Descent} (SGD) and is preferable if working with datasets that are too large to fit into memory. Alternatively, one can use the average gradient of a subset of data points - this method is often referred to as \textit{Mini-Batch} Gradient Descent. For example, considering the function
+\noindent However, a more interesting application of the Gradient Descent algorithm exists in the context of machine learning, where the function to optimize often has fixed parameters in addition to $\Theta$, such as data from a dataset that is related to the function is some way. In such cases, one can consider one of the subtypes of Gradient Descent; either, evaluating the average gradient using all available data samples (\textit{Batch Gradient Descent}) at once or using single data points only - as an approximation of the entire dataset - to perform the updates. This is called \textit{Stochastic Gradient Descent} (SGD) and is preferable if working with datasets that are too large to fit into memory. Alternatively, one can use the average gradient of a subset of data points - this method is often referred to as \textit{Mini-Batch} Gradient Descent. For example, considering the function
 
 \[ f(\Theta) =  \theta_1 x_1 + \theta_2 x_2\]
 

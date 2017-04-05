@@ -2,15 +2,35 @@
 This chapter describes how the U-Net was trained on the Drosophila dataset, what the dataset looks like, and what choices were made regarding training parameters and training algorithms.
 
 
-	\section{Training Set}
-
-
 	\section {Preprocessing and Data Augmentation}
-Usually, neural networks do not take input of an arbitrary form, which is why data is  preprocessed before training the network on it. The same preprocessing is applied during classification of new images. In CNNs, a number of standard preprocessing steps are described here.
+Usually, neural networks do not work well with input of an arbitrary form, which is why data is preprocessed before training the network on it. The same preprocessing is applied during classification of new images. In CNNs, a number of standard preprocessing steps are described here.
 
+	\section{Dataset}
+The original dataset used in the following experiments is made up of 90 microscopy images and their labelled images from three experiments on slightly different types of live \textit{Drosophila} cells. The dimension of all images is $960 \times 608$ pixels ($w \times h$) and the images are given in grayscale. The labelled images are of dimension $3 \times 960 \times 608 \times$ ($d \times w \times h$), where the background class is represented by RGB[0, 0, 0] (black), the cell body proper is marked as RGB[0, 255, 0] (green), the Lamellopodia are RGB[255, 0, 0] (red) and the Filopodia are RGB[0, 0, 255] (blue).
+
+Another ``3-class'' version of the dataset was created in which the classes for Lamellopodia and Filopodia are fused into one, marked as RGB[255, 0, 0] (red). This was done because even for a human, separating Filopodia pixels from Lamellopodia pixels was hard to do because of the quality of the microscopy images. Therefore, the label images might not be entirely correct, misleading the training.\\
+
+\begin {figure}[!ht]
+	
+	\begin {subfigure}[{position=b}]{0.6\linewidth}
+		\begin {center}
+		\includegraphics[scale=0.65]{img/dataset_ex1.png}
+		\end{center}
+	\end {subfigure}
+	\begin {subfigure}[{position=b}]{0.3\linewidth}
+		\begin {center}
+		\includegraphics[scale=0.60]{img/dataset_ex2.png}
+		\end{center}
+	\end {subfigure}
+
+		\caption[]{An example image tile from the 3-class dataset, with corresponding label. The label image is smaller than the input tile because the image tile already includes a mirrored border as padding (see Section \ref{subsec:mirror_tiling}).}
+		\label{fig:dataset_example}
+	
+
+\end {figure}
 
 		\subsection{Normalization}
-Research \cite{lecun_norm} has shown that neural networks perform consistently better when the input data is normalized (see section \ref{act_funcs}), that is, when it is transform into a standardized \textbf{TODO: standardized or normalized?} representation which has zero mean and unit variance (see Figure \ref{fig:norma}). This is achieved by performing almost the same thing that happens in the Batch Normalization layer (see \ref{subsec:batchnorm}), only that no additional transformation is applied. \textbf{TODO:} Mean image subtraction vs individual mean
+Research \cite{lecun_norm} has shown that neural networks perform consistently better when the input data is normalized, that is, when it is transform into a standardized \textbf{TODO: standardized or normalized? \url{http://ieeexplore.ieee.org/document/6553715/}} representation which has zero mean and unit variance (see Figure \ref{fig:norma}). This is achieved by performing almost the same thing that happens in the Batch Normalization layer (see \ref{subsec:batchnorm}), only that no additional transformation is applied. \textbf{TODO:} Mean image subtraction vs individual mean
 
 \begin {figure}[!ht]
 	\begin{center}
@@ -20,15 +40,44 @@ Research \cite{lecun_norm} has shown that neural networks perform consistently b
 	\label{fig:norma}
 \end {figure}
 
+\noindent The reason for this is considered to be the ``vanishing gradient problem''. This term refers to a problem that arises due to the nature of Backpropagation: By repeatedly using the chain rule to obtain the derivatives for the entire network, 
 
-		\subsection{Cropping and Rotation}
-One problem with training deep Neural Networks is the immense amount of data required. Common image datasets such as MNIST\footnote{\url{http://yann.lecun.com/exdb/mnist/}}, CIFAR-10/100\footnote{\url{https://www.cs.toronto.edu/~kriz/cifar.html}} and LSVRC-2010 (ImageNet)\cite{ILSVRC} contain 10,000 to 1.3 million images. Such numbers are absolutely out of reach for most biomedical applications as the data required is highly specialized. Creating the labelled data for this thesis took 30 - 45 minutes per image, making it infeasible to manually create a large training set.
 
-To nonetheless train a network to segment such images, \textit{data augmentation} can be used to increase the number of samples. Data augmentation refers to some way to alter data in order to artificially create new data, for example to train a network to be invariant to certain transformations. For instance, an easy way to multiply the number of samples eightfold is to flip all images only vertically, followed by rotations of both the original images and their flipped counterparts by $90^{\circ}$, $180^{\circ}$ and $270^{\circ}$, as this yields all possible combinations that are possible by flipping and rotating in $90^{\circ}$ steps.
+		\subsection{Mirror Tiling and Rotation}
+\label{subsec:mirror_tiling}
+CNNs usually need fixed input sizes because the combination of convolutions and pooling shrink the image in a certain way. This has to be accounted for when considering the input size of the image, because some input sizes are invalid in consequence (e.g. too small). Because the U-Net is supposed to take an input image of some size and output a segmentation map of the same size, the input size has to be chosen correctly so that the down- and upsampling operations do not change the image size. Therefore, an input size of $428 \times 428$ was chosen as a compromise between needed memory and context within the image available to the CNN.
+
+As the original data was of a different size, each input image can be tiled into sub-images of the appropriate size and then be fed to the network. There is another thing to consider, though: To predict the pixels on the borders of the image by convolution, the images need to be artificially enlarged by a border so that the convolution can proceed. This can be done by using by mirroring the entire image at its borders before tiling. The tiling can then proceed starting from the top-left corner and continuing from left to right and from top to bottom. However, this would result in ``broken'' tiles at the right and bottom borders when the size of the mirror-padded original image isn't cleanly divisable by the network's input size, which was the case for the given input data. Consequently, these broken tiles were repaired by mirroring the data starting at the border of the padded image, padding them back to the preferred tile size (see Figure \ref{fig:tile_mirror_rotate}).\\
+
+\noindent Moreover, a major problem with training deep Neural Networks is the immense amount of data required. Common image datasets such as MNIST\footnote{\url{http://yann.lecun.com/exdb/mnist/}}, CIFAR-10/100\footnote{\url{https://www.cs.toronto.edu/~kriz/cifar.html}} and LSVRC-2010 (ImageNet)\cite{ILSVRC} contain 10,000 to 1.3 million images. Such numbers are absolutely out of reach for most biomedical applications as the data required is usually not publicly available. Manually labelling the data for this thesis took 30 - 45 minutes per image, making it impossible to create a large training set in a reasonable amount of time.
+
+To nonetheless train a network to segment such images, \textit{data augmentation} can be used to increase the number of samples. Data augmentation refers to some way of altering the available data in order to artificially create new data, which, for example, can be used to train a network to be invariant to certain transformations, although translation transformations can be disregarded as CNNs are naturally robust in the face of translated patterns (see Section \ref{sec:CNN}). An easy way to multiply the number of samples eightfold is to flip all images only vertically, followed by rotations of both the original images and their flipped counterparts by $90^{\circ}$, $180^{\circ}$ and $270^{\circ}$, as this yields all possible combinations that are possible by flipping and rotating in $90^{\circ}$ steps.\\
+
+
+\begin {figure}[!ht]
+	\begin {subfigure}[{position=b}]{0.5\linewidth}
+		\scalebox{0.5}{\input{img/fig_tile_mirror.pdf_tex}}
+
+		\caption*{Mirror tiling. \textbf{a):} Input image. \textbf{b):} Mirroring to obtain border (blue). \textbf{c):} Tiling. Broken tiles are shown darker. \textbf{d):} Repairing broken tiles by adding mirrored data (green).}
+	\end {subfigure}
+	\hspace{1cm}
+	\begin {subfigure}[{position=b}]{0.5\linewidth}
+		\scalebox{0.5}{\input{img/fig_rotate.pdf_tex}}
+
+		\caption*{Combinations of flipping and rotating a tile. Taking the original, rotated tiles and the vertical, rotated tiles is enough to obtain all possible variations.}
+	\end {subfigure}
+
+		\caption[]{}
+		\label{fig:tile_mirror_rotate}
+
+\end {figure}
 
 
 		\subsection{Elastic Deformation}
-Another data augmentation technique is \textit{elastic deformation} \cite{elastic}, which calculates a new image from an existing one by sampling random new positions for each pixel in the original image uniformly and multiplies them with a force parameter $\alpha$. Afterwards, the new coordinates are additionally smoothed by a Gaussian filter with standard deviation $\sigma$. The resulting image is a slightly distorted image, and if $\alpha$ and $\sigma$ are chosen appropriately, the resulting images are plausible enough to count as new samples to train on (see figure \ref{fig:elastic}). This is especially useful for biologic and medical use, because elastic deformation produces naturally occuring transformations, such as cells being squashed slightly during microscopy, and helps the network to learn to also classify these correctly. For the work in this thesis, the deformation parameters were set to $\alpha = 200$ and $\sigma = 10$.
+Another data augmentation technique is \textit{elastic deformation} \cite{elastic}, which calculates a new image from an existing one by sampling random new positions for each pixel in the original image uniformly and multiplies them with a force parameter $\alpha$. Afterwards, the new coordinates are additionally smoothed by a Gaussian filter with standard deviation $\sigma$. The resulting image is a slightly distorted image, and if $\alpha$ and $\sigma$ are chosen appropriately, the resulting images are plausible enough to count as new samples to train on (see figure \ref{fig:elastic}). This is especially useful for biologic and medical use, because elastic deformation produces naturally occuring transformations, such as cells being squashed slightly during microscopy, and helps the network to learn to also classify these correctly. For the work in this thesis, the deformation parameters were set to $\alpha = 200$ and $\sigma = 10$.\\
+
+\noindent After performing data augmentation and removing all tiles that contained only pixels of one class as the result of the tiling (e.g. background pixels only), the dataset then contained 15632 image tiles and their corresponding labels. After, the remaining tiles were split with a ratio of 5:1 into a training and a validation set, containing 13026 images and 2606 images respectively.
+
 
 
 \begin {figure}[!ht]
@@ -42,8 +91,7 @@ Another data augmentation technique is \textit{elastic deformation} \cite{elasti
 	\section {Training Algorithms and Parameters}
 	\label{act_funcs}
 	\textbf{TODO:} put ReLU, leaky ReLU, parametric ReLU and ELU here!\\ Include XAVIER init.. is Xavier ok with ReLU? "He et al. 2015", https://www.youtube.com/watch?v=gYpoJMlgyXA
-	
-	\section{Non-convex Functions and Momentum}
+
 
 	\section {Pseudo-Labelling}
 
