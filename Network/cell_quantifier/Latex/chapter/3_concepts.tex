@@ -323,6 +323,7 @@ Either way, the gradient of $E_p$ has to be calculated. The perceptron criterion
 \label{subsec:mlp_backprop}
 While the perceptron algorithm works fine for linear problems, those are only a small subset of real-world problems (see figure \ref{fig:perceptron}). The solution to this problem is to add more neurons to the model, which form a network that consists of layers that pass the outputs of neurons in the previous layers through non-linear activation functions and then use the results as inputs. These layers are referred to as the ``input layer'', the initial layer, the ``output layer'', the last layer, and ``hidden layers'', which are all the layers inbetween.
 
+	\subsubsection{Multi-Layer Perceptrons}
 The resulting networks are called \textit{Multi-Layer Perceptrons} (MLPs), \textit{Feedforward Artificial Neural Networks}(ANNs), or, in the case of a multitude of layers, \textit{Deep Neural Networks}, and are much more powerful than simple perceptrons, as they can approximate haphazard continuous functions that operate on closed and bounded subsets of $\mathbb{R}^n$ given that the network possesses at least one hidden layer of neurons. This capability makes using MLPs for learning real-life problems feasible.\cite{universal_approx}\cite{universal_approx2}\\
 
 \noindent Again, each neuron in the network computes a weighted sum of its $i$ inputs, just like in equation \ref{eq:perc_class}, although indexing has been added to identify neurons and weights in the entire network:
@@ -343,7 +344,7 @@ Afterwards, the sum $a^{(l)}_j$ is passed into an activation function $h(\cdot)$
 
 \[ out_k = \sigma \left ( \sum \limits_{j=0}^{4} w^{(2)}_{kj}\,\, h \left ( \sum \limits_{i=0}^{3} w^{(1)}_{ji} x_i \right ) \right ) \label{eq:mlp_out} \]
 
-\noindent Here, \textbf{$\sigma$} is an output function that is applied in the last layer of the network, and is dependent on the task the network is supposed to fulfill: For regression problems, fitting a function to a set of data and then predicting new values using that function, the identity function can be used, but for binary classification problems, instead of using a step function like in the original perceptron, one instead uses the continuous \textit{Sigmoid} function and interprets the output as
+\noindent Here, \textbf{$\sigma$} is an output function that is applied in the last layer of the network, and is dependent on the task the network is supposed to fulfill: For regression problems, fitting a function to a set of data and then predicting new values using that function, the identity function can be used, but for binary classification problems, instead of using a step function like in the original perceptron, one instead uses the \textit{Sigmoid} function and interprets the output as
 
 \[ \sigma_{sig}(x_i) = \begin{cases}
 				x_i \in C_1 \text{ if } \frac{1}{1 + e^{-x_i}} \geq 0.5 \\
@@ -351,7 +352,14 @@ Afterwards, the sum $a^{(l)}_j$ is passed into an activation function $h(\cdot)$
 			 \end{cases}
 \]
 
-\noindent Also, the choice of the activation function $h(w, x)$ is different from the perceptron: It is not chosen to be the Heaviside function, but instead, to be a non-linear, continuous and differentiable function. Computing an output is done by passing the input vector to the first layer, which computes its activations for all its neurons, which then pass on their activations to the neurons of the next layer as inputs until the output layer is reached.
+\noindent Also, the choice of the activation function $h(w, x)$ is different from the perceptron: It is not chosen to be the Heaviside step function, but instead, to be a non-linear, continuous and differentiable function, such as the general Sigmoid function and its derivative:
+
+\begin {align}
+	 h(x) &= \frac{1}{1 + e^{-x}}\\
+	\frac{\partial}{\partial x} h(x) &= h(x)(1 - h(x))
+\end {align}
+
+\noindent Computing an output is done by passing the input vector to the first layer, which computes its activations for all its neurons, which then pass on their activations to the neurons of the next layer as inputs until the output layer is reached.
 
 If the classification is non-binary, using the \textit{Softmax} function (see section \ref{subsec:softmax}) to obtain probabilities for the likeliness of $x_i$ being part of any of the classes is a solution.\\
 
@@ -378,7 +386,8 @@ If the classification is non-binary, using the \textit{Softmax} function (see se
 
 \noindent For multi-class classifications, an adaption of the Cross-Entropy loss can be used, which is further described in section \ref{subsec:cross_ent}. \cite[pp. 232-236]{bishop_pattern}\\
 
-\noindent Training a network with multiple layers is harder than training a single perceptron because the influence of each of the weights in any layer of the network on the error function has to be computed when using gradient-based optimization methods while the output of the network no longer is the result of a single function, but instead, a composition of an usually large number of functions (see equation \ref{eq:mlp_out}). Although it is possible to manually calculate the partial derivatives for the entire network, this becomes more and more cumbersome as the network grows in size.
+	\subsubsection{The Backpropagation algorithm}
+Training a network with multiple layers is harder than training a single perceptron because the influence of each of the weights in any layer of the network on the error function has to be computed when using gradient-based optimization methods while the output of the network no longer is the result of a single function, but instead, a composition of an usually large number of functions (see equation \ref{eq:mlp_out}). Although it is possible to manually calculate the partial derivatives for the entire network, this becomes more and more cumbersome as the network grows in size.
 
 Luckily, there exists an iterative algorithm called \textit{Backpropagation} \cite{backprop} that finds the gradient of the loss with respect to each weight so that an optimization method can be applied to change every weight. The algorithm makes use of the fact that each neuron can be viewed (almost) independently from the rest of the network. Remembering that the analytic way of obtaining the derivative of a composition of functions 
 

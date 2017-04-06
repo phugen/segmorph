@@ -28,7 +28,111 @@ Then, the feature maps are passed through an non-linear activation function $h(\
 \end {figure}
 
 
+	\section {Activation Functions}
+Even though previously, the Sigmoid function was given as an example of a suitable activation function for MLPs, recent research has shown that better alternatives exist, and it is hardly used anymore. This is mainly because Sigmoids contribute to the problem of ``vanishing gradients'' during Backpropagation which causes earlier layers in a deep network to train much more slowly than layers near the output layer. ``Vanishing gradients'' happen when the magnitude of the gradient is close to zero, which in turn causes the training to change the network weights in affected layers by only a tiny amount, effectively stalling the training process.
+
+The Sigmoid function is especially prone to this because its derivative outputs values in the range $\left [0, \frac{1}{4} \right ]$ only. Combined with weights initialized to small values, e.g. Gaussian-distributed weights with zero mean and unit variance, the repeated application of the chain rule results in many terms in the range $\left [0, 1\right ]$ being multiplied with each other, leading to very small gradients the closer the algorithm gets to the input layer.\cite{glorot} Activation functions for which
+
+\[ \lim \limits_{x \rightarrow -\infty} \frac{\partial}{\partial x} h(x) = 0 \,\,\,\, \land \,\,\,\,  \lim \limits_{x \rightarrow +\infty} \frac{\partial}{\partial x} h(x) = 0 \]
+
+\noindent is true are called \textit{saturating} activation functions and possess the undesirable property of leading to vanishing gradients.\\ 
+ \textbf{TODO: zigzagging because not zero-centered, \url{http://cs231n.github.io/neural-networks-1/} + tanh}\\
+
+\noindent A newer, popular alternative to the Sigmoid function is the \textit{Rectified Linear Unit} function (ReLU). It is defined as the piecewise function
+
+\[  ReLU(x) = \begin{cases}
+			0 \text{ if } x \leq 0\\
+			x \text{ else}
+		 \end{cases}
+\] 
+
+\noindent or simply
+
+\[ ReLU(x) = \max(0, x) \]
+
+\noindent with its derivative given by 
+
+\[ \frac{\partial}{\partial x} ReLU(x) = \begin{cases}
+							1 \text { if } x > 0\\
+							0 \text { if } x < 0\\
+							 \text{undefined if } x = 0
+						        \end{cases},
+\]
+
+\noindent although in implementations, the derivative for zero inputs strays from the mathematical definition and is altered to $\frac{\partial ReLU}{\partial x}\rvert_{x=0} = 0$.\footnote{One example is the ``backward\_cpu'' implementation of the Caffe framework's ReLU layer (\url{https://github.com/BVLC/caffe/blob/master/src/caffe/layers/relu_layer.cpp}).}
+
+ReLUs do not saturate and are cheap to compute in comparison with activation functions containing exponential functions, although when using large learning rates and large weights, the gradients can ``explode'' during Backpropagation, which is the opposite of the ``vanishing gradient'' problem. To deal with this, \textit{gradient clipping} can be performed. A popular form of gradient clipping is L2 norm gradient regularization, given by
+
+\[ \hat{g} = \frac{g\,t}{||g||} \cite{l2clipping} \]
+
+\noindent where $g$ is the gradient vector, $||g||$ is its L2 norm and $\hat{g}$ is the regularized gradient. This regularization is done whenever $||g||$ is larger than some threshold $t$.\\
+
+\noindent Despite this, ReLUs still suffer from the problem that they can ``die'' when the network weights are updated in a way that makes them output activation values of zero forever - for example, when a large negative bias term turns all inputs negative and thus resulting in zero activations. Once a ReLU is dead, the gradient flowing through it will also be zero, and the weights for its neuron won't be updated anymore.
+
+An attempt at fixing this issue is relaxing the strict below-zero activation so it outputs a downscaled version of the input instead. This principle is called \textit{Leaky ReLU} \cite{lrelu} and formally changes the ReLU definition to 
+
+\[  LReLU(x) = \begin{cases}
+			\alpha x \text{ if } x \leq 0\\
+			x \text{ else}
+		 \end{cases}
+\]
+
+\noindent for some small scaling parameter $0 < \alpha < 1$. Consequently, its (zero input-altered) derivative becomes
+
+\[ \frac{\partial}{\partial x} LReLU(x) = \begin{cases}
+							1 \text { if } x > 0\\
+							\alpha \text{ else}
+						        \end{cases}
+\]
+
+\noindent When the leak parameter $\alpha$ is made an additional weight to be trained by Backpropagation, the resulting activation function is called \textit{Parametric ReLU} (PReLU). Another alternative is the \textit{Exponential ReLU} (ELU) \cite{elu} which aims to combine leakiness with activations close to zero mean to speed up learning. It is defined by
+
+\begin {align}
+	ELU(x) &= \begin{cases}
+			x \text { if } x \geq 0\\
+			\alpha(e^x - 1) \text{ else}
+		     \end{cases}\\
+	\frac{\partial}{\partial x} ELU(x) &= \begin{cases}
+								1 \text { if } x \geq 0\\
+								ELU(x) + \alpha \text{ else}
+		    				     \end{cases},
+\end {align}
+
+\noindent where $\alpha$ is a learnable parameter.
+
+
+\begin {figure}[!ht]
+	\begin {subfigure}[{position=b}]{0.3\linewidth}
+		\scalebox{0.60}{\input{img/fig_sigmoid.pgf}}
+		\caption{}
+	\end {subfigure}
+		\begin {subfigure}[{position=b}]{0.3\linewidth}
+		\scalebox{0.60}{\input{img/fig_tanh.pgf}}
+		\caption{}
+	\end {subfigure}
+	\begin {subfigure}[{position=b}]{0.3\linewidth}
+		\scalebox{0.60}{\input{img/fig_relu.pgf}}
+		\caption{}
+	\end {subfigure}
+	\begin {center}
+	\begin {subfigure}[{position=b}]{0.3\linewidth}
+		\scalebox{0.60}{\input{img/fig_lrelu.pgf}}
+		\caption{}
+	\end {subfigure}
+	\begin {subfigure}[{position=b}]{0.3\linewidth}
+		\scalebox{0.60}{\input{img/fig_elu.pgf}}
+		\caption{}
+	\end {subfigure}
+	\end{center}
+
+		\caption[]{Multiple activation functions (blue) and their derivatives (orange). \textbf{a):} Sigmoid. \textbf{b):} Tanh. \textbf{c):} ReLU. \textbf{d):} LReLU with $\alpha = 0.1$. \textbf{e):} ELU with $\alpha = 0.5$.}
+		\label{fig:activation_functions}
+
+\end {figure}
+
 	\section {Output- and Loss Functions}
+
+\textbf{TODO: Add derivatives of loss functions}
 
 	\subsection{Softmax}
 \label{subsec:softmax}
@@ -37,7 +141,11 @@ Then, the feature maps are passed through an non-linear activation function $h(\
 
 \[\sigma(z) = \frac{e^{z}}{\sum_{k=0}^{K} e^{z_k}},\]
 
-\noindent where $e$ is the exponential function and $z$ has a dimension of $1 \times K$. The Softmax function acts as a normalizer that ``squashes'' the values of its input vector into the range $[0, 1]$ with respect to relative differences between the vector values. For example, let $z = [-2.432, 1.832, 0.299]$. Then $\sigma(z) = [0.011, 0.813, 0.176]$ is the softmax output for $z$.
+\noindent where $e$ is the exponential function and $z$ has a dimension of $1 \times K$. The Softmax function acts as a normalizer that ``squashes'' the values of its input vector into the range $[0, 1]$ with respect to relative differences between the vector values. For example, let $z = [-2.432, 1.832, 0.299]$. Then 
+
+\[ \sigma(z) = [0.011, 0.813, 0.176] \]
+
+\noindent is the Softmax output for $z$.
 
 These processed values can then be interpreted as probabilities much more naturally than the raw input. However, the above definition of the Softmax function can become numerically unstable when the exponentiation yields large values because dividing by large numbers could potentially produce zero values. To prevent this, it can be made robust by defining it as
 
