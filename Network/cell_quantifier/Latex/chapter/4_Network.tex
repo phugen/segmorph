@@ -1,11 +1,11 @@
 \chapter {Network Architecture}
 
-Since the task of image segmentation is a popular one, a number of architecture propositions have been made that aim to produce segmentations. Among them is the \textit{U-Net}, which is the basis of the network used in this thesis.  In the following sections, the principles behind so-called \textit{Convolutional Neural Networks}, the differences between them and normal MLPs and the operations in such networks are detailed.
+Since the task of image segmentation is a popular one, a number of architecture propositions have been made that aim to produce segmentations. Among them is the \textit{U-Net}, which is the basis of the network used in this thesis.  In the following sections, the principles behind so-called Convolutional Neural Networks, the differences between them and normal MLPs and the operations in such networks are detailed.
 
 
 	\section{Convolutional Neural Networks}
 \label{sec:CNN}
-Convolutional Neural Networks (CNNs) are a special subtype of ANNs/MLPs that was popularized by LeCun \cite{lecun98} and, more recently, the successes of Krizhevsky \cite{krizhevsky2012} in the domain of image classification, although CNNs have been applied to other problems such as sound analysis as well. The rationale for their creation was that using fully-connected networks like the ones presented in section \ref{subsec:mlp_backprop} relate all elements of an input vector to every other element, which is generally a good thing to do - however, it ignores the relationship between parts of the input that is given in some datasets and doesn't scale well for very large datasets because of the large number of weights needed. Especially in image data, pixels that are close to each other by some metric such as the Euclidean distance are much more likely to be related, while pixels that lie on the other side of the image hardly are relevant in the context of operations like pixel classification. Consequently, CNNs encode this spatial relationship by using convolution operations (see section \ref{sec:canny}). Concretely, a convolution layer in a CNN typically consists of three sub-components:\\
+\textit{Convolutional Neural Networks} (CNNs) are a special subtype of ANNs/MLPs that was popularized by LeCun \cite{lecun98} and, more recently, the successes of Krizhevsky \cite{krizhevsky2012} in the domain of image classification, although CNNs have been applied to other problems such as sound analysis as well. The rationale for their creation was that using fully-connected networks like the ones presented in section \ref{subsec:mlp_backprop} relate all elements of an input vector to every other element, which is generally a good thing to do - however, it ignores the relationship between parts of the input that is given in some datasets and doesn't scale well for very large datasets because of the large number of weights needed. Especially in image data, pixels that are close to each other by some metric such as the Euclidean distance are much more likely to be related, while pixels that lie on the other side of the image hardly are relevant in the context of operations like pixel classification. Consequently, CNNs encode this spatial relationship by using convolution operations. Concretely, a convolution layer in a CNN typically consists of three sub-components:\\
 
 \noindent First, the data is convoluted by applying one or multiple kernels (also called filter) to all input values and their local neighborhoods.\footnote{Although the convolution in section \ref{sec:canny} describes out-of-bounds handling, the architecture used in this thesis uses only the naturally valid part of the convolution, i.e. if a $3 \times 3 \times d$ filter is used, a 1-value border of the data is lost because the local neighborhood would be partly out of bounds for these border values.} Kernels typically have a size of $k \times k \times d$, where $k$ is the filter size and $d$ is the depth of the dataset, e.g. in an RGB image dataset, the depth is 3 because there are 3 color channels. The result of these convolutions are as many outputs, called \textit{feature maps}, as there are filters in the layer. When viewed as a graph, this means that the hidden neurons represent the results of each convolution step, while all hidden neurons of the same filter share the same weights.
 
@@ -61,7 +61,7 @@ The Sigmoid function is especially prone to this because its derivative outputs 
 
 \noindent although in implementations, the derivative for zero inputs strays from the mathematical definition and is altered to $\frac{\partial ReLU}{\partial x}\rvert_{x=0} = 0$.\footnote{One example is the ``backward\_cpu'' implementation of the Caffe framework's ReLU layer (\url{https://github.com/BVLC/caffe/blob/master/src/caffe/layers/relu_layer.cpp}).}
 
-ReLUs do not saturate and are cheap to compute in comparison with activation functions containing exponential functions, although when using large learning rates and large weights, the gradients can ``explode'' during Backpropagation, which is the opposite of the ``vanishing gradient'' problem. To deal with this, \textit{gradient clipping} can be performed. A popular form of gradient clipping is L2 norm gradient regularization, given by
+ReLUs do not saturate and are cheap to compute compared to activation functions containing exponential functions, although when using large learning rates and large weights, the gradients can ``explode'' during Backpropagation, which is the opposite of the ``vanishing gradient'' problem. To deal with this, \textit{gradient clipping} can be performed. A popular form of gradient clipping is L2 norm gradient regularization, given by
 
 \[ \hat{g} = \frac{g\,t}{||g||} \cite{l2clipping} \]
 
@@ -102,6 +102,7 @@ An attempt at fixing this issue is relaxing the strict below-zero activation so 
 
 
 \begin {figure}[!ht]
+	\begin{center}
 	\begin {subfigure}[{position=b}]{0.3\linewidth}
 		\scalebox{0.60}{\input{img/fig_sigmoid.pgf}}
 		\caption{}
@@ -110,11 +111,13 @@ An attempt at fixing this issue is relaxing the strict below-zero activation so 
 		\scalebox{0.60}{\input{img/fig_tanh.pgf}}
 		\caption{}
 	\end {subfigure}
+	\end{center}
+
+	\begin {center}
 	\begin {subfigure}[{position=b}]{0.3\linewidth}
 		\scalebox{0.60}{\input{img/fig_relu.pgf}}
 		\caption{}
 	\end {subfigure}
-	\begin {center}
 	\begin {subfigure}[{position=b}]{0.3\linewidth}
 		\scalebox{0.60}{\input{img/fig_lrelu.pgf}}
 		\caption{}
@@ -130,24 +133,48 @@ An attempt at fixing this issue is relaxing the strict below-zero activation so 
 
 \end {figure}
 
+
+
+	\section{Weight Initialization}
+
+	\textbf{TODO: Glorot, He Inits, referenz auf tanh und batchnorm kombi? ReLU ELU etc}
+
+
 	\section {Output- and Loss Functions}
+In the following, output and loss functions for a CNN as well as the loss function derivatives for Backpropagation are described. Alternatives exist, but the mentioned functions were chosen with the goal of pixel classification in mind and have been found to work well for this kind of problem.
 
 \textbf{TODO: Add derivatives of loss functions}
 
 	\subsection{Softmax}
 \label{subsec:softmax}
 
-\textit{Softmax} is a function that is usually employed to convert a vector of numbers into probabilities. For example, it can be used as the output function $\sigma$ to transform network scores. The Softmax function for some input vector $z$ is defined as
+\textit{Softmax} is a function that can be used as the output function $\sigma$ to transform network scores. The Softmax function for some input vector $z$ is defined as
 
 \[\sigma(z) = \frac{e^{z}}{\sum_{k=0}^{K} e^{z_k}},\]
 
-\noindent where $e$ is the exponential function and $z$ has a dimension of $1 \times K$. The Softmax function acts as a normalizer that ``squashes'' the values of its input vector into the range $[0, 1]$ with respect to relative differences between the vector values. For example, let $z = [-2.432, 1.832, 0.299]$. Then 
+\noindent where $e$ is the exponential function and $z$ has a dimension of $1 \times K$. The Softmax function acts as a normalizer that ``squashes'' the values of its input vector into the range $[0, 1]$ with respect to relative differences between the vector values. For example, let 
+
+\[ z = [-2.432, 1.832, 0.299] \]
+
+\noindent Then 
 
 \[ \sigma(z) = [0.011, 0.813, 0.176] \]
 
-\noindent is the Softmax output for $z$.
+\noindent is the Softmax output for $z$. These processed values sum up to 1 and can be interpreted as probabilities as opposed to the raw output.
 
-These processed values can then be interpreted as probabilities much more naturally than the raw input. However, the above definition of the Softmax function can become numerically unstable when the exponentiation yields large values because dividing by large numbers could potentially produce zero values. To prevent this, it can be made robust by defining it as
+
+%  This is especially useful because if one wants to assign exactly one of many classes to an input, using probabilities is not only a human-readable choice, but also makes the training faster. Considering a case where the raw %output of the network is  
+%
+%\[ out_1 =  5.6,\,\, out_2 = 2.3,\,\, out_3  = 10^{-12} \]
+%
+%\noindent and $out_3$ is the correct output as given by the label data, the weights must be changed by during training so that $out_3$ becomes larger. %Unfortunately, this will take a long time because the partial derivative will be very small, slowing down the training. Applying the Softmax function to this example yields %new outputs
+%
+%\[ out_1 =  0.961,\,\, out_2 = 0.0354,\,\, out_3  = 0.0035 \] 
+%
+%\npindent and thus larger gradients while keeping the relationship between the values intact.
+
+
+However, the above definition of the Softmax function can become numerically unstable when the exponentiation yields large values because dividing by large numbers could potentially produce zero values due to insufficient floating-point precision. \cite[p. 81]{deeplearning_book} To prevent this, the calculation can be made robust by defining it as
 
 \begin {align}
 	&z' = z - \max \limits_{i = 0}(0, z_i)\\
@@ -164,16 +191,20 @@ First, the input $z$ of the layer is transformed by the Softmax function, and th
 
 \[CE(p, q) = -\sum \limits_{i = 0}^{K} p(i) \log q(i)\]
 
-\noindent Since in a pixel classifiying image, each pixel of the input image belongs to one class only, this means that for a given pixel, the probability of its ground truth label is $1.0$, while all others are $0.0$. For example, if, without loss of generality, the third class is assumed to be the ground-truth class, $p$ will be $[0.0, 0.0, 1.0, 0.0]$.  Hence, only the predicted probability of the true third class influences the loss, and all the other summands can be omitted, yielding the condensed general formula
+\noindent Since in a pixel classification task, each pixel belongs to one of many mutually exclusive classes, this means that for a given pixel, the probability of its ground truth label is $1.0$, while all others are $0.0$. For example, if, without loss of generality, the third class is assumed to be the ground-truth class, $p$ will be $[0.0, 0.0, 1.0, 0.0]$.  Hence, only the predicted probability of the true third class influences the loss, and all the other summands can be omitted, yielding a condensed Cross-Entropy error formula for one-class classification problems:
 
-\[CE'(q) = - \log(q_{true}),\]
+\[ CE(q) = - \log(q_{true}) \]
 
-\noindent where $q_{true}$ denotes the predicted probability for the true class. The loss of the entire image is then calculated as the sum of the losses of all pixels divided by the number of pixels.
+\noindent Here, $q_{true}$ denotes the predicted probability for the true class. The loss of an entire input image is then calculated as the sum of the losses of all pixels divided by the number of pixels.\\
+
+\noindent The derivative of the Cross-Entropy loss used during Backpropagation is defined as
+
+TODO
 
 
 		\subsection{Weighted Cross-Entropy Loss}
 
-Using a Cross-Entropy loss function assumes that all pixels in each training sample have the same weight in the Backpropagation process, and therefore, it assumes that the distribution of classes within the samples is balanced. As long as the distribution of classification classes is balanced, this works well, but many datasets do not exhibit this property. Obviously, the assumption is also not true for microscopy images of a few moving cells, as most of the image is taken up by the background class, and thus, performance was expected to be poor.
+Using a Cross-Entropy loss function for pixel classification assumes that all pixels in each input image have the same weight in the Backpropagation process, and therefore, it assumes that the distribution of classes within the samples is balanced. As long as the distribution of classification classes is balanced, this works well, but many datasets do not exhibit this property. Obviously, the assumption is also not true for microscopy images of a few moving cells, as most of the image is taken up by the background class, and thus, performance was expected to be poor.
 
 To combat this problem, one can introduce a pixelwise weight map for each training sample whose values depend on the ground truth class and the position of each pixel. Therefore, the Cross-Entropy loss formula changes to
 
@@ -183,7 +214,7 @@ To combat this problem, one can introduce a pixelwise weight map for each traini
 
 One way to construct such a weight map was given in \cite{unet}, using the weight equation
 
-\[ w(i) = w_c(i) + w_0 \cdot \exp \left (- \frac{(d_1(i) + d_2(i))^2}{2\sigma^2} \right ), \]
+\[ w(i) = w_c(i) + w_0 \left ( \exp \left (- \frac{(d_1(i) + d_2(i))^2}{2\sigma^2} \right ) \right ), \]
 
 \noindent where $w_c$ is the class-specific weight for the pixel's ground truth class, $d_1$ and $d_2$ are the euclidean distances to the nearest and second-nearest non-background pixel and $w_0$ and $\sigma$ are additional modifier terms. The class-specific weights $w_c$ can either be deduced by counting all pixels of all classes in all sample labels to perform \textit{average weighting}, in which all sample use the same class weights, or to do the same for each sample, resulting in \textit{individual weighting}. The class weights are then calculated as their inverse probability, i.e.
 

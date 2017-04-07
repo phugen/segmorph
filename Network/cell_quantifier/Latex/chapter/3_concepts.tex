@@ -378,11 +378,11 @@ If the classification is non-binary, using the \textit{Softmax} function (see se
 
 \noindent The goal of training an MLP is - as previously for the perceptron - finding specific weights so that all inputs are classified correctly, or at least, so that the network makes only few mistakes. Therefore, a loss layer is added to the end of the network, measuring the correctness of the output. Instead of the perceptron criterion \ref{eq:perc_error}, a more general loss function is employed which compares the difference between the output $\sigma(x)$ of the network for a sample $x$ and the preferred output for $x$, the \textit{label} or \textit{ground truth} of $x$. Typically, the loss function for regression problems is based on the \textit{Least Squares Error} (LSE), which is defined as
 
-\[ LSE(w) = \frac{1}{2} \left ( out - t \right )^2, \]
+\[ LSE(w) = \frac{1}{2} \left ( out_x - t \right )^2, \]
 
 \noindent where the single, linear output of the network for some input $x$ and a set of weights $w$ is compared to the ground truth $t$.\footnote{The error is only given as a function of $w$ because both the input $x$ and its correct label $t$ are fixed in the particular case presented here.} Binary classification problems instead use Sigmoid outputs together with the \textit{Cross-Entropy} loss function, which is defined as 
 
-\[ CE(w) =  -t \, \ln out + (1 - t) \ln (1 - out). \]
+\[ CE(w) =  -t \, \ln out_x + (1 - t) \ln (1 - out_x). \]
 
 \noindent For multi-class classifications, an adaption of the Cross-Entropy loss can be used, which is further described in section \ref{subsec:cross_ent}. \cite[pp. 232-236]{bishop_pattern}\\
 
@@ -430,7 +430,7 @@ Luckily, there exists an iterative algorithm called \textit{Backpropagation} \ci
 			\def\svgwidth{0.8\columnwidth}
 			\input{img/backprop.pdf_tex}
 		\end{center}
-		\caption[]{Backpropagation algorithm, applied to a hidden layer $l$\protect\footnotemark. Steps during the forward pass are shown in blue, while steps during the backward pass are orange. The central neuron is the only neuron in the layer $l$, while there are two neurons each in the layers $l-1$ and $l+1$. These other layers could be other hidden layers, input layers, or output layers, as the computation is generalized by the definition of $\delta$. The forward pass calculates the weighted sum $a_1^{(l)}$ and the activation $h(a_1^{(l)})$. Once the backward pass reaches the neuron, it calculates $\delta_1^{(l)}$ and the partial derivatives of the weights of layer $l$, that is, the weights of the connections that flow into the central neuron in the forward pass, using the backpropagated value $\delta_k^{(l+1)}$. This is repeated throughout the entire network until the entire weight gradient is known and a single Gradient Descent step can be taken toward the loss function minimum.}
+		\caption[]{Backpropagation algorithm, applied to a hidden layer $l$.\protect\footnotemark$\,$ Steps during the forward pass are shown in blue, while steps during the backward pass are orange. The central neuron is the only neuron in the layer $l$, while there are two neurons each in the hidden layers $l-1$ and $l+1$. The forward pass calculates the weighted sum $a_1^{(l)}$ and the activation $h(a_1^{(l)})$. Once the backward pass reaches the neuron, it calculates $\delta_1^{(l)}$ and the partial derivatives of the weights of layer $l$, that is, the weights of the connections that flow into the central neuron in the forward pass, using the backpropagated value $\delta_k^{(l+1)}$. This is repeated throughout the entire network until the entire weight gradient is known and a single Gradient Descent step can be taken toward the loss function minimum.}
 		\label{fig:backprop}
 	\end {figure}
 
@@ -449,12 +449,12 @@ Luckily, there exists an iterative algorithm called \textit{Backpropagation} \ci
 	\end {figure}
 
 \noindent Choosing the number of hidden layers and the number of hidden neurons within them wisely is important because bad choices can make the network susceptible to underfitting or overfitting.
-
 \textit{Underfitting} is the term for the inability of a method to model the data correctly. For example, a linear classifier always underfits on a not-linearly separable dataset because it is not powerful enough to solve the problem. \textit{Overfitting} is the exact opposite and occurs when the model is too complex so that it doesn't model a trend in the data, but instead memorizes the dataset (see figure \ref{fig:overfit}). This is undesirable because such a model cannot generalize well and will make incorrect classifications once it is asked to classify data it hasn't been presented with during training. Therefore, a balance has to be found to equip a model with both enough power to classify correctly while also allowing leeway for generalizing when making predictions on new data.
 
 	\begin {figure}[!ht]
 		\begin{center}
-			\scalebox{0.75}{\input{img/fig_overfit.pgf}}
+			\textbf{TODO: uncomment in code}
+			%\scalebox{0.75}{\input{img/fig_overfit.pgf}}
 		\end{center}
 		\caption[]{Overfitting on a dataset, using a 2-layer MLP with 100 hidden neurons and 100,000 iterations of training. A better model would classify the three blue outliers as orange.}
 		\label{fig:overfit}
