@@ -137,20 +137,20 @@ An attempt at fixing this issue is relaxing the strict below-zero activation so 
 
 	\section{Weight Initialization}
 
-	\textbf{TODO: Glorot, He Inits, referenz auf tanh und batchnorm kombi? ReLU ELU etc}
+	\textbf{TODO: Glorot, He Inits, referenz auf tanh und batchnorm kombi? ReLU ELU etc}\\
+	symmetry breaking
 
 
 	\section {Output- and Loss Functions}
 In the following, output and loss functions for a CNN as well as the loss function derivatives for Backpropagation are described. Alternatives exist, but the mentioned functions were chosen with the goal of pixel classification in mind and have been found to work well for this kind of problem.
 
-\textbf{TODO: Add derivatives of loss functions}
 
 	\subsection{Softmax}
 \label{subsec:softmax}
 
-\textit{Softmax} is a function that can be used as the output function $\sigma$ to transform network scores. The Softmax function for some input vector $z$ is defined as
+\textit{Softmax} is a function that can be used as an output function to transform network scores. The Softmax function for some input vector $z$ is defined as
 
-\[\sigma(z) = \frac{e^{z}}{\sum_{k=0}^{K} e^{z_k}},\]
+\[y(z) = \frac{e^{z}}{\sum_{k=0}^{K} e^{z_k}},\]
 
 \noindent where $e$ is the exponential function and $z$ has a dimension of $1 \times K$. The Softmax function acts as a normalizer that ``squashes'' the values of its input vector into the range $[0, 1]$ with respect to relative differences between the vector values. For example, let 
 
@@ -163,23 +163,23 @@ In the following, output and loss functions for a CNN as well as the loss functi
 \noindent is the Softmax output for $z$. These processed values sum up to 1 and can be interpreted as probabilities as opposed to the raw output.
 
 
-%  This is especially useful because if one wants to assign exactly one of many classes to an input, using probabilities is not only a human-readable choice, but also makes the training faster. Considering a case where the raw %output of the network is  
-%
-%\[ out_1 =  5.6,\,\, out_2 = 2.3,\,\, out_3  = 10^{-12} \]
-%
-%\noindent and $out_3$ is the correct output as given by the label data, the weights must be changed by during training so that $out_3$ becomes larger. %Unfortunately, this will take a long time because the partial derivative will be very small, slowing down the training. Applying the Softmax function to this example yields %new outputs
-%
-%\[ out_1 =  0.961,\,\, out_2 = 0.0354,\,\, out_3  = 0.0035 \] 
-%
-%\npindent and thus larger gradients while keeping the relationship between the values intact.
 
-
-However, the above definition of the Softmax function can become numerically unstable when the exponentiation yields large values because dividing by large numbers could potentially produce zero values due to insufficient floating-point precision. \cite[p. 81]{deeplearning_book} To prevent this, the calculation can be made robust by defining it as
+However, the above definition of the Softmax function can become numerically unstable when the exponentiation yields large values because dividing by large numbers could potentially produce zero values due to insufficient floating-point precision. To prevent this, the calculation can be made robust by defining it as
 
 \begin {align}
 	&z' = z - \max \limits_{i = 0}(0, z_i)\\
-	&\sigma(z') = \frac{e^{z'}}{\sum_{k=0}^{K} e^{z'_{{k}}}}
+	&y(z') = \frac{e^{z'}}{\sum_{k=0}^{K} e^{z'_{{k}}}}
 \end {align}
+
+\noindent which avoids dividing by large numbers but still gives the same result. \cite[p. 81]{deeplearning_book}
+
+The partial derivatives of the Softmax outputs $\sigma_i$ with respect to its inputs $z_i$ are given by
+
+\[ \frac{\partial y_i}{\partial z_i} = \begin {cases}
+							y_i(1 - y_i) \text{ if } i = j \\
+							-y_i y_j \text { if } i \neq j \text{ .}
+						\end {cases} \cite[\text{ p. 209}]{bishop_pattern}
+\]
 
 
 		\subsection{Cross-Entropy Loss}
@@ -187,40 +187,61 @@ However, the above definition of the Softmax function can become numerically uns
 
 A common loss layer in MLPs that perform multi-class classification is the \textit{Cross-Entropy Loss} layer. In many frameworks, the layer's implementation actually consists of two steps:
 
-First, the input $z$ of the layer is transformed by the Softmax function, and then sent to the appended loss function, in which the actual loss computation is done. The \textit{Cross-Entropy Loss} function compares a true probability distribution $p$ to a model probability distribution $q$. For a vector of calculated softmax probabilities $z_i$, it is defined as follows:
+First, the input $z$ of the layer is transformed by the Softmax function, and then sent to the appended loss function, in which the actual loss computation is done. The \textit{Cross-Entropy Loss} function compares a true probability distribution $p$ to a model probability distribution $q$. For a vector of calculated Softmax probabilities $z_i$, it is defined as follows:
 
 \[CE(p, q) = -\sum \limits_{i = 0}^{K} p(i) \log q(i)\]
 
-\noindent Since in a pixel classification task, each pixel belongs to one of many mutually exclusive classes, this means that for a given pixel, the probability of its ground truth label is $1.0$, while all others are $0.0$. For example, if, without loss of generality, the third class is assumed to be the ground-truth class, $p$ will be $[0.0, 0.0, 1.0, 0.0]$.  Hence, only the predicted probability of the true third class influences the loss, and all the other summands can be omitted, yielding a condensed Cross-Entropy error formula for one-class classification problems:
+\noindent Since in a pixel classification task such as the Drosophila cell classification, each pixel belongs to one of many mutually exclusive classes, the true probability $p_{true}$ of the $i$th pixel's ground truth label is $1.0$, while all others are $0.0$. For example, if the third class is assumed to be the ground-truth class, the vector of $p$ values for all classes will be $[0.0,\, 0.0,\, 1.0,\, 0.0]$.  Hence, only the predicted probability $q_3$ of the third class influences the loss, and all the other summands can be omitted, yielding a condensed Cross-Entropy loss formula for one-class classification problems:
 
 \[ CE(q) = - \log(q_{true}) \]
 
-\noindent Here, $q_{true}$ denotes the predicted probability for the true class. The loss of an entire input image is then calculated as the sum of the losses of all pixels divided by the number of pixels.\\
+\noindent Here, $q_{true}$ denotes the predicted probability for the true class the sample. The loss of an entire input image is then calculated as the sum of the losses of all pixels divided by the number of pixels.
 
-\noindent The derivative of the Cross-Entropy loss used during Backpropagation is defined as
+\noindent To use the Cross-Entropy loss in combination with a Softmax activation input during Backpropagation, the $\delta_j$ values are needed. As the loss layer is the last layer in the network, $\delta_j$ is defined as simply
 
-TODO
+\begin {align} \delta_j &= \frac{\partial E}{\partial a_j}\\
+			    &= y_i - t_i,
+\end {align}
+
+\noindent where $i$ is the index of the Softmax probability for a class $C_i$ and $t_i$ is the ground truth probability. For classification with mutually exclusive classes, i.e. $t_i = 1.0$ when $C_i$ is the correct class and $t_i = 0.0$ otherwise, this means that $\delta_j$ can be calculated by just subtracting $1$ from the predicted Softmax probability of the true class.
 
 
 		\subsection{Weighted Cross-Entropy Loss}
 
-Using a Cross-Entropy loss function for pixel classification assumes that all pixels in each input image have the same weight in the Backpropagation process, and therefore, it assumes that the distribution of classes within the samples is balanced. As long as the distribution of classification classes is balanced, this works well, but many datasets do not exhibit this property. Obviously, the assumption is also not true for microscopy images of a few moving cells, as most of the image is taken up by the background class, and thus, performance was expected to be poor.
+Using a Cross-Entropy loss function for pixel classification assumes that all pixels in each input image have the same weight in the Backpropagation process, and therefore, it assumes that the distribution of classes within the samples is balanced. As long as the distribution of classification classes is balanced, this works well, but many datasets do not exhibit this property. Obviously, the assumption is also not true for microscopy images of a few moving on dark background, as most of the image is taken up by the background class, and thus, the performance of training using a normal Cross-Entropy Loss was expected to be poor.
 
-To combat this problem, one can introduce a pixelwise weight map for each training sample whose values depend on the ground truth class and the position of each pixel. Therefore, the Cross-Entropy loss formula changes to
+To combat this problem, one can introduce a pixelwise weight map for each training sample whose values depend on the ground truth class and the position of each pixel. Therefore, the condensed Cross-Entropy loss formula changes to
 
-\[CE(p, q) = -\sum \limits_{i = 0}^{K} p(i) \log q(i) \cdot w(i),\]
+\[ CE(p, q) = -\sum \limits_{i = 0}^{K} w(i) \bigg ( p(i) \log q(i) \bigg ) \]
 
-\noindent where $w(i)$ is the weight for pixel $i$.
+\noindent where $w(i)$ is a weight map for each pixel $i$.
 
-One way to construct such a weight map was given in \cite{unet}, using the weight equation
+One way to construct such a weight map is given in \cite{unet}, using the weight equation
 
 \[ w(i) = w_c(i) + w_0 \left ( \exp \left (- \frac{(d_1(i) + d_2(i))^2}{2\sigma^2} \right ) \right ), \]
 
-\noindent where $w_c$ is the class-specific weight for the pixel's ground truth class, $d_1$ and $d_2$ are the euclidean distances to the nearest and second-nearest non-background pixel and $w_0$ and $\sigma$ are additional modifier terms. The class-specific weights $w_c$ can either be deduced by counting all pixels of all classes in all sample labels to perform \textit{average weighting}, in which all sample use the same class weights, or to do the same for each sample, resulting in \textit{individual weighting}. The class weights are then calculated as their inverse probability, i.e.
+\noindent where $w_c(i)$ is the class-specific weight for the $i$th pixel's ground truth class, $d_1$ and $d_2$ are the euclidean distances to the nearest and second-nearest non-background pixel and $w_0$ and $\sigma$ are additional modifier terms. The class-specific weights $w_c(i)$ can either be deduced by counting all pixels of all classes in all sample labels to perform \textit{average weighting}, in which all sample use the same class weights, or to do the same for each sample, resulting in \textit{individual weighting}. The class weights are then calculated as their inverse probability, i.e.
 
-\[ w_c = 1 - \frac{\#c}{\#all}, \]
+\[ w_c(i) = 1 - \frac{\#c}{\#all}, \]
 
-\noindent where $\#c$ is the number of pixels that belong to a class $c$ and $\#all$ is the number of pixels in the sample (or in all samples, depending on the weighting mode). This way, rarer classes influence gain a harsher penalty when misclassified, making them more important during training.  \textbf{TODO:} which values did we use? did we use class weighting at all? inverse weights..
+\noindent where $\#c$ is the number of pixels that belong to a class $C$ and $\#all$ is the number of pixels in the sample (or in all samples, depending on the weighting mode). This way, rarer classes influence are given a harsher penalty when misclassified, making them more important during training. The calculation of $\delta_j$ for Backpropagation is then defined as follows: \\
+
+
+\begin {align}
+	\delta_j &= \frac{\partial E}{\partial a_j} \\
+		&= \frac{\partial}{\partial a_j} \left ( w \left ( - \sum \limits_{j=1}^{C} t_j \ln(y_j) \right ) \right ) \\ \intertext{where $w$ refers to the weight constant, $t_j$ is the ground truth probability and $y_j$ is the Softmax probability for the current pixel. Then}
+		&= w \left ( - \sum \limits_{j=1}^{C} t_j \frac{\partial y_j}{\partial a_j} \right ) \\
+		&= w \left (- \sum \limits_{j=1}^{C} t_j \frac{1}{y_j} \frac{\partial y_j}{\partial a_j} \right ) \\
+		&= w \left ( - \frac{t_i}{y_i} \frac{\partial y_i}{\partial a_j} - \sum \limits_{j \neq i}^{C} \frac{t_j}{y_j} \frac{\partial y_j}{\partial a_j} \right ) \\ \intertext{using the derivative of the Softmax from \ref{eq:softmax_deriv}, it follows that}
+		&= w \left ( - \frac{t_i}{y_i} y_i (1 - y_i) - \sum \limits_{j \neq i}^{C} \frac{t_j}{y_j} (- y_j y_i) \right ) \\
+		&= w \left ( - t_i + t_i y_i - \sum \limits_{j \neq i}^{C} - t_j y_i \right ) \\
+		&= w \left ( - t_i - \sum \limits_{j=1}^{C} - t_j y_i  \right ) \\
+		&= w \left ( - t_i + y_i \sum \limits_{j=1}^{C} t_j \right ) \\ \intertext{because $t_j = 0$ for all $C_j$ except the real class, this can be simplified to} 
+		&= w \left (- t_i + y_i \right ) \\ \tag*{$\blacksquare$} 
+\end {align}
+
+
+ \textbf{TODO:} which values did we use? did we use class weighting at all? inverse weights..
 
 
 		\subsection{F-Measure}
