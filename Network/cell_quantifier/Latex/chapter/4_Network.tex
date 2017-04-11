@@ -245,7 +245,7 @@ One way to construct such a weight map is given in \cite{unet}, using the weight
 
 		\subsection{F-Measure}
 
-An alternative to solving the problem of unbalanced classes in the training data is using the \textit{F-Measure}, also called \textit{DICE similarity}, as a loss function instead. The F-Measure is a statistical similarity function which has been shown to perform well when using SGD-trained CNNs on unbalanced data. \cite{fmeasure3}\cite{fmeasure4}\cite{fmeasure5} It is based on the quantities of \textit{Precision} and \textit{Recall} over the training sample in comparison to its ground truth. The precision is defined as
+An alternative to solving the problem of unbalanced classes in the training data is using the \textit{F-Measure}, also called \textit{DICE similarity}, as a loss function instead. The F-Measure is a statistical similarity function which has been shown to perform well when using SGD-trained CNNs on unbalanced data for binary segmentations. \cite{fmeasure3}\cite{fmeasure4}\cite{fmeasure5} It is based on the quantities of \textit{Precision} and \textit{Recall} over the training sample in comparison to its ground truth. The precision is defined as
 
 \[ PR = \frac{TP}{TP + FP} \]
 
@@ -261,7 +261,7 @@ FP &= \sum  \limits_{i=1}^{n} y_i (1 - t_i) \\
 FN &= \sum \limits_{i=1}^{n} (1 - y_i) t_i
 \end {align}
 
-\noindent with $y_i$ and $t_i$ being the Softmax probability of the class with the largest probability and the corresponding ground truth probability of a pixel $i$ in an image with $n$ pixels. The $F_1$ score for an image is then defined as
+\noindent with $y_i$ and $t_i$ being the Softmax probability of the foreground class and the corresponding ground truth probability of a pixel $i$ in an image with $n$ pixels. The $F_1$ score for an image is then defined as
 
 \begin {align}
  	F_1 &= 2 \left ( \frac{PR \cdot RC}{PR + RC} \right ) \\
@@ -275,8 +275,20 @@ FN &= \sum \limits_{i=1}^{n} (1 - y_i) t_i
 	&= 2 \left ( \frac{t_j \sum_{i=1}^{n} \left ( y_i + t_i \right ) - \sum_{i=1}^{n} \left ( y_i t_i \right )  }{\left [ \sum_{i=1}^{n} \left ( y_i + t_i \right ) \right ]^2 } \right )
 \end {align}
 
+\noindent For multi-class problems, the approach is changed slightly: The $F_1$ score is calculated for each class $C_j$ in a binary fashion, using the $C_j$ as the ``foreground'' and all other classes $C_i, i \neq j$ as ``background''. This way, the definitions for TP, FP and FN can be used for more than two classes. The average of these multiple F-Measures is then used as the loss.\footnote{It should be noted that the $F_1$ score increases the better the classification becomes. To compare it with traditional loss functions, it is convenient to look at the inverse score $1 - F_1$ instead.}
+
+During the backward pass, the gradients are also calculated per class in a similiar way.
+
 
 	\section {The U-Net Architecture}
-The U-Net \cite{unet} is a CNN architecture which aims to produce segmentation maps for images of cells. It was implemented using Caffe \cite{caffe}, a CNN library developed by the University of California, Berkeley that allows CNN layers - such as the ones described in the previous section - to be put together to form a network.
+The U-Net \cite{unet} is a CNN architecture which aims to produce segmentation maps for images of cells. It was implemented using Caffe \cite{caffe}, a CNN library developed by the University of California, Berkeley that allows CNN layers - such as the ones described in the previous section - to be put together to form a network. The U-Net differs from standard CNNs in that it first performs a number of $3 \times 3$ convolutions followed by ReLU activations and $2 \times 2$ downsampling pooling operations with stride $2$ while steadily increasing the number of filters after each pooling operation from 64 up to 1024, but then replaces max pooling with upsampling of the same size and enlarges the feature maps again while reducing the number of filters. This results in a symmetric architecture that has a downsampling and an upsampling path which give the network its name.
 
-% Image of U-Net here 
+Additionally, the network uses feature concatenation by using shortcut connections (called ``skip-layer connections'' in \cite{bishop_pattern}) , taking the non-padded part of the feature maps from the corresponding sampling level after each upsampling operation and fusing them with the upsampled maps by \textbf{TODO: how does fusing work? summation? maximum?}. This is done to boost the precision of the segmentation output - downsampling reduces locality information which is nonetheless needed when creating a segmentation map, so this is a way to reduce the complexity of the network while still achieving precise results.
+
+The network is also a fully-convolutional network, so it does not have a final fully-connected layer to perform pixel classification. Instead, a $1 \times 1$ convolution with as many filters as classes should be present in the final segmentation is used for classification (see Figure \ref{fig:unet_arch}).
+
+\begin {figure}[!ht]
+	\scalebox{0.75}{\input{img/unet_arch.pdf_tex}}
+	\caption{The U-Net architecture. The numbers indicate the number of channels, or, in the case of the convolutional layers, the number of filters. In this example, the input is a grayscale image and therefore has one channel only. $C$ is the number of output classes to segment the image into, i.e. 3 or 4 depending on which dataset is used.}
+	\label{fig:unet_arch}
+\end {figure}
