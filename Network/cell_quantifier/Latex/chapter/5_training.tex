@@ -1,12 +1,7 @@
 	\chapter{Training}
-This chapter describes how the U-Net was trained on the Drosophila dataset, what the dataset looks like, and what choices were made regarding training parameters and training algorithms.
-
-
-	\section {Preprocessing and Data Augmentation}
-Usually, neural networks do not work well with input of an arbitrary form, which is why data is preprocessed before training the network on it. The same preprocessing is applied during classification of new images. In CNNs, a number of standard preprocessing steps are described here.
 
 	\section{Dataset}
-The original dataset used in the following experiments is made up of 90 microscopy images and their label images from three experiments on slightly different types of live \textit{Drosophila} cells. The dimension of all images is $960 \times 608$ pixels ($w \times h$) and the images are given in grayscale. The labelled images are of dimension $3 \times 960 \times 608 \times$ ($d \times w \times h$), where the background class is represented by RGB[0, 0, 0] (black), the cell body proper is marked as RGB[0, 255, 0] (green), the Lamellopodia are RGB[255, 0, 0] (red) and the Filopodia are RGB[0, 0, 255] (blue).
+The dataset used in the following experiments is made up of 90 microscopy images and their label images from three experiments on slightly different types of live \textit{Drosophila} cells. The dimension of all images is $960 \times 608$ pixels ($w \times h$) and the images are given in grayscale. The labelled images are of dimension $3 \times 960 \times 608 \times$ ($d \times w \times h$), where the background class is represented by RGB[0, 0, 0] (black), the cell body proper is marked as RGB[0, 255, 0] (green), the Lamellopodia are RGB[255, 0, 0] (red) and the Filopodia are RGB[0, 0, 255] (blue).
 
 Another ``3-class'' version of the dataset was created in which the classes for Lamellopodia and Filopodia are fused into one, marked as RGB[255, 0, 0] (red). This was done because even for a human, separating Filopodia pixels from Lamellopodia pixels was hard to do because of the quality of the microscopy images. Therefore, the label images might not be entirely correct, misleading the training.\\
 
@@ -29,39 +24,43 @@ Another ``3-class'' version of the dataset was created in which the classes for 
 
 \end {figure}
 
+	\section {Preprocessing and Data Augmentation}
+Usually, neural networks do not work well with input of an arbitrary form, which is why data is preprocessed before training the network on it. The same preprocessing is applied during classification of new images. Hence, in the following sections, the preprocessing operations performed on input data to the U-Net is described. Furthermore, the concept of \textit{data augmentation} is explored, which helps with training when data is scarce.
+
+
 		\subsection{Normalization}
-Research \cite{lecun_norm} has shown that neural networks perform consistently better when the input data is normalized, that is, when it is transform into a standardized \textbf{TODO: standardized or normalized? \url{http://ieeexplore.ieee.org/document/6553715/}} representation which has zero mean and unit variance (see Figure \ref{fig:norma}). This is achieved by performing almost the same thing that happens in the Batch Normalization layer (see \ref{subsec:batchnorm}), only that no additional transformation is applied. \textbf{TODO:} Mean image subtraction vs individual mean
+Research \cite{lecun_norm} has shown that neural networks perform consistently better when the input data is normalized, that is, when it is transform into a standardized \textbf{TODO: standardized or normalized? \url{http://ieeexplore.ieee.org/document/6553715/}} representation which has zero mean and unit variance. This is achieved by subtracting the mean value of the input image per channel from each channel of that image\footnote{Another approach often used is to compute a mean image from all images in the dataset and substract that from each image. However, in the following experiments, individual means were used.} and then dividing by the image's standard deviation (see Figure \ref{fig:norma}).
 
 \begin {figure}[!ht]
 	\begin{center}
-		\input{img/fig_norma.pgf}
+		\scalebox{0.5}{\input{img/fig_norma.pgf}}
 	\end{center}
 	\caption[]{Normalization of two-dimensional example data. The blue data points represent the original dataset, while the orange points show the dataset after normalization.}
 	\label{fig:norma}
 \end {figure}
 
-\textbf{TODO: querverweis auf activation func chapter}
-
 
 		\subsection{Mirror Tiling and Rotation}
 \label{subsec:mirror_tiling}
-CNNs usually need fixed input sizes because the combination of convolutions and pooling shrink the image in a certain way. This has to be accounted for when considering the input size of the image, because some input sizes are invalid in consequence. For example, downsampling with stride $2 \times 2$ shrinks an image by a factor of two, but if the dimensions of the image are not divisable by two, the operator can't be applied without causing interpolation problems. Because the U-Net is supposed to take an input image of some size and output a segmentation map of the same size, the input size additionally has to be chosen correctly so that network outputs an image of the correct size. This is done by adding a padding border to the input images so that in the case of an input size of $244 \times 244$, the padding increases the padded size to $428 \times 428$. This can be done by mirroring the image at its borders so it matches the needed border size. The input size was chosen as as a compromise between needed memory and context within the image available to the CNN.
+CNNs usually need fixed input sizes because the combination of convolutions and pooling shrink the image in a certain way. This has to be accounted for when considering the input size of the image, because some input sizes are invalid in consequence. For example, downsampling with stride $2 \times 2$ shrinks an image by a factor of two, but if the dimensions of the image are not divisable by two at any downsampling stage in the network, the operator cannot be applied without causing interpolation problems. Because the U-Net is supposed to take an input image of some size and output a segmentation map of the same size, the input size additionally has to be chosen correctly so that network outputs an image of the correct size. This is done by adding a padding border to the input images so that in the case of an input size of $244 \times 244$, the padding increases the padded size to $428 \times 428$. This can be done by mirroring the image at its borders so that it matches the needed border size. This input size was chosen as as a compromise between needed memory and context within the image available to the CNN.
 
-However, as the original Drosophila data was of a different size, each input image can be first padded by a mirror border and then be tiled into sub-images of the appropriate size to be fed to the network. The tiling starts at the top-left corner and continues from left to right and from top to bottom. However, naively tiling would result in ``broken'' tiles at the right and bottom borders when the size of the mirror-padded  image isn't evenly divisable by the network's input size, which was the case for the given input data. Consequently, these broken tiles were repaired by again mirroring the data starting at the border of the padded image, growing them back to the chosen tile size (see Figure \ref{fig:tile_mirror_rotate}).\\
+However, as the original Drosophila data is of a larger size, each input image is first padded by a mirror border and then tiled into sub-images of the appropriate size to be fed to the network. The tiling starts at the top-left corner and continues from left to right and from top to bottom. However, naively tiling would result in ``broken'' tiles at the right and bottom borders when the size of the mirror-padded  image is not evenly divisable by the network's input size, which was the case for the given input data. Consequently, these broken tiles were repaired by starting at the edges of the image and going ``backward'' in both dimensions until a tile of size $428 \times 428$ is created which uses both the broken tile data as well as data that is also part of the previous tile. While this reuses the overlapping parts of the tiles, this way, the data of the broken tiles can also be used for training (see Figure \ref{fig:tile_mirror_rotate}).\\
+
+\textbf{TODO: how are the labels tiled? -> inputsize}\\
 
 \noindent Moreover, a major problem with training deep Neural Networks is the immense amount of data required. Common image datasets such as MNIST\footnote{\url{http://yann.lecun.com/exdb/mnist/}}, CIFAR-100\footnote{\url{https://www.cs.toronto.edu/~kriz/cifar.html}} and ImageNet \cite{ILSVRC} contain 10,000 to 14.1 million images. Such numbers are absolutely out of reach for most biomedical applications as the data required is usually not publicly available. Manually labelling the data for this thesis took 30 - 45 minutes per image, making it impossible to create a large training set in a reasonable amount of time.
 
-To nonetheless train a network to segment such images, \textit{data augmentation} can be used to increase the number of samples. Data augmentation refers to some way of altering the available data in order to artificially create new data, which, for example, can be used to train a network to be invariant to certain transformations, although translation transformations can be disregarded as CNNs are naturally robust in the face of translated patterns (see Section \ref{sec:CNN}). An easy way to multiply the number of samples eightfold is to flip all images only vertically, followed by rotations of both the original images and their flipped counterparts by $90^{\circ}$, $180^{\circ}$ and $270^{\circ}$, as this yields all possible combinations that are possible by flipping and rotating in $90^{\circ}$ steps.\\
+To nonetheless train a network to segment such images, \textit{data augmentation} is used to increase the number of samples. Data augmentation refers to some way of altering the available data in order to artificially create new data, which, for example, can be used to train a network to be invariant to certain transformations, although translation transformations can be disregarded as CNNs are naturally robust in the face of translated patterns (see Section \ref{sec:CNN}). An easy way to multiply the number of samples eightfold is to flip all images only vertically, followed by rotations of both the original images and their flipped counterparts by $90^{\circ}$, $180^{\circ}$ and $270^{\circ}$, as this yields all possible combinations that are possible by flipping and rotating in $90^{\circ}$ steps.\\
 
 
 \begin {figure}[!ht]
-	\begin {subfigure}[{position=b}]{0.5\linewidth}
+	\begin {subfigure}[t]{0.5\linewidth}
 		\scalebox{0.5}{\input{img/fig_tile_mirror.pdf_tex}}
 
-		\caption*{Mirror tiling. \textbf{a):} Input image. \textbf{b):} Mirroring to obtain border (blue). \textbf{c):} Tiling. Broken tiles are shown darker. \textbf{d):} Repairing broken tiles by adding mirrored data (green).}
+		\caption*{Mirror tiling. \textbf{a):} Input image. \textbf{b):} Mirroring to obtain border (blue). \textbf{c):} Tiling. Broken tiles are shown darker. \textbf{d):} Repairing broken tiles by using combining broken tile data with data from neighboring tiles by moving back from the image edges ``into'' the image. The total data used for repairing all broken tiles is shown in green, while the data used for repairing the bottom right tile is marked by a dashed square.}
 	\end {subfigure}
 	\hspace{1cm}
-	\begin {subfigure}[{position=b}]{0.5\linewidth}
+	\begin {subfigure}[t]{0.5\linewidth}
 		\scalebox{0.5}{\input{img/fig_rotate.pdf_tex}}
 
 		\caption*{Combinations of flipping and rotating a tile. Taking the original, rotated tiles and the vertical, rotated tiles is enough to obtain all possible variations.}
@@ -89,8 +88,37 @@ Another data augmentation technique is \textit{elastic deformation} \cite{elasti
 \end {figure}
 
 
-	\section {Training Algorithms and Optimizations}
-	Approaches that try to reduce overfitting in learning algorithms are called \textit{regularization} approaches.
+	\section {Training Optimizations and Regularization}
+	As overfitting occurs often in MLPs and CNNs, several techniques to control overfitting were devised. These techniques are called \textit{regularization} techniques.
+
+	\subsection{Early Stopping}
+\textit{Early Stopping} is based on the assumption that during the validation of the network, i.e. while letting it classify data that hasn't been used for training to test its generalization ability, overfitting is detectable by monitoring the validation loss. The validation loss measures how well the network performs for unseen data, and Early Stopping dictates that once the validation loss indicates overfitting by some stopping criterion, the training should be stopped. For smooth curves without local minima, this would simply mean that once the validation loss starts increasing instead of decreasing, the training should be stopped, although in practice, training and validation losses are unstable and thus harder to handle. \cite{early_stopping} introduces the \textit{generalization loss} value of a training epoch $t$, defined by
+
+\[ GL(t) = 100 \left ( \frac{E_{val}(t)}{E_{min}(t)} - 1 \right ) \]
+
+\noindent where $E_{val}(t)$ and $E_{min}(t)$ are the current validation loss and the minimum validation loss in all previous epochs $\{0, \dots, t\}$. Based on this, several stopping criteria are proposed, such as stopping the training when 
+
+\[ GL(t) > \alpha \]
+
+\noindent for some threshold $\alpha$, i.e. the relative increase of the loss with respect to the current best is exceeded by some threshold $\alpha$. However, this might prematurely stop the training in phases where the validation loss might still recover due to larger weight updates in which the training still progresses fast. Therefore, the training loss $E_{tr}(t)$ over $k$ epochs can be observed by using the training progress measure
+
+\[ P_k(t) = 1000 \left ( \frac{\sum_{t' = t - k + 1}^{t} E_{tr}(t')}{k (\min_{t' = t - k + 1}^{t} E_{tr}(t'))} - 1 \right ) \]
+
+\noindent which measures the ratio of average training error and minimum training error in that interval. In effect, $P_k$ is a measure of the training jitter present in the interval. The stopping criterion then is 
+
+\[ \frac{GL(t)}{P_k(t)} > \beta \]
+
+\noindent meaning that training is stopped when the generalization loss is too high and the training error has become stable, making it unlikely for the validation loss to recover (see Figure \ref{fig:early_stopping}). However, determining correct parameters and mathematically analyzing the benefits of Early Stopping is not easy, making this approach largely heuristical. Additionally, Caffe currently does not implement an easy way to apply these algorithms directly to the training, making it necessary to monitor training trends graphically in practice while saving the state of the trained weights frequently so that the training can be interrupted manually when results seem to stop improving.
+
+
+\begin {figure}[!ht]
+	\begin{center}
+		\scalebox{0.7}{\input{img/fig_early_stopping.pgf}}
+	\end{center}
+	\caption[]{Stopping points calculated by two Early Stopping algorithms applied to artificially created loss data. The training loss is shown in orange, while the validation loss is shown in blue. \textbf{a):} Using $GL(t) > \alpha$ with $\alpha = 30$. \textbf{b):} Using $\frac{GL(t)}{P_k(t)} > \beta$, with $\beta = 10$ and $k = 10$. The first algorithm stops training even though the minimum validation loss is not reached, while the second algorithm gets closer to the global minimum. }
+	\label{fig:early_stopping}
+\end {figure}
+
 
 	\subsubsection {Dropout}
 \label{subsec:dropout}
@@ -100,7 +128,7 @@ Another data augmentation technique is \textit{elastic deformation} \cite{elasti
 
 	\subsubsection {Batch Normalization}
 \label{subsec:batchnorm}
-\textit{Batch Normalization} (BN) \cite{batchnorm} is a method to improve training accuracy and speed while training either general MLPs or CNNs with the SGD algorithm (or other gradient-based algorithms that use mini-batches). The idea a BN layer in a network is based on is that Backpropagation works better if the inputs to the network are normalized (see also section \ref{sec:preprocessing}). However, as the input passes through the network, the repeated transformations change the distribution of the data, referred to by the authors of the BN paper as ``internal covariance shift''. Batch Normalization reduces this shift by re-normalizing data within the network so that the following layers once again work on normalized data. For this purpose, such a layer first normalizes the data by applying the formula 
+\textit{Batch Normalization} (BN) \cite{batchnorm} is a method to improve generalization capacity and training speed while training either general MLPs or CNNs with the SGD algorithm (or other gradient-based algorithms that use mini-batches). The idea a BN layer in a network is based on is that Backpropagation works better if the inputs to the network are normalized. However, as the input passes through the network, the repeated transformations change the distribution of the data, referred to by the authors of the BN paper as ``internal covariance shift''. One way to try and reduce this shift is by proper initialization of the network weights (see \ref{sec:weight_init}). Batch Normalization provides a different way of dealing with covariance shift and claims to diminish the dependence on a good initialization as well as the need for Dropout, although at the time of writing, it is still unclear whether using Batch Normalization really solves all weight initialization problems or if there is a better way to keep the weights in a proper range. The way Batch Normalization reduces this shift is by re-normalizing data within the network so that the following layers once again receive normalized data. For this purpose, such a layer first normalizes the data by applying the formula 
 
 \[  \hat{x} = \frac{x - E[x]}{\sqrt{Var[x]} + \epsilon} \]
 
@@ -117,10 +145,29 @@ Another data augmentation technique is \textit{elastic deformation} \cite{elasti
 \textbf{TODO:} test time and CNN special case?
 
 
-	\section {Pseudo-Labelling}
+	\subsection {Pseudo-Labelling}
+\label{subsec:pseudo_label}
+\textit{Pseudo-labelling} \cite{pseudo_label} is a regularization technique that makes use of data for which no ground truth data exists. The network is $n$ normal and $n$ unlabeled samples in each training step, assuming the minibatch size is $n$. The loss $L$ for the labelled image is calculated as usual. For unlabelled images, a pseudo-label is generated by passing the unlabelled data into the network using dummy labels, ignoring the resulting loss and replacing the output prediction scores by a one-hot encoding where the class with the maximum output probability is 1. For example, if the network outputs the probabilities 
+
+\[ [0.1, 0.1, 0.8, 0.1] \]
+
+\noindent for some pixel, the pseudo-probabilties for this pixel would become
+
+\[ [0, 0, 1, 0] \]
+
+\noindent in one-hot encoding. The unlabelled image is then fed to the network again, using the pseudo-label to calculate a pseudo-loss $L_p$. Then, a weighted combined loss $L_c$ is calculated to update the network weights, defined by
+
+\[ L_c = \frac{1}{n} \sum \limits_{m=1}^{n} L + \alpha \frac{1}{n} \sum \limits_{m=1}^{n} L_p  \]
+
+\noindent where $\alpha$ is a weighting parameter that depends on the number of iterations $t$ that the training has been running. It is defined as
+
+\begin {align}
+\alpha(t) = \begin{cases} 0 \text{ if } t < T_1 \\
+				\frac{t - T_1}{T_2 - T_1} \alpha_f \text{ if } T_1 \leq t < T_2 \\
+				\alpha_f \text { if } T_2 \leq t \\
+	        \end{cases}
+\end {align}
+
+\noindent with $\alpha_f = 3$, $T_1 = 100$ and $T_2 = 600$. This factor $\alpha$ prevents the unlabelled loss to dominate the weight updates in a stage of training where the network still makes very incorrect predictions. Intuitively, the network confirms its own predictions and updates the weights more decisively by increasing confidence for the update by selecting the dominant class in each pseudo-label.
 
 		\subsubsection {The Cluster Assumption}
-
-	\section {Validation}
-		
-		\subsection{Early Stopping}

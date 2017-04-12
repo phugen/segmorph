@@ -59,7 +59,9 @@ The algorithm is initialized with $k$ either random or differently selected clus
 \end{algorithm}
 
 \begin {figure}[!ht]
-	\includegraphics{img/fig_kmeans}
+	\begin {center}
+		\includegraphics[scale=0.65]{img/fig_kmeans}
+	\end{center}
 	\caption{Application of the K-Means algorithm to a test image. \textbf{Top left}: Input image. \textbf{Top right}: Ground truth labels of the input image. \textbf{Bottom left}: K-means results with $k=4$,  using arbitrary colors for the labels. \textbf{Bottom right}: Results with $k=6$. It is noteworthy that while the results for $k=4$ are reasonable, the nearly transparent lamellopodium pixels are labelled as background values, while the cell proper is segmented into two parts.}
 	\label{fig:kmeans}
 \end {figure}
@@ -203,7 +205,7 @@ The algorithm starts with a guess for the parameters in $\Theta$ and then iterat
 
 \[ \Theta_i = \Theta_{i-1} - \eta \nabla_{f_i} \]
 
-\noindent where $f_i$ is the function $f$ evaluated for $x_i$ and $\Theta_{i-1}$. Similarily, to use Mini-Batch SGD with a batch size of $n$, an average over the gradients for $n$ datapoints is used:
+\noindent where $f_i$ is the function $f$ evaluated for $x_i$ and $\Theta_{i-1}$, while the number of steps that it takes to consider all datapoints in the dataset is called an \textit{epoch}. Similarily, to use Mini-Batch SGD with a batch size of $n$, an average over the gradients for $n$ datapoints is used:
 
 \[ \Theta_i = \Theta_{i-1} - \eta \left ( \frac{1}{n} \sum \limits_{i=1}^{n} \nabla_{f_i} \right ) \]
 
@@ -356,9 +358,11 @@ Afterwards, the sum $a^{(l)}_j$ is passed into an activation function $h(\cdot)$
 
 \begin {align}
 	 h(x) &= \frac{1}{1 + e^{-x}}\\
-	\frac{\partial}{\partial x} h(x) &= h(x)(1 - h(x))
+	\frac{\partial h}{\partial x} &= h(x)(1 - h(x))
 \end {align}
 
+
+\textbf{TODO: clean up this part - messy!}\\
 \noindent Computing an output is done by passing the input vector to the first layer, which computes its activations for all its neurons, which then pass on their activations to the neurons of the next layer as inputs until the output layer is reached.
 
 If the classification is non-binary, using the \textit{Softmax} function (see section \ref{subsec:softmax}) to obtain probabilities for the likeliness of $x_i$ being part of any of the classes is a solution.\\
@@ -376,7 +380,7 @@ If the classification is non-binary, using the \textit{Softmax} function (see se
 	\footnotetext{There is no consensus on which method of counting is the most appropriate. Sometimes, only the number of hidden layers or even all layers are counted \cite[pp. 229]{bishop_pattern}}
 }
 
-\noindent The goal of training an MLP is - as previously for the perceptron - finding specific weights so that all inputs are classified correctly, or at least, so that the network makes only few mistakes. Therefore, a loss layer is added to the end of the network, measuring the correctness of the output. Instead of the perceptron criterion \ref{eq:perc_error}, a more general loss function is employed which compares the difference between the output $\sigma(x)$ of the network for a sample $x$ and the preferred output for $x$, the \textit{label} or \textit{ground truth} of $x$. Typically, the loss function for regression problems is based on the \textit{Least Squares Error} (LSE), which is defined as
+\noindent The goal of training an MLP is - as previously for the perceptron - finding specific weights so that all inputs are classified correctly, or at least, so that the network makes only few mistakes. Therefore, a loss function is added to the end of the network, measuring the correctness of the output. Instead of the perceptron criterion \ref{eq:perc_error}, a more general loss function is employed which compares the difference between the output $\sigma(x)$ of the network for a sample $x$ and the preferred output for $x$, the \textit{label} or \textit{ground truth} of $x$. Typically, the loss function for regression problems is based on the \textit{Least Squares Error} (LSE), which is defined as
 
 \[ LSE(w) = \frac{1}{2} \left ( out_x - t \right )^2, \]
 

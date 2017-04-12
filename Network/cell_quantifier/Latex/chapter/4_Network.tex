@@ -27,13 +27,13 @@ After convolution, the feature maps are passed through an non-linear activation 
 
 
 	\section {Activation Functions}
-Even though previously, the Sigmoid function was given as an example of a suitable activation function for MLPs, recent research has shown that better alternatives exist, and it is hardly used anymore. This is mainly because Sigmoids contribute to the problem of ``vanishing gradients'' during Backpropagation which causes earlier layers in a deep network to train much more slowly than layers near the output layer. ``Vanishing gradients'' happen when the magnitude of the gradient is close to zero, which in turn causes the training to change the network weights in affected layers by only a tiny amount, severely hampering the training progress in these layers.
+Even though previously, the Sigmoid function was given as an example of a suitable activation function for MLPs, recent research \cite{glorot}\cite{rectifiers} has shown that better alternatives exist, and it is hardly used anymore. This is mainly because Sigmoids contribute to the problem of ``vanishing gradients'' during Backpropagation which causes earlier layers in a deep network to train much more slowly than layers near the output layer. ``Vanishing gradients'' happen when the magnitude of the gradient is close to zero, which in turn causes the training to change the network weights in affected layers by only a tiny amount, severely hampering the training progress in these layers.
 
 The Sigmoid function
 
 \[ \sigma(x) = \frac{1}{1 + e^{-x}} \]
 
-\noindent is especially prone to this because its derivative outputs values in the range $\left [0, \frac{1}{4} \right ]$ only. Combined with weights initialized to small values, e.g. Gaussian-distributed weights with zero mean and unit variance, the repeated application of the chain rule results in many terms in the range $\left [0, 1\right ]$ being multiplied with each other, leading to very small gradients the closer the algorithm gets to the input layer. \cite{glorot} The same is true for the $tanh$ activation function
+\noindent is especially prone to this because its derivative outputs values in the range $\left [0, \frac{1}{4} \right ]$ only. Combined with weights initialized to small values, e.g. Gaussian-distributed weights with zero mean and unit variance, the repeated application of the chain rule results in many terms in the range $\left [0, 1\right ]$ being multiplied with each other, leading to very small gradients the closer the algorithm gets to the input layer. The same is true for the $tanh$ activation function
 
 \begin {align}
 	tanh(x) &= \frac{1 - e^{-2x}}{1 + e^{-2x}}\\
@@ -64,7 +64,7 @@ In general, activation functions for which
 
 \noindent with its derivative given by 
 
-\[ \frac{\partial}{\partial x} ReLU(x) = \begin{cases}
+\[ \frac{\partial ReLU}{\partial x} = \begin{cases}
 							1 \text { if } x > 0\\
 							0 \text { if } x < 0\\
 							 \text{undefined if } x = 0
@@ -91,20 +91,20 @@ An attempt at fixing this issue is relaxing the strict below-zero activation so 
 
 \noindent for some small scaling parameter $0 < \alpha < 1$. Consequently, its (zero input-altered) derivative becomes
 
-\[ \frac{\partial}{\partial x} LReLU(x) = \begin{cases}
+\[ \frac{\partial LReLU}{\partial x} = \begin{cases}
 							1 \text { if } x > 0\\
 							\alpha \text{ else}
 						        \end{cases}
 \]
 
-\noindent When the leak parameter $\alpha$ is made an additional weight to be trained by Backpropagation, the resulting activation function is called \textit{Parametric ReLU} (PReLU). \cite{he} Another alternative is the \textit{Exponential ReLU} (ELU) \cite{elu} which aims to combine leakiness with activations close to zero mean to speed up learning. It is defined by
+\noindent When the leak parameter $\alpha$ is made an additional weight to be trained by Backpropagation, the resulting activation function is called \textit{Parametric ReLU} (PReLU). \cite{rectifiers} Another alternative is the \textit{Exponential ReLU} (ELU) \cite{elu} which aims to combine leakiness with activations close to zero mean to speed up learning. It is defined by
 
 \begin {align}
 	ELU(x) &= \begin{cases}
 			x \text { if } x \geq 0\\
 			\alpha(e^x - 1) \text{ else}
 		     \end{cases}\\
-	\frac{\partial}{\partial x} ELU(x) &= \begin{cases}
+	\frac{\partial ELU}{\partial x} &= \begin{cases}
 								1 \text { if } x \geq 0\\
 								ELU(x) + \alpha \text{ else}
 		    				     \end{cases},
@@ -148,19 +148,20 @@ An attempt at fixing this issue is relaxing the strict below-zero activation so 
 
 
 	\section{Weight Initialization}
+\label{sec:weight_init}
 Another important decision apart from choosing an appropriate activation function is initializing the weights of the network. A naive approach of setting all weights to zero would lead to absolute failure when the activation function used output zero for a zero input, because then, all gradients would likewise be zero vectors and the weights would never be updated. Setting all weights to the same value also doesn't work well because this would make the neurons symmetric, meaning that neurons update the same way and thus also output the same values, which doesn't lead to good model performance.
 
-A more reasonable approach is to initialize the weights as small random numbers, for example sampled from a Gaussian distribution with a small variance - albeit this causes problems when using activation functions with small activation outputs, as the small weights and activations reduce the variance of the activations in the network the further the activations travel. Making the weights larger also doesn't work, as the function will then saturate due to the large weights and the gradient becomes zero. \textit{Xavier initialization} \cite{glorot} provides a now-standard approximate method to get useful activations throughout all network layers by initializing the weights of a neuron by drawing them from a normal distribution $\mathcal{N}$ with mean $\mu = 0$ and a variance $\sigma^2$ which is calculated for each neuron independently, using the number of inputs $\#in$ to that neuron and the number of outputs $\#out$ of that neuron:
+A more reasonable approach is to initialize the weights as small random numbers, for example sampled from a Gaussian distribution with a small variance - albeit this causes problems when using activation functions with small activation outputs, as the small weights and activations reduce the variance of the activations in the network the further the activations travel. Making the weights larger also doesn't work, as the function will then saturate due to the large weights and the gradient becomes zero.
+
+\textit{Xavier initialization} \cite{glorot} provides a now-standard approximate method to get useful activations throughout all network layers by initializing the weights of a neuron by drawing them from a normal distribution $\mathcal{N}$ with mean $\mu = 0$ and a variance $\sigma^2$ which is calculated for each neuron independently, using the number of inputs $\#in$ to that neuron and the number of outputs $\#out$ of that neuron:
 
 \[ \sigma^2 = \frac{2}{\#in + \#out}\,\,\,\footnote{Some frameworks use the simpler, alternative formula $\frac{1}{\#in}$ instead.} \]
 
-\noindent In CNNs, $\#in$ for a layer with, for instance, five $3 \times 3 \times 10$ filters would simply be $3 * 3 * 10 = 90$. Xavier initialization is based on the idea that each neuron should be initialized using weights that are neither too small nor too large, i.e. that correspond to the output of a distribution with a resonable variance, e.g. $\sigma^2$ = 1, which in turn depends on the number of inputs and outputs.
+\noindent In CNNs, $\#in$ for a layer with, for instance, five $3 \times 3 \times 10$ filters is equal to $3 * 3 * 10 = 90$. Xavier initialization is based on the idea that each neuron should be initialized using weights that are neither too small nor too large, i.e. that correspond to the output of a distribution with a resonable variance, e.g. $\sigma^2$ = 1, which in turn depends on the number of inputs and outputs.
 
 However, this formula was derived and tested before ReLUs became commonplace. As \cite{rectifiers} points out, using Xavier initialization with ReLUs is suboptimal because ReLUs set negative activations to zero, unlike symmetric functions such as Sigmoid. Therefore, a slightly different initialization, hereafter referred to as \textit{MSRA initialization}, was proposed. MSRA works well with ReLUs and its related activation functions and uses the variance $\sigma^2$, defined as
 
 \[ \sigma^2 = \frac{2}{\#in} \]
-
-\noindent Batch Normalization (see \ref{subsec:batchnorm}) provides a different way of dealing with the aforementioned problems and claims to diminish the dependence on a good initialization, although at the time of writing, it is still unclear whether using Batch Normalization really solves all weight initialization problems or if there is a better way to keep the weights in a proper range.
 
 
 	\section {Output- and Loss Functions}
@@ -302,12 +303,12 @@ FN &= \sum \limits_{i=1}^{n} (1 - y_i) t_i
 During the backward pass, the gradients are also calculated per class in a similiar way.
 
 
-	\section {The U-Net Architecture}
+	\section {U-Net}
 The U-Net \cite{unet} is a CNN architecture which aims to produce segmentation maps for images of cells. It was implemented using Caffe \cite{caffe}, a CNN library developed by the University of California, Berkeley that allows CNN layers - such as the ones described in the previous section - to be put together to form a network. The U-Net differs from standard CNNs in that it first performs a number of $3 \times 3$ convolutions followed by ReLU activations and $2 \times 2$ downsampling pooling operations with stride $2$ while steadily increasing the number of filters after each pooling operation from 64 up to 1024, but then replaces max pooling with upsampling of the same size and enlarges the feature maps again while reducing the number of filters. This results in a symmetric architecture that has a downsampling and an upsampling path which give the network its name.
 
 Additionally, the network uses feature concatenation by using shortcut connections (called ``skip-layer connections'' in \cite{bishop_pattern}) , taking the non-padded part of the feature maps from the corresponding sampling level after each upsampling operation and concatenating them with the upsampled maps. This is done to boost the precision of the segmentation output - downsampling reduces locality information which is nonetheless needed when creating a segmentation map, so this is a way to reduce the complexity of the network while still achieving precise results.
 
-The network is also a fully-convolutional network, so it does not have a final fully-connected layer to perform pixel classification. Instead, a $1 \times 1$ convolution with as many filters as classes should be present in the final segmentation is used for classification (see Figure \ref{fig:unet_arch}).
+The network is also a fully-convolutional network, so it does not have a final fully-connected layer to perform pixel classification. Instead, a $1 \times 1$ convolution with a number of filters that corresponds to the number of classes in the final segmentation map is used for classification (see Figure \ref{fig:unet_arch}).
 
 \begin {figure}[!ht]
 	\scalebox{0.75}{\input{img/unet_arch.pdf_tex}}
