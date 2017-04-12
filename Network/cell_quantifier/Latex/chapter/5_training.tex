@@ -45,9 +45,9 @@ Research \cite{lecun_norm} has shown that neural networks perform consistently b
 
 		\subsection{Mirror Tiling and Rotation}
 \label{subsec:mirror_tiling}
-CNNs usually need fixed input sizes because the combination of convolutions and pooling shrink the image in a certain way. This has to be accounted for when considering the input size of the image, because some input sizes are invalid in consequence (e.g. too small). Because the U-Net is supposed to take an input image of some size and output a segmentation map of the same size, the input size has to be chosen correctly so that the down- and upsampling operations do not change the image size. Therefore, an input size of $428 \times 428$ was chosen as a compromise between needed memory and context within the image available to the CNN.
+CNNs usually need fixed input sizes because the combination of convolutions and pooling shrink the image in a certain way. This has to be accounted for when considering the input size of the image, because some input sizes are invalid in consequence. For example, downsampling with stride $2 \times 2$ shrinks an image by a factor of two, but if the dimensions of the image are not divisable by two, the operator can't be applied without causing interpolation problems. Because the U-Net is supposed to take an input image of some size and output a segmentation map of the same size, the input size additionally has to be chosen correctly so that network outputs an image of the correct size. This is done by adding a padding border to the input images so that in the case of an input size of $244 \times 244$, the padding increases the padded size to $428 \times 428$. This can be done by mirroring the image at its borders so it matches the needed border size. The input size was chosen as as a compromise between needed memory and context within the image available to the CNN.
 
-As the original data was of a different size, each input image can be tiled into sub-images of the appropriate size and then be fed to the network. There is another thing to consider, though: To predict the pixels on the borders of the image by convolution, the images need to be artificially enlarged by a border so that the convolution can proceed. This can be done by using by mirroring the entire image at its borders before tiling. The tiling can then proceed starting from the top-left corner and continuing from left to right and from top to bottom. However, this would result in ``broken'' tiles at the right and bottom borders when the size of the mirror-padded original image isn't cleanly divisable by the network's input size, which was the case for the given input data. Consequently, these broken tiles were repaired by mirroring the data starting at the border of the padded image, padding them back to the preferred tile size (see Figure \ref{fig:tile_mirror_rotate}).\\
+However, as the original Drosophila data was of a different size, each input image can be first padded by a mirror border and then be tiled into sub-images of the appropriate size to be fed to the network. The tiling starts at the top-left corner and continues from left to right and from top to bottom. However, naively tiling would result in ``broken'' tiles at the right and bottom borders when the size of the mirror-padded  image isn't evenly divisable by the network's input size, which was the case for the given input data. Consequently, these broken tiles were repaired by again mirroring the data starting at the border of the padded image, growing them back to the chosen tile size (see Figure \ref{fig:tile_mirror_rotate}).\\
 
 \noindent Moreover, a major problem with training deep Neural Networks is the immense amount of data required. Common image datasets such as MNIST\footnote{\url{http://yann.lecun.com/exdb/mnist/}}, CIFAR-100\footnote{\url{https://www.cs.toronto.edu/~kriz/cifar.html}} and ImageNet \cite{ILSVRC} contain 10,000 to 14.1 million images. Such numbers are absolutely out of reach for most biomedical applications as the data required is usually not publicly available. Manually labelling the data for this thesis took 30 - 45 minutes per image, making it impossible to create a large training set in a reasonable amount of time.
 
@@ -88,9 +88,33 @@ Another data augmentation technique is \textit{elastic deformation} \cite{elasti
 	\label{fig:elastic}
 \end {figure}
 
-	\section {Training Algorithms and Parameters}
-	\label{act_funcs}
-	\textbf{TODO:} put ReLU, leaky ReLU, parametric ReLU and ELU here!\\ Include XAVIER init.. is Xavier ok with ReLU? "He et al. 2015", https://www.youtube.com/watch?v=gYpoJMlgyXA
+
+	\section {Training Algorithms and Optimizations}
+	Approaches that try to reduce overfitting in learning algorithms are called \textit{regularization} approaches.
+
+	\subsubsection {Dropout}
+\label{subsec:dropout}
+\textit{Dropout} is a regularization technique \cite{dropout} that ``disables'' neurons it is applied to during training with a certain chance according to a user-defined Bernoulli probability. These disabled neurons are not trained on the particular training sample - an effect one could view as training only a sub-network of the original neural network. By applying Dropout repeatedly and scaling the weights by the Dropout probability $p$ during testing, one gains an approximation of averaging the outputs of all possible $2^n$ sub-networks, where $n$ is the number of neurons in the network. This lowers the amount of overfitting because neurons learn not to ``rely'' on other neurons which otherwise would lead to specialized co-adaptions that usually hurt the generalization ability of the network.
+
+
+
+	\subsubsection {Batch Normalization}
+\label{subsec:batchnorm}
+\textit{Batch Normalization} (BN) \cite{batchnorm} is a method to improve training accuracy and speed while training either general MLPs or CNNs with the SGD algorithm (or other gradient-based algorithms that use mini-batches). The idea a BN layer in a network is based on is that Backpropagation works better if the inputs to the network are normalized (see also section \ref{sec:preprocessing}). However, as the input passes through the network, the repeated transformations change the distribution of the data, referred to by the authors of the BN paper as ``internal covariance shift''. Batch Normalization reduces this shift by re-normalizing data within the network so that the following layers once again work on normalized data. For this purpose, such a layer first normalizes the data by applying the formula 
+
+\[  \hat{x} = \frac{x - E[x]}{\sqrt{Var[x]} + \epsilon} \]
+
+\noindent where $E$ is the mean of an SGD mini-batch, $Var$ is the covariance and $\epsilon$ is an added constant that provides numerical stability. These calculations are done for each dimension of the input separately. Additionally, it has two variables $\gamma$ and $\beta$ which are learned by Backpropagation. These variables perform an affine transformation of the normalized data given by
+
+\[ y_i = \gamma \hat{x} + \beta \]
+
+\noindent This transformation simply provides a means to scale and shift the normalized data. In case the best operation is to not transform the data at all, the parameters can be learned to be set to 
+
+\[ \gamma = \sqrt{Var[x]} \,\,\text{ and } \,\, \beta = E[x] ,\]
+
+\noindent in which case the affine transformation simply recovers the original, un-normalized input to the BN layer.
+
+\textbf{TODO:} test time and CNN special case?
 
 
 	\section {Pseudo-Labelling}

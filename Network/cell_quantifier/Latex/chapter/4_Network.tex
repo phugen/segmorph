@@ -5,17 +5,15 @@ Since the task of image segmentation is a popular one, a number of architecture 
 
 	\section{Convolutional Neural Networks}
 \label{sec:CNN}
-\textit{Convolutional Neural Networks} (CNNs) are a special subtype of ANNs/MLPs that was popularized by LeCun \cite{lecun98} and, more recently, the successes of Krizhevsky \cite{krizhevsky2012} in the domain of image classification, although CNNs have been applied to other problems such as sound analysis as well. The rationale for their creation was that using fully-connected networks like the ones presented in section \ref{subsec:mlp_backprop} relate all elements of an input vector to every other element, which is generally a good thing to do - however, it ignores the relationship between parts of the input that is given in some datasets and doesn't scale well for very large datasets because of the large number of weights needed. Especially in image data, pixels that are close to each other by some metric such as the Euclidean distance are much more likely to be related, while pixels that lie on the other side of the image hardly are relevant in the context of operations like pixel classification. Consequently, CNNs encode this spatial relationship by using convolution operations. Concretely, a convolution layer in a CNN typically consists of three sub-components:\\
+\textit{Convolutional Neural Networks} (CNNs) are a special subtype of ANNs/MLPs that was popularized by LeCun \cite{lecun98} and, more recently, the successes of Krizhevsky \cite{krizhevsky2012} in the domain of image classification, although CNNs have been applied to other problems such as sound analysis as well. The rationale for their creation was that using fully-connected networks like the ones presented in section \ref{subsec:mlp_backprop} relate all elements of an input vector to every other element, which is generally a good thing to do - however, it ignores the relationship between parts of the input that is given in some datasets and doesn't scale well for very large datasets because of the large number of weights needed. Especially in image data, pixels that are close to each other by some metric such as the Euclidean distance are much more likely to be related, while pixels that lie on the other side of the image hardly are relevant to a local pattern the pixels might be forming. Consequently, CNNs encode this spatial relationship by using convolution operations which share weights across all neurons involved in the convolution. Concretely, such a convolution layer in a CNN typically consists of three sub-components:\\
 
-\noindent First, the data is convoluted by applying one or multiple kernels (also called filter) to all input values and their local neighborhoods.\footnote{Although the convolution in section \ref{sec:canny} describes out-of-bounds handling, the architecture used in this thesis uses only the naturally valid part of the convolution, i.e. if a $3 \times 3 \times d$ filter is used, a 1-value border of the data is lost because the local neighborhood would be partly out of bounds for these border values.} Kernels typically have a size of $k \times k \times d$, where $k$ is the filter size and $d$ is the depth of the dataset, e.g. in an RGB image dataset, the depth is 3 because there are 3 color channels. The result of these convolutions are as many outputs, called \textit{feature maps}, as there are filters in the layer. When viewed as a graph, this means that the hidden neurons represent the results of each convolution step, while all hidden neurons of the same filter share the same weights.
+\noindent First, the data is convoluted by applying one or multiple kernels (also called filter) to all input values and their local neighborhoods.\footnote{Although the convolution in section \ref{sec:canny} describes out-of-bounds handling, the architecture used in this thesis uses only the naturally valid part of the convolution, i.e. if a $3 \times 3 \times d$ filter is used, a 1-value border of the data is lost because the local neighborhood would be partly out of bounds for these border values.} Filters typically have a size of $k \times k \times d$, where $k$ is the filter size and $d$ is the depth of the dataset, e.g. in an RGB image dataset, the depth is 3 because there are 3 color channels. This means that the convolutions performed in CNNs are almost always multi-dimensional, extending through the whole depth of the stack of input values. The result of these convolutions are as many 2D outputs as there are filters in the layer. These outputs are called \textit{feature maps}, and they then, in turn, provide an input stack for the following layers. Effectively, applying the a specific filter to every valid position in a feature map means that the same kind of pattern is searched in the entire dataset, resulting in \textit{translation invariance}, i.e. it doesn't matter where the pattern is found for it to be recognized as such.
 
-Effectively, this means that the same kind of pattern is searched in the entire dataset, resulting in \textit{translation invariance}, i.e. it doesn't matter where the pattern is because it is still the same pattern at every position in the data.
+After convolution, the feature maps are passed through an non-linear activation function $h(\cdot)$ to generate ``activation maps'', like in normal MLPs.
 
-Then, the feature maps are passed through an non-linear activation function $h(\cdot)$, just like in normal MLPs, to generate activation maps.
+\noindent Finally, these activation maps are exposed to a pooling operation such as \textit{Maximum Pooling}. Maximum pooling is a downsampling method that reduces the complexity of the network by replacing groups of values that are apart by a certain stride in the activation map with the maximum value within that group, resulting in a condensed activation map, while performing this calculation for each depth slice of the data independently. Intuitively, some of the information about where a pattern was detected by a filter while creating the feature map is given up in order to make the network easier to manage by reducing the valid convolution filter positions, although the relative spatial relationships between patterns are kept intact. \cite[pp. 330-345]{deeplearning_book}\\
 
-\noindent Finally, these activation maps are exposed to a pooling operation such as \textit{Maximum Pooling}. Maximum pooling is a downsampling method that reduces the complexity of the network by replacing groups of values that are apart by a certain stride in the activation map with the maximum value within that group, resulting in a condensed activation map, while performing this calculation for each depth slice of the data independently. Intuitively, some of the information about where a pattern was detected by a filter while creating the feature map is given up in order to make the network easier to train, although the relative positions between patterns are kept intact. \cite[pp. 330-345]{deeplearning_book}\\
-
-\noindent The training of such a network then proceeds like in an MLP, only that the weights that the network has to learn by backpropating the loss through the network are the weights of fully-connected layer as well as the filter weights.\\
+\noindent The training of such a network then proceeds like in an MLP, only that the weights that the network has to learn by Backpropagation are the weights of the fully-connected layer as well as the filter weights. Training the filters results in a hierarchy in which filters that are closer to the input detect low-level features such as edges, while further along the network, filter responses might be triggered by specific objects only.\\
 
 \noindent See figure \ref{fig:convnet} for an example of a simple CNN architecture.
 
@@ -23,22 +21,36 @@ Then, the feature maps are passed through an non-linear activation function $h(\
 	\begin{center}
 		\includegraphics[scale=0.75]{img/fig_convnet}
 	\end{center}
-	\caption{A Convolutional Neural Network with multiple filters. For simplicity, most neuron connections aren't shown explicitly. \textbf{a):} Input layer. The input size is $6 \times 6 \times 3$, while the kernel size is $3 \times 3 \times 3$. Neurons with valid convolution neighborhoods shown in gray. \textbf{b):} Feature maps with size $4 \times 4 \times 3$ that are the result of applying convolution filters to the input, which are then passed into the activation function $h$ to create activation maps. \textbf{c):} Results of a Maximum Pooling operation with sizes $2 \times 2$ and stride $2$ applied to the activation maps. The colors indicate the downsampled position of the maximum activation in a pooling region. \textbf{d):} Fully-connected output layer that calculates the network outputs via applying the output function $\sigma$. The max-pooled values have been rearranged into a column for clarity, and connections are color-coded by the receiving neuron.}
+	\caption{A small Convolutional Neural Network. For simplicity, most neuron connections aren't shown explicitly. \textbf{a):} Input layer. The input size is $6 \times 6 \times 3$, while the kernel size is $3 \times 3 \times 3$. Neurons with valid convolution neighborhoods shown in gray. \textbf{b):} Five feature maps with size $4 \times 4 \times 3$ that are the result of applying five different convolution filters to the input, which are then passed into the activation function $h$ to create activation maps. \textbf{c):} Results of a Maximum Pooling operation with sizes $2 \times 2$ and stride $2$ applied to the activation maps. The colors indicate the downsampled position of the maximum activation in a pooling region. \textbf{d):} Fully-connected output layer that calculates the network outputs via applying the output function $\sigma$. The max-pooled values have been rearranged into a column for clarity.}
 	\label{fig:convnet}
 \end {figure}
 
 
 	\section {Activation Functions}
-Even though previously, the Sigmoid function was given as an example of a suitable activation function for MLPs, recent research has shown that better alternatives exist, and it is hardly used anymore. This is mainly because Sigmoids contribute to the problem of ``vanishing gradients'' during Backpropagation which causes earlier layers in a deep network to train much more slowly than layers near the output layer. ``Vanishing gradients'' happen when the magnitude of the gradient is close to zero, which in turn causes the training to change the network weights in affected layers by only a tiny amount, effectively stalling the training process.
+Even though previously, the Sigmoid function was given as an example of a suitable activation function for MLPs, recent research has shown that better alternatives exist, and it is hardly used anymore. This is mainly because Sigmoids contribute to the problem of ``vanishing gradients'' during Backpropagation which causes earlier layers in a deep network to train much more slowly than layers near the output layer. ``Vanishing gradients'' happen when the magnitude of the gradient is close to zero, which in turn causes the training to change the network weights in affected layers by only a tiny amount, severely hampering the training progress in these layers.
 
-The Sigmoid function is especially prone to this because its derivative outputs values in the range $\left [0, \frac{1}{4} \right ]$ only. Combined with weights initialized to small values, e.g. Gaussian-distributed weights with zero mean and unit variance, the repeated application of the chain rule results in many terms in the range $\left [0, 1\right ]$ being multiplied with each other, leading to very small gradients the closer the algorithm gets to the input layer.\cite{glorot} Activation functions for which
+The Sigmoid function
+
+\[ \sigma(x) = \frac{1}{1 + e^{-x}} \]
+
+\noindent is especially prone to this because its derivative outputs values in the range $\left [0, \frac{1}{4} \right ]$ only. Combined with weights initialized to small values, e.g. Gaussian-distributed weights with zero mean and unit variance, the repeated application of the chain rule results in many terms in the range $\left [0, 1\right ]$ being multiplied with each other, leading to very small gradients the closer the algorithm gets to the input layer. \cite{glorot} The same is true for the $tanh$ activation function
+
+\begin {align}
+	tanh(x) &= \frac{1 - e^{-2x}}{1 + e^{-2x}}\\
+		  &= 2 \left ( \frac{1}{1 + e^{-(2x)}} \right ) - 1\\
+		  &= 2 \sigma(2x) - 1
+\end {align}
+
+\noindent although its derivative is always in $[0, 1]$ and thus it decays more slowly as it passes through the network. However, in comparison with the Sigmoid, $tanh$ has the advantage of being zero-centered. Data that is not zero-centered can be detrimental for Gradient Descent training because this can cause the weight gradients to become either all positive or all negative, especially in a Stochastic Gradient Descent where only one sample determines how the weights are updated. If this happens, the updates might take longer to reach an optimum because the best update step to take might require a gradient update with mixed signs instead, leading to ``zig-zagging'' during the descent.
+
+In general, activation functions for which
 
 \[ \lim \limits_{x \rightarrow -\infty} \frac{\partial}{\partial x} h(x) = 0 \,\,\,\, \land \,\,\,\,  \lim \limits_{x \rightarrow +\infty} \frac{\partial}{\partial x} h(x) = 0 \]
 
-\noindent is true are called \textit{saturating} activation functions and possess the undesirable property of leading to vanishing gradients.\\ 
- \textbf{TODO: zigzagging because not zero-centered, \url{http://cs231n.github.io/neural-networks-1/} + tanh}\\
+\noindent is true are called \textit{saturating} activation functions and possess the undesirable property of leading to vanishing gradients which eventually lead to problems as the number of layers in networks increases.\\ 
+ \textbf{TODO: check definition of saturation}\\
 
-\noindent A newer, popular alternative to the Sigmoid function is the \textit{Rectified Linear Unit} function (ReLU). It is defined as the piecewise function
+\noindent A newer, popular alternative to the Sigmoid and $\tanh$ functions is the \textit{Rectified Linear Unit} function (ReLU). It is defined as the piecewise function
 
 \[  ReLU(x) = \begin{cases}
 			0 \text{ if } x \leq 0\\
@@ -85,7 +97,7 @@ An attempt at fixing this issue is relaxing the strict below-zero activation so 
 						        \end{cases}
 \]
 
-\noindent When the leak parameter $\alpha$ is made an additional weight to be trained by Backpropagation, the resulting activation function is called \textit{Parametric ReLU} (PReLU). Another alternative is the \textit{Exponential ReLU} (ELU) \cite{elu} which aims to combine leakiness with activations close to zero mean to speed up learning. It is defined by
+\noindent When the leak parameter $\alpha$ is made an additional weight to be trained by Backpropagation, the resulting activation function is called \textit{Parametric ReLU} (PReLU). \cite{he} Another alternative is the \textit{Exponential ReLU} (ELU) \cite{elu} which aims to combine leakiness with activations close to zero mean to speed up learning. It is defined by
 
 \begin {align}
 	ELU(x) &= \begin{cases}
@@ -136,9 +148,19 @@ An attempt at fixing this issue is relaxing the strict below-zero activation so 
 
 
 	\section{Weight Initialization}
+Another important decision apart from choosing an appropriate activation function is initializing the weights of the network. A naive approach of setting all weights to zero would lead to absolute failure when the activation function used output zero for a zero input, because then, all gradients would likewise be zero vectors and the weights would never be updated. Setting all weights to the same value also doesn't work well because this would make the neurons symmetric, meaning that neurons update the same way and thus also output the same values, which doesn't lead to good model performance.
 
-	\textbf{TODO: Glorot, He Inits, referenz auf tanh und batchnorm kombi? ReLU ELU etc}\\
-	symmetry breaking
+A more reasonable approach is to initialize the weights as small random numbers, for example sampled from a Gaussian distribution with a small variance - albeit this causes problems when using activation functions with small activation outputs, as the small weights and activations reduce the variance of the activations in the network the further the activations travel. Making the weights larger also doesn't work, as the function will then saturate due to the large weights and the gradient becomes zero. \textit{Xavier initialization} \cite{glorot} provides a now-standard approximate method to get useful activations throughout all network layers by initializing the weights of a neuron by drawing them from a normal distribution $\mathcal{N}$ with mean $\mu = 0$ and a variance $\sigma^2$ which is calculated for each neuron independently, using the number of inputs $\#in$ to that neuron and the number of outputs $\#out$ of that neuron:
+
+\[ \sigma^2 = \frac{2}{\#in + \#out}\,\,\,\footnote{Some frameworks use the simpler, alternative formula $\frac{1}{\#in}$ instead.} \]
+
+\noindent In CNNs, $\#in$ for a layer with, for instance, five $3 \times 3 \times 10$ filters would simply be $3 * 3 * 10 = 90$. Xavier initialization is based on the idea that each neuron should be initialized using weights that are neither too small nor too large, i.e. that correspond to the output of a distribution with a resonable variance, e.g. $\sigma^2$ = 1, which in turn depends on the number of inputs and outputs.
+
+However, this formula was derived and tested before ReLUs became commonplace. As \cite{rectifiers} points out, using Xavier initialization with ReLUs is suboptimal because ReLUs set negative activations to zero, unlike symmetric functions such as Sigmoid. Therefore, a slightly different initialization, hereafter referred to as \textit{MSRA initialization}, was proposed. MSRA works well with ReLUs and its related activation functions and uses the variance $\sigma^2$, defined as
+
+\[ \sigma^2 = \frac{2}{\#in} \]
+
+\noindent Batch Normalization (see \ref{subsec:batchnorm}) provides a different way of dealing with the aforementioned problems and claims to diminish the dependence on a good initialization, although at the time of writing, it is still unclear whether using Batch Normalization really solves all weight initialization problems or if there is a better way to keep the weights in a proper range.
 
 
 	\section {Output- and Loss Functions}
@@ -283,12 +305,12 @@ During the backward pass, the gradients are also calculated per class in a simil
 	\section {The U-Net Architecture}
 The U-Net \cite{unet} is a CNN architecture which aims to produce segmentation maps for images of cells. It was implemented using Caffe \cite{caffe}, a CNN library developed by the University of California, Berkeley that allows CNN layers - such as the ones described in the previous section - to be put together to form a network. The U-Net differs from standard CNNs in that it first performs a number of $3 \times 3$ convolutions followed by ReLU activations and $2 \times 2$ downsampling pooling operations with stride $2$ while steadily increasing the number of filters after each pooling operation from 64 up to 1024, but then replaces max pooling with upsampling of the same size and enlarges the feature maps again while reducing the number of filters. This results in a symmetric architecture that has a downsampling and an upsampling path which give the network its name.
 
-Additionally, the network uses feature concatenation by using shortcut connections (called ``skip-layer connections'' in \cite{bishop_pattern}) , taking the non-padded part of the feature maps from the corresponding sampling level after each upsampling operation and fusing them with the upsampled maps by \textbf{TODO: how does fusing work? summation? maximum?}. This is done to boost the precision of the segmentation output - downsampling reduces locality information which is nonetheless needed when creating a segmentation map, so this is a way to reduce the complexity of the network while still achieving precise results.
+Additionally, the network uses feature concatenation by using shortcut connections (called ``skip-layer connections'' in \cite{bishop_pattern}) , taking the non-padded part of the feature maps from the corresponding sampling level after each upsampling operation and concatenating them with the upsampled maps. This is done to boost the precision of the segmentation output - downsampling reduces locality information which is nonetheless needed when creating a segmentation map, so this is a way to reduce the complexity of the network while still achieving precise results.
 
 The network is also a fully-convolutional network, so it does not have a final fully-connected layer to perform pixel classification. Instead, a $1 \times 1$ convolution with as many filters as classes should be present in the final segmentation is used for classification (see Figure \ref{fig:unet_arch}).
 
 \begin {figure}[!ht]
 	\scalebox{0.75}{\input{img/unet_arch.pdf_tex}}
-	\caption{The U-Net architecture. The numbers indicate the number of channels, or, in the case of the convolutional layers, the number of filters. In this example, the input is a grayscale image and therefore has one channel only. $C$ is the number of output classes to segment the image into, i.e. 3 or 4 depending on which dataset is used.}
+	\caption{The U-Net architecture. The white numbers indicate the number of filters per convolution, while the orange numbers show the number of feature maps that are taken from earlier layers for concatenation \textbf{before} downsampling is performed. In this example, the input is a grayscale image and therefore has one channel only. $C$ is the number of output classes to segment the image into, i.e. 3 or 4 depending on which dataset is used.}
 	\label{fig:unet_arch}
 \end {figure}

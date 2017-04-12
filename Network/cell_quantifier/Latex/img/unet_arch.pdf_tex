@@ -50,7 +50,6 @@
   \makeatother%
   \begin{picture}(1,0.75)%
     \put(0,0){\includegraphics[width=\unitlength,page=1]{img/unet_arch.pdf}}%
-    \put(0.02973702,0.66353075){\color[rgb]{1,1,1}\makebox(0,0)[lb]{\smash{1}}}%
     \put(0.08184266,0.6636561){\color[rgb]{1,1,1}\makebox(0,0)[lb]{\smash{64}}}%
     \put(0.13953968,0.66345691){\color[rgb]{1,1,1}\makebox(0,0)[lb]{\smash{64}}}%
     \put(0.11453706,0.5259468){\color[rgb]{1,1,1}\makebox(0,0)[lb]{\smash{128}}}%
@@ -60,15 +59,21 @@
     \put(0.27963863,0.27273519){\color[rgb]{1,1,1}\makebox(0,0)[lb]{\smash{512}}}%
     \put(0.33783073,0.27206177){\color[rgb]{1,1,1}\makebox(0,0)[lb]{\smash{512}}}%
     \put(0.40473889,0.16363871){\color[rgb]{1,1,1}\makebox(0,0)[lb]{\smash{1024}}}%
-    \put(0.46110372,0.16362012){\color[rgb]{1,1,1}\makebox(0,0)[lb]{\smash{1024}}}%
-    \put(0.54798775,0.27174935){\color[rgb]{1,1,1}\makebox(0,0)[lb]{\smash{512}}}%
-    \put(0.60521228,0.27262008){\color[rgb]{1,1,1}\makebox(0,0)[lb]{\smash{512}}}%
+    \put(0.46729419,0.16362012){\color[rgb]{1,1,1}\makebox(0,0)[lb]{\smash{512}}}%
+    \put(0.54731429,0.27107593){\color[rgb]{1,1,1}\makebox(0,0)[lb]{\smash{512}}}%
+    \put(0.60521228,0.27059977){\color[rgb]{1,1,1}\makebox(0,0)[lb]{\smash{256}}}%
     \put(0.62104439,0.3938514){\color[rgb]{1,1,1}\makebox(0,0)[lb]{\smash{256}}}%
-    \put(0.67826896,0.39298071){\color[rgb]{1,1,1}\makebox(0,0)[lb]{\smash{256}}}%
+    \put(0.67826896,0.39298071){\color[rgb]{1,1,1}\makebox(0,0)[lb]{\smash{128}}}%
     \put(0.68963428,0.52421206){\color[rgb]{1,1,1}\makebox(0,0)[lb]{\smash{128}}}%
-    \put(0.74753231,0.52468823){\color[rgb]{1,1,1}\makebox(0,0)[lb]{\smash{128}}}%
-    \put(0.74630086,0.66237515){\color[rgb]{1,1,1}\makebox(0,0)[lb]{\smash{64}}}%
+    \put(0.75359326,0.52468823){\color[rgb]{1,1,1}\makebox(0,0)[lb]{\smash{64}}}%
+    \put(0.74529069,0.66237515){\color[rgb]{1,1,1}\makebox(0,0)[lb]{\smash{64}}}%
     \put(0.80307023,0.66202835){\color[rgb]{1,1,1}\makebox(0,0)[lb]{\smash{64}}}%
-    \put(0.86517472,0.66267289){\color[rgb]{1,1,1}\makebox(0,0)[lb]{\smash{C}}}%
+    \put(0.86517472,0.66161431){\color[rgb]{1,1,1}\makebox(0,0)[lb]{\smash{C}}}%
+    \put(0.46736389,0.29563798){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{}}}%
+    \put(0.46047579,0.40720162){\color[rgb]{1,0.4,0}\makebox(0,0)[lb]{\smash{+256}}}%
+    \put(0.45686405,0.28960339){\color[rgb]{1,0.4,0}\makebox(0,0)[lb]{\smash{+512}}}%
+    \put(0.46447864,0.54123871){\color[rgb]{1,0.4,0}\makebox(0,0)[lb]{\smash{+128}}}%
+    \put(0.46958154,0.67584608){\color[rgb]{1,0.4,0}\makebox(0,0)[lb]{\smash{+64}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=2]{img/unet_arch.pdf}}%
   \end{picture}%
 \endgroup%

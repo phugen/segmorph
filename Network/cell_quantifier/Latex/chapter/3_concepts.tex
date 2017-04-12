@@ -460,33 +460,9 @@ Luckily, there exists an iterative algorithm called \textit{Backpropagation} \ci
 		\label{fig:overfit}
 	\end {figure}
 
-\noindent The danger of overfitting on data increases with the complexity of the model. As MLPs are highly complex, often using millions of weights, overfitting is often a problem. Approaches that try to reduce overfitting in learning algorithms are called \textit{regularization} approaches.
+\noindent The danger of overfitting on data increases with the complexity of the model. As MLPs are highly complex, often using millions of weights, overfitting is often a problem. 
 
 
 
+%	\subsection{Training Optimizations and Regularization}
 
-	\subsection{Training Optimizations and Regularization}
-
-	\subsubsection {Dropout}
-\label{subsec:dropout}
-\textit{Dropout} is a regularization technique \cite{dropout} that ``disables'' neurons it is applied to during training with a certain chance according to a user-defined Bernoulli probability. These disabled neurons are not trained on the particular training sample - an effect one could view as training only a sub-network of the original neural network. By applying Dropout repeatedly and scaling the weights by the Dropout probability $p$ during testing, one gains an approximation of averaging the outputs of all possible $2^n$ sub-networks, where $n$ is the number of neurons in the network. This lowers the amount of overfitting because neurons learn not to ``rely'' on other neurons which otherwise would lead to specialized co-adaptions that usually hurt the generalization ability of the network.
-
-
-
-	\subsubsection {Batch Normalization}
-\label{subsec:batchnorm}
-\textit{Batch Normalization} (BN) \cite{batchnorm} is a method to improve training accuracy and speed while training either general MLPs or CNNs with the SGD algorithm (or other gradient-based algorithms that use mini-batches). The idea a BN layer in a network is based on is that Backpropagation works better if the inputs to the network are normalized (see also section \ref{sec:preprocessing}). However, as the input passes through the network, the repeated transformations change the distribution of the data, referred to by the authors of the BN paper as ``internal covariance shift''. Batch Normalization reduces this shift by re-normalizing data within the network so that the following layers once again work on normalized data. For this purpose, such a layer first normalizes the data by applying the formula 
-
-\[  \hat{x} = \frac{x - E[x]}{\sqrt{Var[x]} + \epsilon} \]
-
-\noindent where $E$ is the mean of an SGD mini-batch, $Var$ is the covariance and $\epsilon$ is an added constant that provides numerical stability. These calculations are done for each dimension of the input separately. Additionally, it has two variables $\gamma$ and $\beta$ which are learned by Backpropagation. These variables perform an affine transformation of the normalized data given by
-
-\[ y_i = \gamma \hat{x} + \beta \]
-
-\noindent This transformation simply provides a means to scale and shift the normalized data. In case the best operation is to not transform the data at all, the parameters can be learned to be set to 
-
-\[ \gamma = \sqrt{Var[x]} \,\,\text{ and } \,\, \beta = E[x] ,\]
-
-\noindent in which case the affine transformation simply recovers the original, un-normalized input to the BN layer.
-
-\textbf{TODO:} test time and CNN special case?
