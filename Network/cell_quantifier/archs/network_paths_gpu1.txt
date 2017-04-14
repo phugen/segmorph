@@ -1,0 +1,6 @@
+# comments also work!
+.\unet_4\unet_4_solver.prototxt
+.\unet_batchnorm_4\unet_batchnorm_4_solver.prototxt
+.\unet_weighted_4\unet_weighted_4_solver.prototxt
+.\unet_weighted_batchnorm_4\unet_weighted_batchnorm_4_solver.prototxt
+.\unet_f1_4\unet_f1_4_solver.prototxt
