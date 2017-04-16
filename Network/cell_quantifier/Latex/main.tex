@@ -111,6 +111,13 @@
 \setcounter{tocdepth}{2} % paragraphs im Inhaltsverzeichnis anzeigen
 \interfootnotelinepenalty=10000 % prevent footnotes from flowing over onto next page
 
+% new command (wrapper) for \pgfimage with multiple images in a subfolder
+\newcommand\inputpgf[2]{{
+\let\pgfimageWithoutPath\pgfimage
+\renewcommand{\pgfimage}[2][]{\pgfimageWithoutPath[##1]{#1/##2}}
+\input{#1/#2}
+}}
+
 % Einstellungen für Abstand an den Rändern
 \geometry{a4paper,left=35mm,right=35mm,top=20mm,bottom=20mm, includeheadfoot}
 

@@ -3,7 +3,6 @@
 This section explains an array of concepts that can be used to segment an image into multiple areas. In the ``Results'' chapter (\ref{ch:results}), the performance of all the mentioned algorithms is compared, using the same data set each time.
 	
 	\section{Thresholding}
-\textbf{TODO: Mehr über Otsu, FIGURE}\\
 \label{sec:thresholding}
 
 Thresholding is the simplest segmentation algorithm there is: Given an input image with dimensions $x \times y$ and intensity values $z$ (for instance, $[0, 255]$ at 8-bit color depth), defined as a function 
@@ -27,46 +26,28 @@ Otsu's method iterates through all possible values for $\theta$ and calculates t
 
 \noindent where $W_b$ and $W_f$ are the weights - the sum of pixels in all bins belonging to either the background or foreground class, as determined by $\theta$, divided by the total number of pixels - and $\mu_b$ and $\mu_f$ are the statistical mean values for the background and foreground classes. The threshold with the maximum \textbf{between}-class variance corresponds to a segmentation in which the pixels of each class have minimum \textbf{within}-class variance: Intuitively, this means that the pixels of each class are very much alike.
 
-However, this approach doesn't work as well for images whose histograms are not bimodal at all - for example, due to excessive noise - and also, while possible, doesn't perform well for cases in which a large number of classes is to be segmented.\\
+\textbf{TODO: multi-otsu formula}\\
+\begin {figure}[!ht]
+	\begin {subfigure}[t]{0.3\linewidth}
+		\scalebox{0.65}{\inputpgf{img}{fig_otsu_histogram.pgf}}
+	\end {subfigure}
+	\hspace{5.5cm}
+	\begin {subfigure}[b]{0.3\linewidth}
+		\scalebox{0.65}{\inputpgf{img}{fig_otsu.pgf}}
+	\end {subfigure}
+		\caption[]{\textbf{Left:} Histogram of an 8-bit grayscale input image. Optimal thresholds found by Otsu's algorithm are marked in orange. \textbf{Right:} Original image (top) and four-way segmentation result.}
+		\label{fig:otsu}
+	\end {figure}
+
+
+
+However, this approach doesn't work as well for images whose histograms are not bimodal at all - for example, due to excessive noise - and also, while possible, doesn't perform well for cases in which a large number of classes is to be segmented, neither in time needed to perform a segmentation nor in the quality of the segmentation itself. \cite{Otsu} \\
 
 \noindent This thresholding mechanism is called ``global thresholding'' because the same threshold is applied to the entire image. However, there are also local thresholding algorithms which segment different parts of the image with different thresholds. The need for such algorithms often arises when the illumination of the input image is irregular, for example when cast shadows overlay part of the image (see \ref{fig:illumination}). One approach is to calculate a threshold for each pixel of the image while examining a neighborhood of size $L \times L$ around the pixel in question, using the mean, the mean of the maximum and minimum values or the median of the resulting local pixel intensity distribution to determine a local threshold.
 
 Local thresholding, however, also depends on choosing $L$ so that the local neighborhoods contain enough pixels of either class, or otherwise the local thresholds won't be chosen well\cite[pp.~84--93]{machine_vision}.
 
 
-	\section{K-Means}
-K-Means \cite{kmeans} is a general-purpose data clustering algorithm whose aim is to create $k$ data clusters from all $n$-dimensional data points $d = (f_1, f_2, \dots, f_n)$ so that the squared distance from each data point in the cluster to the cluster mean is minimized overall. Mathematically, this means calculating
-
-\[ \argmin \limits_{C} \sum \limits_{i=1}^{k} \sum \limits_{d \in C_i} || d - \mu_i||^2 ,\]
-
-\noindent where $C_{i \dots k}$ are the $k$ clusters and $\mu_{i \dots k}$ is the mean of the respective cluster. Viewed graphically, this is equal to computing a higher-order Voronoi diagram for the data, using the $k$ cluster centroids as the Voronoi cell centers (see Figure \ref{fig:kmeans}).
-
-The algorithm is initialized with $k$ either random or differently selected cluster centers. Then, the algorithm executes the two steps described in \ref{alg:kmeans_pseudo} alternatingly until either a set number of iterations is reached or the overall difference between the current and the last centroid positions falls below a threshold $\epsilon$.
-
-\begin {algorithm}
-	\caption{K-Means ($\epsilon$, iter\_max)}\label{alg:kmeans_pseudo}
-	\begin {algorithmic}[1]
-		\State iter = 0
-		\State Assign each data point to exactly one of the $k$ clusters by selecting the cluster that has the closest mean distance as defined above.
-		\State Calculate new cluster centers by recalculating the mean of all elements assigned to each cluster and calculate difference $\Delta$ compared to previous iteration.
-		\If {$\Delta < \epsilon$ \textbf{or} iter == iter\_max}
-			\State \textbf{end}
-		\Else
-			\State iter += 1
-			\State \textbf{goto} step 2
-		\EndIf
-	\end{algorithmic}
-\end{algorithm}
-
-\begin {figure}[!ht]
-	\begin {center}
-		\includegraphics[scale=0.65]{img/fig_kmeans}
-	\end{center}
-	\caption{Application of the K-Means algorithm to a test image. \textbf{Top left}: Input image. \textbf{Top right}: Ground truth labels of the input image. \textbf{Bottom left}: K-means results with $k=4$,  using arbitrary colors for the labels. \textbf{Bottom right}: Results with $k=6$. It is noteworthy that while the results for $k=4$ are reasonable, the nearly transparent lamellopodium pixels are labelled as background values, while the cell proper is segmented into two parts.}
-	\label{fig:kmeans}
-\end {figure}
-
-\noindent Obviously, this algorithm can also be used to segment images into $k$ different classes, but since K-Means assigns classes to data by using the distance from the mean, the algorithm output favors segmentations in which the classes have roughly the same size, which isn't necessarily the correct way to classify pixels in arbitrary image data.
 
 	\section{Canny Edge Detection}
 \label{sec:canny}
@@ -126,6 +107,43 @@ In the final step, a hysteresis threshold is applied. This process consists of d
 \noindent Pixels that have a value of $2$ are called strong pixels because they had values larger than the high threshold, whereas pixels with a value of $1$ are called weak pixels. Finally, the algorithm checks for each pixel if an 8-connected path between that pixel and a strong pixel exists - if not, then the pixel is dropped. This can be done with the help of connected component-finding algorithms by dropping each ``$1$''-component which is not connected to at least one ``2''-value.\\
 
 \noindent The thresholds $\theta_{high}$ and $\theta_{low}$ have to be set by the user, although there exists the possibility to set these by using the Otsu threshold described in \ref{sec:thresholding} . Using this combination approach, $\theta_{high}$ is set to the Otsu threshold value for $I(x, y)$, and $\theta_{low}$ is set to $0.5 * \theta_{high}$.\cite{otsu_combine}
+
+
+	\section{K-Means}
+K-Means \cite{kmeans} is a general-purpose data clustering algorithm whose aim is to create $k$ data clusters from all $n$-dimensional data points $d = (f_1, f_2, \dots, f_n)$ so that the squared distance from each data point in the cluster to the cluster mean is minimized overall. Mathematically, this means calculating
+
+\[ \argmin \limits_{C} \sum \limits_{i=1}^{k} \sum \limits_{d \in C_i} || d - \mu_i||^2 ,\]
+
+\noindent where $C_{i \dots k}$ are the $k$ clusters and $\mu_{i \dots k}$ is the mean of the respective cluster. Viewed graphically, this is equal to computing a higher-order Voronoi diagram for the data, using the $k$ cluster centroids as the Voronoi cell centers (see Figure \ref{fig:kmeans}).
+
+The algorithm is initialized with $k$ either random or differently selected cluster centers. Then, the algorithm executes the two steps described in \ref{alg:kmeans_pseudo} alternatingly until either a set number of iterations is reached or the overall difference between the current and the last centroid positions falls below a threshold $\epsilon$.
+
+\begin {algorithm}
+	\caption{K-Means ($\epsilon$, iter\_max)}\label{alg:kmeans_pseudo}
+	\begin {algorithmic}[1]
+		\State iter = 0
+		\State Assign each data point to exactly one of the $k$ clusters by selecting the cluster that has the closest mean distance as defined above.
+		\State Calculate new cluster centers by recalculating the mean of all elements assigned to each cluster and calculate difference $\Delta$ compared to previous iteration.
+		\If {$\Delta < \epsilon$ \textbf{or} iter == iter\_max}
+			\State \textbf{end}
+		\Else
+			\State iter += 1
+			\State \textbf{goto} step 2
+		\EndIf
+	\end{algorithmic}
+\end{algorithm}
+
+\begin {figure}[!ht]
+	\begin {center}
+		\includegraphics[scale=0.65]{img/fig_kmeans}
+	\end{center}
+	\caption{Application of the K-Means algorithm to a test image. \textbf{Top left}: Input image. \textbf{Top right}: Ground truth labels of the input image. \textbf{Bottom left}: K-means results with $k=4$,  using arbitrary colors for the labels. \textbf{Bottom right}: Results with $k=6$. It is noteworthy that while the results for $k=4$ are reasonable, the nearly transparent lamellopodium pixels are labelled as background values, while the cell proper is segmented into two parts.}
+	\label{fig:kmeans}
+\end {figure}
+
+\noindent Obviously, this algorithm can also be used to segment images into $k$ different classes, but since K-Means assigns classes to data by using the distance from the mean, the algorithm output favors segmentations in which the classes have roughly the same size, which isn't necessarily the correct way to classify pixels in arbitrary image data.
+
+
 
 
 	\section{Gaussian Mixture Models}

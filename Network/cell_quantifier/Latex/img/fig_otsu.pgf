@@ -1,0 +1,57 @@
+%% Creator: Matplotlib, PGF backend
+%%
+%% To include the figure in your LaTeX document, write
+%%   \input{<filename>.pgf}
+%%
+%% Make sure the required packages are loaded in your preamble
+%%   \usepackage{pgf}
+%%
+%% Figures using additional raster images can only be included by \input if
+%% they are in the same directory as the main LaTeX file. For loading figures
+%% from other directories you can use the `import` package
+%%   \usepackage{import}
+%% and then include the figures with
+%%   \import{<path to file>}{<filename>.pgf}
+%%
+%% Matplotlib used the following preamble
+%%   \usepackage{fontspec}
+%%   \setmainfont{DejaVu Serif}
+%%   \setsansfont{DejaVu Sans}
+%%   \setmonofont{DejaVu Sans Mono}
+%%
+\begingroup%
+\makeatletter%
+\begin{pgfpicture}%
+\pgfpathrectangle{\pgfpointorigin}{\pgfqpoint{2.070000in}{4.550000in}}%
+\pgfusepath{use as bounding box, clip}%
+\begin{pgfscope}%
+\pgfsetbuttcap%
+\pgfsetmiterjoin%
+\definecolor{currentfill}{rgb}{1.000000,1.000000,1.000000}%
+\pgfsetfillcolor{currentfill}%
+\pgfsetlinewidth{0.000000pt}%
+\definecolor{currentstroke}{rgb}{1.000000,1.000000,1.000000}%
+\pgfsetstrokecolor{currentstroke}%
+\pgfsetdash{}{0pt}%
+\pgfpathmoveto{\pgfqpoint{0.000000in}{0.000000in}}%
+\pgfpathlineto{\pgfqpoint{2.070000in}{0.000000in}}%
+\pgfpathlineto{\pgfqpoint{2.070000in}{4.550000in}}%
+\pgfpathlineto{\pgfqpoint{0.000000in}{4.550000in}}%
+\pgfpathclose%
+\pgfusepath{fill}%
+\end{pgfscope}%
+\begin{pgfscope}%
+\pgfpathrectangle{\pgfqpoint{0.314391in}{2.411500in}}{\pgfqpoint{1.492969in}{1.592500in}} %
+\pgfusepath{clip}%
+\pgfsys@transformshift{0.314391in}{2.411500in}%
+\pgftext[left,bottom]{\pgfimage[interpolate=true,width=1.500000in,height=1.600000in]{fig_otsu-img0.png}}%
+\end{pgfscope}%
+\begin{pgfscope}%
+\pgfpathrectangle{\pgfqpoint{0.314391in}{0.500500in}}{\pgfqpoint{1.492969in}{1.592500in}} %
+\pgfusepath{clip}%
+\pgfsys@transformshift{0.314391in}{0.500500in}%
+\pgftext[left,bottom]{\pgfimage[interpolate=true,width=1.500000in,height=1.600000in]{fig_otsu-img1.png}}%
+\end{pgfscope}%
+\end{pgfpicture}%
+\makeatother%
+\endgroup%
