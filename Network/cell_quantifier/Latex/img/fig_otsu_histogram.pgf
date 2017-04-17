@@ -650,13 +650,13 @@
 \pgfusepath{stroke}%
 \end{pgfscope}%
 \begin{pgfscope}%
-\pgftext[x=1.715080in,y=1.044765in,left,base]{\sffamily\fontsize{10.000000}{12.000000}\selectfont t0=37}%
+\pgftext[x=1.715080in,y=1.044765in,left,base]{\sffamily\fontsize{10.000000}{12.000000}\selectfont t1=37}%
 \end{pgfscope}%
 \begin{pgfscope}%
-\pgftext[x=3.005918in,y=1.044765in,left,base]{\sffamily\fontsize{10.000000}{12.000000}\selectfont t1=110}%
+\pgftext[x=3.005918in,y=1.044765in,left,base]{\sffamily\fontsize{10.000000}{12.000000}\selectfont t2=110}%
 \end{pgfscope}%
 \begin{pgfscope}%
-\pgftext[x=5.216257in,y=1.044765in,left,base]{\sffamily\fontsize{10.000000}{12.000000}\selectfont t2=235}%
+\pgftext[x=5.216257in,y=1.044765in,left,base]{\sffamily\fontsize{10.000000}{12.000000}\selectfont t3=235}%
 \end{pgfscope}%
 \end{pgfpicture}%
 \makeatother%

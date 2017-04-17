@@ -112,7 +112,7 @@ def otsu3(image):
      # mark thresholds with vertical lines
     for i, thr in enumerate(threshs):
         ax1.axvline(thr, color="orange")
-        ax1.text(thr+2, 500 ,"t" + str(i) + "=" + str(thr), rotation=0)
+        ax1.text(thr+2, 500 ,"t" + str(i+1) + "=" + str(thr), rotation=0)
 
     ax1.set_xlabel("Intensity levels")
     ax1.set_ylabel("Number of pixels")
@@ -206,11 +206,11 @@ def otsu4(image):
      # mark thresholds with vertical lines
     for i, thr in enumerate(threshs):
         ax1.axvline(thr, color="orange")
-        ax1.text(thr+2, 500 ,"t" + str(i) + "=" + str(thr), rotation=0)
+        ax1.text(thr+2, 500 ,"t" + str(i+1) + "=" + str(thr), rotation=0)
 
     ax1.set_xlabel("Intensity levels")
     ax1.set_ylabel("Number of pixels")
     plt.show()
 
-    
+
     return threshs

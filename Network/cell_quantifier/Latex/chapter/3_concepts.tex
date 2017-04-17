@@ -1,11 +1,11 @@
 \chapter{Basic Concepts}
 
-This section explains an array of concepts that can be used to segment an image into multiple areas. In the ``Results'' chapter (\ref{ch:results}), the performance of all the mentioned algorithms is compared, using the same data set each time.
+Image segmentation is one of the main challenges in image processing and has been an active field of study for years, which resulted in many segmentation methods being available. In the following pages, a selection of methods that work for multi-class segmentation, i.e. segmentation with more than two classes, is presented. All methods described here are later used to segment a set of images and compared to the ground truth to measure the quality of the segmentations (see \ref{chap:results}.
 	
 	\section{Thresholding}
 \label{sec:thresholding}
 
-Thresholding is the simplest segmentation algorithm there is: Given an input image with dimensions $x \times y$ and intensity values $z$ (for instance, $[0, 255]$ at 8-bit color depth), defined as a function 
+Thresholding is the most basic segmentation algorithm there is: Given an input image with dimensions $x \times y$ and intensity values $z$ (for instance, $[0, 255]$ at 8-bit color depth), defined as a function 
 
 \[I(x, y) \to z, \text{ for } x, y, z \in \mathbb{N}_0,\]
 
@@ -18,15 +18,14 @@ Thresholding is the simplest segmentation algorithm there is: Given an input ima
 \]
 
 
-\noindent This yields a binary segmentation of the image into two classes, given that $\theta$ is chosen properly. The choice of $\theta$ is therefore crucial for the success of the segmentation. One way to find a suitable threshold parameter is (automated) image histogram analysis, such as in Otsu's method.\cite{Otsu}
+\noindent This yields a binary segmentation of the image into two classes, given that $\theta$ is chosen properly. The choice of $\theta$ is therefore crucial for the success of the segmentation. One way to find a suitable threshold parameter is (automated) image histogram analysis, such as in Otsu's method. \cite{Otsu}
 
 Otsu's method iterates through all possible values for $\theta$ and calculates the ``between-class variance'' ${\sigma^{2}}_B$ for each $\theta$, defined as
 
-\[ {\sigma^2}_{B} = W_b W_f (\mu_b - \mu_f)^2,\]
+\[ {\sigma^2}_{B} = w_b w_f (\mu_b - \mu_f)^2,\]
 
-\noindent where $W_b$ and $W_f$ are the weights - the sum of pixels in all bins belonging to either the background or foreground class, as determined by $\theta$, divided by the total number of pixels - and $\mu_b$ and $\mu_f$ are the statistical mean values for the background and foreground classes. The threshold with the maximum \textbf{between}-class variance corresponds to a segmentation in which the pixels of each class have minimum \textbf{within}-class variance: Intuitively, this means that the pixels of each class are very much alike.
+\noindent where $w_b$ and $w_f$ are the weights - the sum of pixels in all bins belonging to either the background or foreground class, as determined by $\theta$, divided by the total number of pixels - and $\mu_b$ and $\mu_f$ are the statistical mean values for the background and foreground classes. The threshold with the maximum \textbf{between}-class variance corresponds to a segmentation in which the pixels of each class have minimum \textbf{within}-class variance: Intuitively, this means that the pixels of each class are very much alike.
 
-\textbf{TODO: multi-otsu formula}\\
 \begin {figure}[!ht]
 	\begin {subfigure}[t]{0.3\linewidth}
 		\scalebox{0.65}{\inputpgf{img}{fig_otsu_histogram.pgf}}
@@ -39,13 +38,26 @@ Otsu's method iterates through all possible values for $\theta$ and calculates t
 		\label{fig:otsu}
 	\end {figure}
 
+\noindent To extend the normal Otsu algorithm to $n$-class segmentation, the between-class variance formula is changed to include the variances of all classes, so that the best set of thresholds $\theta = \{t_1 \dots t_{n-1}\}$ is the one that minimizes the overall within-class variance by maximizing the overall between-class variance:
 
+\[ \sigma_B^2 = \sum \limits_{i=1}^{n} w_i (\mu_i - \mu_t)^2 \]
 
-However, this approach doesn't work as well for images whose histograms are not bimodal at all - for example, due to excessive noise - and also, while possible, doesn't perform well for cases in which a large number of classes is to be segmented, neither in time needed to perform a segmentation nor in the quality of the segmentation itself. \cite{Otsu} \\
+\noindent Here, $w_i$ is the weight of the $i$th class, $\mu_i$ is the mean of that class and $\mu_t$ is the total mean of all classes, i.e. $\sum_{i=1}^{n} w_i \mu_i$. The thresholds can then be applied using
 
-\noindent This thresholding mechanism is called ``global thresholding'' because the same threshold is applied to the entire image. However, there are also local thresholding algorithms which segment different parts of the image with different thresholds. The need for such algorithms often arises when the illumination of the input image is irregular, for example when cast shadows overlay part of the image (see \ref{fig:illumination}). One approach is to calculate a threshold for each pixel of the image while examining a neighborhood of size $L \times L$ around the pixel in question, using the mean, the mean of the maximum and minimum values or the median of the resulting local pixel intensity distribution to determine a local threshold.
+\[ T(I(x, y), \theta) =  \begin{cases}
+				n \text{ if } I(x, y) \, \geq \, t_{n-1} \\
+				n-1 \text { if } I(x, y) \, \geq t_{n-2} \land I(x, y) < t_{n-1}\\
+				\dots\\
+			           0 \text{ if } I(x, y) \, < t_1
+			     \end{cases}
+\]
 
-Local thresholding, however, also depends on choosing $L$ so that the local neighborhoods contain enough pixels of either class, or otherwise the local thresholds won't be chosen well\cite[pp.~84--93]{machine_vision}.
+\noindent However, this approach doesn't work as well for images whose histograms do not exhibit distinct histogram peaks - for example, due to noise - and also doesn't perform well for cases in which $n$ is large, neither considering the time needed to perform a segmentation\footnote{While variants of Otsu exist that are optimized for speed, such as \cite{otsu_fast}, only the original Otsu algorithm is evaluated here because it is the most common.} nor considering the segmentation quality, due to the method inspecting only the histogram data. \cite{Otsu}\\
+
+\noindent The Otsu algorithm belongs to a family of thresholding mechanisms that is called ``global thresholding'' because the same threshold is applied to the entire image. However, there are also local or ``adaptive'' thresholding algorithms which segment different parts of the image with different thresholds. The need for such algorithms often arises when the illumination of the input image is highly irregular, for example when cast shadows overlay part of the image (see \ref{fig:illumination}). One approach is to calculate a threshold for each pixel of the image while examining a neighborhood of size $L \times L$ around the pixel in question, using the mean, the mean of the maximum and minimum values or the median of the resulting local pixel intensity distribution to determine a local threshold.
+
+\textbf{TODO: are there adaptive thresholds for multi-label purposes?}\\
+Local thresholding, however, is much slower than global thresholding because it has to process the neighborhoods of each pixel, while it also depends on choosing $L$ so that the neighborhoods contain enough pixels of either class, or otherwise the thresholds won't be chosen well\cite[pp.~84--93]{machine_vision}.
 
 
 
@@ -106,7 +118,7 @@ In the final step, a hysteresis threshold is applied. This process consists of d
 
 \noindent Pixels that have a value of $2$ are called strong pixels because they had values larger than the high threshold, whereas pixels with a value of $1$ are called weak pixels. Finally, the algorithm checks for each pixel if an 8-connected path between that pixel and a strong pixel exists - if not, then the pixel is dropped. This can be done with the help of connected component-finding algorithms by dropping each ``$1$''-component which is not connected to at least one ``2''-value.\\
 
-\noindent The thresholds $\theta_{high}$ and $\theta_{low}$ have to be set by the user, although there exists the possibility to set these by using the Otsu threshold described in \ref{sec:thresholding} . Using this combination approach, $\theta_{high}$ is set to the Otsu threshold value for $I(x, y)$, and $\theta_{low}$ is set to $0.5 * \theta_{high}$.\cite{otsu_combine}
+\noindent The thresholds $\theta_{high}$ and $\theta_{low}$ have to be set by the user, although there exists the possibility to set these by using the Otsu threshold described in \ref{sec:thresholding} . Using this combination approach, $\theta_{high}$ is set to the Otsu threshold value for $I(x, y)$, and $\theta_{low}$ is set to $0.5 * \theta_{high}$.  \cite{otsu_combine}
 
 
 	\section{K-Means}
@@ -118,7 +130,7 @@ K-Means \cite{kmeans} is a general-purpose data clustering algorithm whose aim i
 
 The algorithm is initialized with $k$ either random or differently selected cluster centers. Then, the algorithm executes the two steps described in \ref{alg:kmeans_pseudo} alternatingly until either a set number of iterations is reached or the overall difference between the current and the last centroid positions falls below a threshold $\epsilon$.
 
-\begin {algorithm}
+\begin {algorithm}[!ht]
 	\caption{K-Means ($\epsilon$, iter\_max)}\label{alg:kmeans_pseudo}
 	\begin {algorithmic}[1]
 		\State iter = 0
@@ -158,7 +170,9 @@ Gaussian Mixtures Models (GMMs) are a subclass of mixture models, that is, proba
 \noindent A mixture model consists of $K$ models that each have different parameters $\mu$ and $\Sigma$ and are weighted by weights $\pi_k \in \mathbb{R}$, $1 > \pi_k > 0$, with $\sum_{i=1}^{k} \pi_i = 1$.
 
 \begin {figure}[!ht]
-	\includegraphics{img/fig_normal_vs_gmm}
+	\begin{center}
+		\includegraphics[scale=0.75]{img/fig_normal_vs_gmm}
+	\end{center}
 	\caption{Comparison of a single Gaussian fit (upper) with a GMM fit, using $K=3$, on a two-dimensional dataset randomly sampled from three Gaussian distributions. The single Gaussian fails to capture the structure of the data, while the GMM succeeds.}
 	\label{fig:normal_vs_gmm}
 \end {figure}
@@ -172,10 +186,6 @@ Gaussian Mixtures Models (GMMs) are a subclass of mixture models, that is, proba
 	\caption{From left to right: Input image, pseudo-color labels assigned by a $K=4$ GMM fit to the input image and the ground truth labels for the input image.}
 	\label{fig:gmm_vs_gt}
 \end {figure}
-
-
-	\section{Graph Cuts}
-
 
 
 	\section{Multi-layer Perceptrons}
@@ -244,7 +254,7 @@ The algorithm starts with a guess for the parameters in $\Theta$ and then iterat
 		\begin{center}
 			\scalebox{0.75}{\input{img/fig_momentum.pgf}}
 		\end{center}
-		\caption[]{The effect of momentum on SGD, applied to fitting a line to a noisy two-dimensional dataset with $\eta = 0.1$. \textbf{Left:} Standard SGD. Near the optimum, the algorithm begins zig-zagging and takes many steps to converge. \textbf{Right:} Momentum with SGD and $\gamma = 0.85$. Although the algorithm overshoots the minimum a few times, the number of steps until convergence is much smaller.}
+		\caption[]{The effect of momentum on SGD, applied to fitting a line to a noisy two-dimensional dataset with $\eta = 0.1$. \textbf{Left:} Standard SGD. Near the optimum, the algorithm begins zig-zagging and takes many steps to converge. \textbf{Right:} SGD with momentum and $\gamma = 0.85$. Although the algorithm overshoots the minimum a few times, the number of steps until convergence is much smaller.}
 		\label{fig:momentum}
 	\end {figure}
 
