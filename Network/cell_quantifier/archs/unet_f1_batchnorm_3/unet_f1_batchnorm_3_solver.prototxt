@@ -1,4 +1,4 @@
-net: "unet_f1_batchnorm_3.prototxt" # the destination of the network structure file
+net: "./unet_f1_batchnorm_3/unet_f1_batchnorm_3.prototxt" # the destination of the network structure file
 
 base_lr: 0.0001 # base learning rate, originally 0.001
 lr_policy: "step" # drop learning rate in steps by a factor gamma

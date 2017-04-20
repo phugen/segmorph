@@ -1,3 +1,5 @@
+# Does a SLIC and Kmeans segmentation of an image.
+
 from skimage import data, segmentation, color
 from skimage.future import graph
 from matplotlib import pyplot as plt
@@ -47,15 +49,14 @@ clusterer = cluster.KMeans(n_clusters=6)
 labels_2 = np.array(clusterer.fit_predict(img.reshape(img.size, 1))).reshape(imgdims[0], imgdims[1])
 kmeans_2 = color.label2rgb(labels_2, img, kind="avg")
 
-fig, (ax1, ax2) = plt.subplots(nrows=2, ncols=2, sharex=True, sharey=True)
+fig, ax1 = plt.subplots(nrows=1, ncols=3, sharex=True, sharey=True)
 ax1[0].imshow(img, cmap=plt.cm.gray)
-ax1[1].imshow(ground_truth)
-ax2[0].imshow(kmeans_1, cmap=plt.cm.gnuplot)
-ax2[1].imshow(kmeans_2, cmap=plt.cm.gnuplot)
+#ax1[1].imshow(ground_truth)
+ax1[1].imshow(kmeans_1, plt.cm.gray)
+ax1[2].imshow(kmeans_2, plt.cm.gray)
 
-for a in (ax1, ax2):
-    for i in range(2):
-        a[i].axis('off')
+for i in range(3):
+    ax1[i].axis('off')
 
 plt.subplots_adjust(top=0.99, bottom=0.01, left=0.17, right=0.87, hspace=0.05, wspace=0.05)
 plt.show()

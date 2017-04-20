@@ -5,9 +5,25 @@ Since the task of image segmentation is a popular one, a number of architecture 
 
 	\section{Convolutional Neural Networks}
 \label{sec:CNN}
-\textit{Convolutional Neural Networks} (CNNs) are a special subtype of ANNs/MLPs that was popularized by LeCun \cite{lecun98} and, more recently, the successes of Krizhevsky \cite{krizhevsky2012} in the domain of image classification, although CNNs have been applied to other problems such as sound analysis as well. The rationale for their creation was that using fully-connected networks like the ones presented in section \ref{subsec:mlp_backprop} relate all elements of an input vector to every other element, which is generally a good thing to do - however, it ignores the relationship between parts of the input that is given in some datasets and doesn't scale well for very large datasets because of the large number of weights needed. Especially in image data, pixels that are close to each other by some metric such as the Euclidean distance are much more likely to be related, while pixels that lie on the other side of the image hardly are relevant to a local pattern the pixels might be forming. Consequently, CNNs encode this spatial relationship by using convolution operations which share weights across all neurons involved in the convolution. Concretely, such a convolution layer in a CNN typically consists of three sub-components:\\
+\textit{Convolutional Neural Networks} (CNNs) are a special subtype of ANNs/MLPs that was popularized by LeCun \cite{lecun98} and, more recently, the successes of Krizhevsky \cite{krizhevsky2012} in the domain of image classification, although CNNs have been applied to other problems such as sound analysis as well. The rationale for their creation was that using fully-connected networks like the ones presented in section \ref{subsec:mlp_backprop} relate all elements of an input vector to every other element, which is generally a good thing to do - however, it ignores the relationship between parts of the input that is given in some datasets and doesn't scale well for very large datasets because of the large number of weights needed. Especially in image data, pixels that are close to each other by some metric are much more likely to be related, while pixels that lie on the other side of the image hardly are relevant to a local pattern the pixels might be forming. Consequently, CNNs encode this spatial relationship by using convolution operations which share weights across all neurons involved in the convolution.\\
 
-\noindent First, the data is convoluted by applying one or multiple kernels (also called filter) to all input values and their local neighborhoods.\footnote{Although the convolution in section \ref{sec:canny} describes out-of-bounds handling, the architecture used in this thesis uses only the naturally valid part of the convolution, i.e. if a $3 \times 3 \times d$ filter is used, a 1-value border of the data is lost because the local neighborhood would be partly out of bounds for these border values.} Filters typically have a size of $k \times k \times d$, where $k$ is the filter size and $d$ is the depth of the dataset, e.g. in an RGB image dataset, the depth is 3 because there are 3 color channels. This means that the convolutions performed in CNNs are almost always multi-dimensional, extending through the whole depth of the stack of input values. The result of these convolutions are as many 2D outputs as there are filters in the layer. These outputs are called \textit{feature maps}, and they then, in turn, provide an input stack for the following layers. Effectively, applying the a specific filter to every valid position in a feature map means that the same kind of pattern is searched in the entire dataset, resulting in \textit{translation invariance}, i.e. it doesn't matter where the pattern is found for it to be recognized as such.
+\noindent A \textit{convolution} is a mathematical operation which examines the ``neighborhood'' of a function value $x$, including $x$ itself, to compute a new value.  Convolutions were first used in signal processing, but can also be generalized to 2D and 3D spaces, for example blur images or find contours. In image processing, convolutions on an image matrix $I$ are usually performed by defining a small, quadratic \textit{kernels} or \textit{weight matrices} $B$ with uneven dimensions $d \times d$ and $d > 1$. The values in $B$ are the neighborhood weights for some neighborhood in $I$. Visualizing the convolution process, $B$ is aligned with each value in $I$ by its center value, one after another, and a dot product between the neighborhood from $I$ and the matrix $B$ is calculated, which is then the output of the convolution for the center value.
+
+However, for values in $I$ that are on the border of the matrix, this means that some neighborhood values are not defined because the neighborhood would extend over the boundaries of the matrix. In such out-of-bounds cases (OOB), several methods exist to nonetheless perform a convolution. Commonly, OOB values are set to zero and the convolution is performed as usual. An alternative is to treat the matrix like a torus and wrap around once the border is reached. Another variant is to just perform convolutions on those values that have a valid neighborhood, i.e. one that lies completely inside the matrix boundaries, therefore avoiding OOB values altogether, although this shrinks the input matrix each time a convolution is applied because the outer matrix values are ignored. For example, if a $3 \times 3$ kernel is used, a 1-value border of the data is lost (see Figure \ref{fig:convolution}). This last variant is assumed in the following sections.\\
+
+\begin {figure}[!ht]
+	\begin{center}
+		\includegraphics[scale=0.55]{img/fig_convolution}
+	\end{center}
+	\caption{A single step of a matrix convolution on an input matrix $I$, using a $3 \times 3$ kernel $B$. The inspected neighborhood that corresponds to the kernel is shown in green, while the convolution center value $x$ and the convolution output $x'$ are underlayed with orange. Note that $x'$ is a border value because only valid neighborhoods are assumed to be used.}
+	\label{fig:convolution}
+\end {figure}
+
+\noindent Concretely, a convolution layer in a CNN typically consists of three sub-components:\\
+
+\noindent First, the data is convoluted by using one or multiple kernels (also called filter) to all input values and their local neighborhoods. Filters typically have a size of $k \times k \times d$, where $k$ is the filter size and $d$ is the depth of the dataset, e.g. in an RGB image dataset, the depth is 3 because there are 3 color channels. This means that the convolutions performed in CNNs are almost always multi-dimensional, extending through the whole depth of the stack of input values. The result of these convolutions are as many 2D outputs as there are filters in the layer. These outputs are called \textit{feature maps}, and they then, in turn, provide an input stack for the following layers.
+
+Effectively, applying the a specific filter to every valid position in a feature map means that the same kind of pattern is searched in the entire dataset, resulting in \textit{translation invariance}, i.e. it doesn't matter where the pattern is found for it to be recognized as such.
 
 After convolution, the feature maps are passed through an non-linear activation function $h(\cdot)$ to generate ``activation maps'', like in normal MLPs.
 
@@ -27,7 +43,7 @@ After convolution, the feature maps are passed through an non-linear activation 
 
 
 	\section {Activation Functions}
-Even though previously, the Sigmoid function was given as an example of a suitable activation function for MLPs, recent research \cite{glorot}\cite{rectifiers} has shown that better alternatives exist, and it is hardly used anymore. This is mainly because Sigmoids contribute to the problem of ``vanishing gradients'' during Backpropagation which causes earlier layers in a deep network to train much more slowly than layers near the output layer. ``Vanishing gradients'' happen when the magnitude of the gradient is close to zero, which in turn causes the training to change the network weights in affected layers by only a tiny amount, severely hampering the training progress in these layers.
+Even though previously, the Sigmoid function was given as an example of a suitable activation function for MLPs, recent research \cite{glorot, rectifiers} has shown that better alternatives exist, and it is hardly used anymore. This is mainly because Sigmoids contribute to the problem of ``vanishing gradients'' during Backpropagation which causes earlier layers in a deep network to train much more slowly than layers near the output layer. ``Vanishing gradients'' happen when the magnitude of the gradient is close to zero, which in turn causes the training to change the network weights in affected layers by only a tiny amount, severely hampering the training progress in these layers.
 
 The Sigmoid function
 
@@ -119,7 +135,7 @@ An attempt at fixing this issue is relaxing the strict below-zero activation so 
 		\scalebox{0.60}{\input{img/fig_sigmoid.pgf}}
 		\caption{}
 	\end {subfigure}
-		\begin {subfigure}[{position=b}]{0.3\linewidth}
+	\begin {subfigure}[{position=b}]{0.3\linewidth}
 		\scalebox{0.60}{\input{img/fig_tanh.pgf}}
 		\caption{}
 	\end {subfigure}
@@ -268,7 +284,7 @@ One way to construct such a weight map is given in \cite{unet}, using the weight
 
 		\subsection{F-Measure}
 
-An alternative to solving the problem of unbalanced classes in the training data is using the \textit{F-Measure}, also called \textit{DICE similarity}, as a loss function instead. The F-Measure is a statistical similarity function which has been shown to perform well when using SGD-trained CNNs on unbalanced data for binary segmentations. \cite{fmeasure3}\cite{fmeasure4}\cite{fmeasure5} It is based on the quantities of \textit{Precision} and \textit{Recall} over the training sample in comparison to its ground truth. The precision is defined as
+An alternative to solving the problem of unbalanced classes in the training data is using the \textit{F-Measure}, also called \textit{DICE similarity}, as a loss function instead. The F-Measure is a statistical similarity function which has been shown to perform well when using SGD-trained CNNs on unbalanced data for binary segmentations. \cite{fmeasure3, fmeasure4, fmeasure5} It is based on the quantities of \textit{Precision} and \textit{Recall} over the training sample in comparison to its ground truth. The precision is defined as
 
 \[ PR = \frac{TP}{TP + FP} \]
 

@@ -7,8 +7,11 @@ import glob
 
 # Google Logging params.
 # Need to be set before importing Caffe!
-os.environ['GLOG_log_dir'] = "." # NOTE: where to save native log. Needs new PyCaffe version to work!
-os.environ['GLOG_logtostderr']= "0"
+os.environ["GLOG_log_dir"] = "." # where to save native log. NOTE: Needs new (December '16+) PyCaffe version to work!
+os.environ["GLOG_stderrthreshold"] = "INFO" # log everything, regardless of severity level
+os.environ["GLOG_alsologtostderr"]= "1" # in addition to logfile, show output on the console!
+
+
 
 import caffe
 

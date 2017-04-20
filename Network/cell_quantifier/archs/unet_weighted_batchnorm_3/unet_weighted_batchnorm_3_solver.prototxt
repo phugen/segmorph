@@ -1,8 +1,8 @@
-net: "unet_weighted_batchnorm_3.prototxt" # the destination of the network structure file
+net: "./unet_weighted_batchnorm_3/unet_weighted_batchnorm_3.prototxt" # the destination of the network structure file
 
-base_lr: 0.0001 # base learning rate, originally 0.001
+base_lr: 0.001 # base learning rate, originally 0.001
 lr_policy: "step" # drop learning rate in steps by a factor gamma
-gamma: 0.3 # see above
+gamma: 0.1 # see above
 stepsize: 20000 # drop learning rate every <stepsize> steps
 
 iter_size: 1 # how many images are processed simultaneously in one learning step (batch size)
