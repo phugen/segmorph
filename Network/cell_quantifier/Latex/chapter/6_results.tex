@@ -4,8 +4,9 @@
 	\section{Hardware}
 All variants of the U-Net were trained on a NVIDIA TITAN Xp GPU (12 GB VRAM) using Caffe's CUDA/cuDNN support.
 
-	\section {Timings and segmentation precision}
-\textbf{TODO: Use Cross-Entropy after manually recoloring images?}
+	\section {Segmentation quality}
+
+To evaluate the quality of the segmentations, the average multi-class F-Measure (see Section \ref{subsec:fmeasure}) of the network outputs for all validation images compared to their ground truth was calculated.\\
 
 \begin {table}
 	\centering
@@ -19,7 +20,7 @@ All variants of the U-Net were trained on a NVIDIA TITAN Xp GPU (12 GB VRAM) usi
 		Unet\_F1& & \\ \hline
 		Unet\_F1\_Batchnorm & & \\ \hline
 	\end {tabular}
-\caption[]{Precision of 3 and 4-class segmentations according to the ?? metric.}
+\caption[]{Multi-class F-Measure scores of 3 and 4-class CNN segmentations.}
 \end {table}
 
 \textbf{TODO: Batchnorm: lower learning rate, higher decay rate, no dropout?}
@@ -35,7 +36,7 @@ All variants of the U-Net were trained on a NVIDIA TITAN Xp GPU (12 GB VRAM) usi
 		PReLU& & \\ \hline
 		ELU& & \\ \hline
 	\end {tabular}
-\caption[]{Precision of 3 and 4-class segmentations for the \textbf{TODO} network, using different activations functions.}
+\caption[]{Multi-class F-Measure scores of 3 and 4-class segmentations for the \textbf{TODO} network, using different activations functions.}
 \end {table}
 
 \noindent Then, the effect of the weight initialization on the best network was compared, using the Xavier and the MSRA initializations.
@@ -48,15 +49,14 @@ All variants of the U-Net were trained on a NVIDIA TITAN Xp GPU (12 GB VRAM) usi
 		Xavier& & \\ \hline
 		MSRA& & \\ \hline
 	\end {tabular}
-\caption[]{Precision of 3 and 4-class segmentations for the \textbf{TODO} network, using \textbf{TODO} activations and either Xavier or MSRA weight initialization.}
+\caption[]{Multi-class F-Measure scores of 3 and 4-class segmentations for the \textbf{TODO} network, using \textbf{TODO} activations and either Xavier or MSRA weight initialization.}
 \end {table}
 
 \textbf{TODO: Evaluation of training progress, i.e. validation loss progession}
 
 
-To compare the CNN results with the results of the other methods, the ``unreliable label'' problem has to be dealt with. Because Otsu thresholding, K-Means and Gaussian Mixture Models are all unsupervised methods, i.e. they do not depend on ground truth images, the labels they output have no direct relation to the ground truth labels used in the CNN training. Therefore, the results from these methods needs to be converted into a representation that can be compared to the ground truth without falsifying the results.
+To compare the CNN results with the results of the other methods, the problem of matching the output labels with those of the ground truth data has to be dealt with. Because Otsu thresholding, K-Means and Gaussian Mixture Models are all unsupervised methods, i.e. they do not depend on ground truth images, the labels they output have no direct relation to the ground truth labels used in the CNN training. Therefore, all combinations of matching the output labels with the ground truth labels are evaluated and for each, an F-Measure score is calculated. The assignment with the highest score is then assumed to be the correct one.
 
-\textbf{TODO: how to fix unreliable labels?}
 
 \begin {table}
 	\centering
@@ -68,5 +68,5 @@ To compare the CNN results with the results of the other methods, the ``unreliab
 		GMM& & \\ \hline
 		\textbf{TODO-network}& & \\ \hline
 	\end {tabular}
-\caption[]{Precision of 3 and 4-class segmentations according to the \textbf{TODO} metric. The best network is compared to the outputs of unsupervised methods.}
+\caption[]{Multi-class F-Measure scores of 3 and 4-class segmentations. The best network is compared to the outputs of unsupervised methods.}
 \end {table}

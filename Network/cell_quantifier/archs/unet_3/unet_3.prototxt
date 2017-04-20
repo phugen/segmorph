@@ -71,7 +71,7 @@ layer { bottom: 'u0c'               top: 'u0d'   name: 'conv_u0c-d'     type: "C
 layer { bottom: 'u0d'               top: 'u0d'   name: 'relu_u0d'       type: "ReLU" }
 
 layer { bottom: 'u0d'               top: 'score' name: 'conv_u0d-score' type: "Convolution"  param {lr_mult: 1 decay_mult: 1} param {lr_mult: 2 decay_mult: 0}  convolution_param { engine: CAFFE num_output: 3 pad: 0 kernel_size: 1 weight_filler { type: 'xavier' }} }
-layer { bottom: 'score' bottom: 'label' top: 'loss'  name: 'loss'   type: "SoftmaxWithLoss" include: { phase: TRAIN }}
+layer { bottom: 'score' bottom: 'label' top: 'loss'  name: 'loss'   type: "SoftmaxWithLoss" }
 
 layer { bottom: 'score'             top: 'visualize_out'             name: 'visualize'  type: "Softmax" include: { phase: TRAIN }}
 layer { bottom: 'visualize_out'                                      name: 'fake'     type: "Silence" include: { phase: TRAIN }}

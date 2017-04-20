@@ -283,6 +283,7 @@ One way to construct such a weight map is given in \cite{unet}, using the weight
 
 
 		\subsection{F-Measure}
+\label{subsec:fmeasure}
 
 An alternative to solving the problem of unbalanced classes in the training data is using the \textit{F-Measure}, also called \textit{DICE similarity}, as a loss function instead. The F-Measure is a statistical similarity function which has been shown to perform well when using SGD-trained CNNs on unbalanced data for binary segmentations. \cite{fmeasure3, fmeasure4, fmeasure5} It is based on the quantities of \textit{Precision} and \textit{Recall} over the training sample in comparison to its ground truth. The precision is defined as
 
