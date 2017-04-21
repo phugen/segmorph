@@ -12,7 +12,7 @@ import os
 import sys
 import subprocess
 import glob
-import tempfile
+import copy
 
 if len(sys.argv) < 4:
     print "Usage: python start_training.py network_list device_id numiters"
@@ -35,26 +35,26 @@ for net in nets:
 
     # ignore comments in file
     if not net.startswith("#"):
+
         print "Starting training for " + net + " on GPU " + str(device) + "!"
-
-        # avoid deadlock that can be caused by using subprocess.PIPE for
-        # temporary storage of subprocess outputs
-        # (see https://thraxil.org/users/anders/posts/2008/03/13/Subprocess-Hanging-PIPE-is-your-enemy/ )
-        tmp = tempfile.TemporaryFile()
-
-        # start training
-        proc = subprocess.Popen(["python", "-u", "train_network.py", str(net), str(device), str(numiters)],\
-                                bufsize=1, stdout=tmp, stderr=tmp)
 
         # write logs to both stdout and logfile
         logname = os.path.basename(net)[:-9] + ".log"
 
         with open("logs/" + logname, "w") as log:
-            for line in iter(proc.stdout.readline, ''):
+
+            # start training.
+            # only redirect stderr to logfile to avoid deadlock
+            # that can happen when two or more pipes are redirected!
+            proc = subprocess.Popen(["python", "-u", "train_network.py", str(net), str(device), str(numiters)],\
+                                    bufsize=1, stderr=subprocess.PIPE)
+
+            # show logging output on stdout and write it to file
+            for line in iter(proc.stderr.readline, b''):
                 print line, # NOTE: the comma prevents duplicate newlines (softspace hack)
                 log.write(line)
-        print "COMMUNICATE:" + str(proc.communicate("n\n")[0]) # wait for child process to finish
 
+            proc.wait() # wait for training to finish before starting next one
 
         print "Finished training for " + net + " !"
         print ""
