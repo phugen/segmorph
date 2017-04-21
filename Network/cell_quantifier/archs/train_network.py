@@ -3,8 +3,12 @@
 # A previous training session can be resumed by supplying
 # an optional path to a solver state file.
 
+
+
 import sys
 import os
+
+#os.environ["PYTHONUNBUFFERED"] = "1" # don't buffer output
 
 # Google Logging params.
 # Need to be set before importing Caffe!

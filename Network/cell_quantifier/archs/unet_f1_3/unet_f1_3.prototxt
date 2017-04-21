@@ -1,6 +1,6 @@
 name: 'unet_f1_3'
 force_backward: true
-layer { top: 'data' top: 'label' name: 'loaddata'       type: "HDF5Data"  hdf5_data_param { source: 'caffeHDF5_3.txt' batch_size: 1 } include: { phase: TRAIN }}
+layer { top: 'data' top: 'label' name: 'loaddata'       type: "HDF5Data"  hdf5_data_param { source: 'caffeHDF5_3.txt' batch_size: 5 } include: { phase: TRAIN }}
 layer { top: 'data' top: 'label' name: 'loaddata'       type: "HDF5Data"  hdf5_data_param { source: 'caffeHDF5_validation_3.txt' batch_size: 1 } include: { phase: TEST }}
 
 layer { bottom: 'data'              top: 'd0b'   name: 'conv_d0a-b'     type: "Convolution" param {lr_mult: 1 decay_mult: 1} param {lr_mult: 2 decay_mult: 0}  convolution_param { num_output: 64 pad: 0 kernel_size: 3 engine: CAFFE weight_filler { type: 'xavier' }} }

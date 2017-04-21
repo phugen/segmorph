@@ -10,7 +10,7 @@ max_iter: 300000 # total number of training iterations
 momentum: 0.99 # weight of previous update
 regularization_type: "L2" # max-norm weight clipping, see Dropout paper
 
-test_initialization: true # determines whether net is tested at iteration 0
+test_initialization: false # determines whether net is tested at iteration 0
 test_iter: 3456 # total number of test iterations
 test_interval: 1000 # test every <test_interval> iterations
 
