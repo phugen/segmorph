@@ -1,9 +1,10 @@
-	\chapter{Training}
+\chapter{Training}
+\label{chap:training}
 
 	\section{Dataset}
 The dataset used in the following experiments is made up of 90 microscopy images and their label images from three experiments on slightly different types of live \textit{Drosophila} cells. The dimension of all images is $960 \times 608$ pixels ($w \times h$) and the images are given in grayscale. The labelled images are of dimension $3 \times 960 \times 608 \times$ ($d \times w \times h$), where the background class is represented by RGB[0, 0, 0] (black), the cell body proper is marked as RGB[0, 255, 0] (green), the Lamellopodia are RGB[255, 0, 0] (red) and the Filopodia are RGB[0, 0, 255] (blue).
 
-Another ``3-class'' version of the dataset was created in which the classes for Lamellopodia and Filopodia are fused into one, marked as RGB[255, 0, 0] (red). This was done because even for a human, separating Filopodia pixels from Lamellopodia pixels was hard to do because of the quality of the microscopy images. Therefore, the label images might not be entirely correct, misleading the training.\\
+Another ``3-class'' version of the dataset was created in which the classes for Lamellopodia and Filopodia are fused into one, marked as RGB[255, 0, 0] (red). This was done because even for a human, separating Filopodia pixels from Lamellopodia pixels was hard to do because of the varying contrast in the images, and it was deemed valuable to see how a network performs if the ground truth data is more straight-forward to interpret.\\
 
 \begin {figure}[!ht]
 	
@@ -72,7 +73,7 @@ To nonetheless train a network to segment such images, \textit{data augmentation
 
 
 		\subsection{Elastic Deformation}
-Another data augmentation technique is \textit{Elastic Deformation} \cite{elastic}, which calculates a new image from an existing one by sampling random new positions for each pixel in the original image uniformly and multiplies them with a force parameter $\alpha$. Afterwards, the new coordinates are additionally smoothed by a Gaussian filter with standard deviation $\sigma$. The resulting image is a slightly distorted image, and if $\alpha$ and $\sigma$ are chosen appropriately and the same deformation is applied to both an input image and its ground truth image, the resulting images are plausible enough to count as new samples to train on (see figure \ref{fig:elastic}). This is especially useful for biological and medical use cases because Elastic Deformation produces naturally occuring transformations, such as cells being squashed slightly during microscopy, and helps the network to learn to also classify these correctly. For the work in this thesis, the deformation parameters were set to $\alpha = 200$ and $\sigma = 10$.\\
+Another data augmentation technique is \textit{Elastic Deformation} \cite{elastic}, which calculates a new image from an existing one by sampling random new positions for each pixel in the original image uniformly and multiplies them with a force parameter $\alpha$. Afterwards, the new coordinates are additionally smoothed by a Gaussian filter with standard deviation $\sigma$. The resulting image is a slightly distorted image, and if $\alpha$ and $\sigma$ are chosen appropriately and the same deformation is applied to both an input image and its ground truth image, the resulting images are plausible enough to count as new samples to train on (see Figure \ref{fig:elastic}). This is especially useful for biological and medical use cases because Elastic Deformation produces naturally occuring transformations, such as cells being squashed slightly during microscopy, and helps the network to learn to also classify these correctly. For the work in this thesis, the deformation parameters were set to $\alpha = 200$ and $\sigma = 10$.\\
 
 \noindent After performing data augmentation and removing all tiles that contained only pixels of one class as the result of the tiling (e.g. background pixels only), the dataset then contained 15632 image tiles and their corresponding labels. After, the remaining tiles were split with a ratio of 5:1 into a training and a validation set, containing 13026 images and 2606 images respectively.
 
@@ -87,8 +88,23 @@ Another data augmentation technique is \textit{Elastic Deformation} \cite{elasti
 \end {figure}
 
 
-	\section {Training Optimizations and Regularization}
-	As overfitting occurs often in MLPs and CNNs, several techniques to control overfitting were devised. These techniques are called \textit{regularization} techniques.
+	\section {Regularization and Optimization in Neural Networks}
+	
+Choosing the number of hidden layers and the number of hidden neurons within them wisely is important because bad choices can make the network susceptible to underfitting or overfitting.
+\textit{Underfitting} is the term for the inability of a method to model the data correctly. For example, a linear classifier always underfits on a not-linearly separable dataset because it is not powerful enough to solve the problem. \textit{Overfitting} is the exact opposite and occurs when the model is too complex so that it doesn't model a trend in the data, but instead memorizes the dataset (see Figure \textbf{\ref{fig:overfit}}). This is undesirable because such a model cannot generalize well and will make incorrect classifications once it is asked to classify data it hasn't been presented with during training. Therefore, a balance has to be found to equip a model with both enough power to classify correctly while also allowing leeway for generalizing when making predictions on new data.
+
+	\begin {figure}[!ht]
+		\begin{center}
+			\textbf{TODO: uncomment in code}
+			%\scalebox{0.75}{\input{img/fig_overfit.pgf}}
+		\end{center}
+		\caption[]{Overfitting on a dataset, using a 2-layer MLP with 100 hidden neurons and 100,000 iterations of training. A better model would classify the three blue outliers as orange.}
+		\label{fig:overfit}
+	\end {figure}
+
+\noindent The danger of overfitting on data increases with the complexity of the model. As MLPs and CNNs are highly complex, due to their abundance of weights, overfitting is often a problem. Therefore, several techniques to control overfitting were devised, which are called \textit{regularization} techniques.
+
+
 
 	\subsection{Early Stopping}
 \textit{Early Stopping} is based on the assumption that during the validation of the network, i.e. while letting it classify data that hasn't been used for training to test its generalization ability, overfitting is detectable by monitoring the validation loss. The validation loss measures how well the network performs for unseen data, and Early Stopping dictates that once the validation loss indicates overfitting by some stopping criterion, the training should be stopped. For smooth curves without local minima, this would simply mean that once the validation loss starts increasing instead of decreasing, the training should be stopped, although in practice, training and validation losses are unstable and thus harder to handle. \cite{early_stopping} introduces the \textit{generalization loss} value of a training epoch $t$, defined by
@@ -119,13 +135,13 @@ Another data augmentation technique is \textit{Elastic Deformation} \cite{elasti
 \end {figure}
 
 
-	\subsubsection {Dropout}
+	\subsection {Dropout}
 \label{subsec:dropout}
 \textit{Dropout} is a regularization technique \cite{dropout} that ``disables'' neurons it is applied to during training with a certain chance according to a user-defined Bernoulli probability. These disabled neurons are not trained on the particular training sample - an effect one could view as training only a sub-network of the original neural network. By applying Dropout repeatedly and scaling the weights by the Dropout probability $p$ during testing, one gains an approximation of averaging the outputs of all possible $2^n$ sub-networks, where $n$ is the number of neurons in the network. This lowers the amount of overfitting because neurons learn not to ``rely'' on other neurons which otherwise would lead to specialized co-adaptions that usually hurt the generalization ability of the network.
 
 
 
-	\subsubsection {Batch Normalization}
+	\subsection {Batch Normalization}
 \label{subsec:batchnorm}
 \textit{Batch Normalization} (BN) \cite{batchnorm} is a method to improve generalization capacity and training speed while training either general MLPs or CNNs with the SGD algorithm (or other gradient-based algorithms that use mini-batches). It is known that Backpropagation learning works better if the inputs to the network are normalized (see Section \ref{subsec:normalization}). However, as the input passes through the network, the repeated transformations change the distribution of the data so that unnormalized values are used as input to hidden neurons, referred to as ``internal covariance shift''.
 
@@ -163,9 +179,9 @@ The way BN reduces this shift is by re-normalizing data within the network so th
 \noindent where $x$ are labeled samples, $u$ are unlabeled samples and $\alpha$ is a weighting parameter that depends on the number of iterations $t$ that the training has been running. It is defined as
 
 \begin {align}
-\alpha(t) = \begin{cases} 0 \text{ if } t < T_1 \\
-				\frac{t - T_1}{T_2 - T_1} \alpha_f \text{ if } T_1 \leq t < T_2 \\
-				\alpha_f \text { if } T_2 \leq t \\
+\alpha(t) = \begin{cases} 0 &\text{ if } t < T_1 \\
+				\frac{t - T_1}{T_2 - T_1} \alpha_f &\text{ if } T_1 \leq t < T_2 \\
+				\alpha_f &\text { if } T_2 \leq t \\
 	        \end{cases}
 \end {align}
 

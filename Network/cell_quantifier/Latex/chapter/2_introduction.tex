@@ -8,13 +8,15 @@ These microscopy images contain four regions of interest: The background, contai
 \begin {figure}[!ht]	
 	\centering
 	\begin {subfigure}[t]{0.52\linewidth}
-		\includegraphics[scale=0.60]{img/fig_problems.png}
+		\textbf{TODO: Uncomment this}
+		%\includegraphics[scale=0.60]{img/fig_problems.png}
 
 		\caption*{Cropped part of a microscopy image, showing challenges segmentation algorithms must overcome. \textbf{Red:} Obscured borders due to cell overlap. \textbf{Green:} Movement blur. \textbf{Blue:} Clipped cells on the borders of the image. \textbf{Orange:} ``Ghost cells'' from an image lower in the stack. Additionally, the illumination in the image varies massively from cell to cell and the contrast between Lamellipodia, Filopodia and the background is low.}
 	\end {subfigure}
 	\hspace{1cm}
 	\begin {subfigure}[t]{0.35\linewidth}
-		\includegraphics[scale=1.0]{img/fig_cell_example.png}
+		\textbf{TODO: Uncomment this}
+		%\includegraphics[scale=1.0]{img/fig_cell_example.png}
 
 		\caption*{A Drosophila cell. Contrast and brightness are enhanced for clarity. The green arrow shows the cell proper, the red arrow shows the Lamellopodium and the blue arrow shows one of many Filopodia.}
 	\end {subfigure}
@@ -23,4 +25,4 @@ These microscopy images contain four regions of interest: The background, contai
 	\label{fig:cell_example}
 \end {figure}
 
-\noindent In chapter \ref{chapter_concepts}, different approaches to the image segmentation problem are explained. The focus is on the function of Multi-Layer Perceptrons and the way they can be trained efficiently, as this approach was seen as the most promising one. The following chapter \ref{chapter_architecture} describes the architecture of the network that was believed to suit the task at hand, and also focuses on the individual layer types and loss functions the network works with. Then, in chapter \ref{chapter_training}, information about the data sets used for training and validating the network as well as information about data pre-processing, training parameters and optimization is given. In chapter \ref{chapter_results}, the hardware details of the training- and testing environment are listed and the results of all proposed approaches are compared to each other. In chapter \ref{chapter_conclusion}, a conclusion is derived from the achieved results and finally, in chapter \ref{chapter_futurework}, some ideas that are worth considering but went untested in the course of this thesis are explained. 
+\noindent In Chapter \ref{chap:concepts}, different approaches to the image segmentation problem are explained. The focus is on the function of Multi-Layer Perceptrons and the way they can be trained efficiently, as this approach was assumed to be the most promising one. The following Chapter \ref{chap:network} describes the architecture of a network that was believed to suit the task at hand, and also focuses on the individual layer types, activation functions and loss functions the network works with. Then, in Chapter \ref{chap:training}, information about the data sets used for training and validating the network as well as information about data pre-processing, training parameters and optimization is given. In Chapter \ref{chap:results}, the hardware details of the training- and testing environment are listed and the results of all proposed approaches are compared to each other. In Chapter \ref{chap:conclusion}, a conclusion is derived from the achieved results and finally, in Chapter \ref{chap:futurework}, some ideas that are worth considering but went untested in the course of this thesis are explained. 

@@ -1,4 +1,5 @@
 \chapter{Basic Concepts}
+\label{chap:concepts}
 
 Image segmentation is one of the main challenges in image processing and has been an active field of study for years, which results in many segmentation methods being available. In the following pages, a selection of methods that can perform multi-class segmentation, i.e. segmentation with more than two classes, is presented. As the number of images to be segmented is usually high, and computation time can be a crucial factor, human interaction should remain at a minimum level. Therefore, only methods that, once the segmentation process has been started, work without human interaction were chosen. All methods described here are later used to segment a set of images and compared to the ground truth to measure the quality of the segmentations (see Chapter \ref{chap:results}).
 	
@@ -68,10 +69,10 @@ Thresholding is the most basic segmentation algorithm there is: Given an input i
 
 \noindent However, this approach doesn't work as well for images whose histograms do not exhibit distinct histogram peaks - for example, due to noise - and also doesn't perform well for cases in which $n$ is large, neither considering the time needed to perform a segmentation\footnote{While variants of Otsu exist that are optimized for speed, such as \cite{otsu_fast}, only the original Otsu algorithm is evaluated here because it is the most common.} nor considering the segmentation quality, due to the method inspecting only the histogram data. \cite{Otsu}\\
 
-\noindent The Otsu algorithm belongs to a family of thresholding mechanisms that is called ``global thresholding'' because the same threshold is applied to the entire image. However, there are also local or ``adaptive'' thresholding algorithms which segment different parts of the image with different thresholds. The need for such algorithms often arises when the illumination of the input image is highly irregular, for example when cast shadows overlay part of the image (see \ref{fig:illumination}). One approach is to calculate a threshold for each pixel of the image while examining a neighborhood of size $L \times L$ around the pixel in question, using the mean, the mean of the maximum and minimum values or the median of the resulting local pixel intensity distribution to determine a local threshold.
+%\noindent The Otsu algorithm belongs to a family of thresholding mechanisms that is called ``global thresholding'' because the same threshold is applied to the entire image. However, there are also local or ``adaptive'' thresholding algorithms which segment different parts of the image with different thresholds. The need for such algorithms often arises when the illumination of the input image is highly irregular, for example when cast shadows overlay part of the image (see \ref{fig:illumination}). One approach is to calculate a threshold for each pixel of the image while examining a neighborhood of size $L \times L$ around the pixel in question, using the mean, the mean of the maximum and minimum values or the median of the resulting local pixel intensity distribution to determine a local threshold.
 
-\textbf{TODO: are there adaptive thresholds for multi-label purposes?}\\
-Local thresholding, however, is much slower than global thresholding because it has to process the neighborhoods of each pixel, while it also depends on choosing $L$ so that the neighborhoods contain enough pixels of either class, or otherwise the thresholds won't be chosen well. \cite[pp.~84--93]{machine_vision}
+%\textbf{TODO: are there adaptive thresholds for multi-label purposes?}\\
+%Local thresholding, however, is much slower than global thresholding because it has to process the neighborhoods of each pixel, while it also depends on choosing $L$ so that the neighborhoods contain enough pixels of either class, or otherwise the thresholds won't be chosen well. \cite[pp.~84--93]{machine_vision}
 
 
 \begin{comment}
@@ -132,7 +133,7 @@ In the final step, a hysteresis threshold is applied. This process consists of d
 
 \noindent Pixels that have a value of $2$ are called strong pixels because they had values larger than the high threshold, whereas pixels with a value of $1$ are called weak pixels. Finally, the algorithm checks for each pixel if an 8-connected path between that pixel and a strong pixel exists - if not, then the pixel is dropped. This can be done with the help of connected component-finding algorithms by dropping each ``$1$''-component which is not connected to at least one ``2''-value.\\
 
-\noindent The thresholds $\theta_{high}$ and $\theta_{low}$ have to be set by the user, although there exists the possibility to set these by using the Otsu threshold described in \ref{sec:thresholding} . Using this combination approach, $\theta_{high}$ is set to the Otsu threshold value for $I(x, y)$, and $\theta_{low}$ is set to $0.5 * \theta_{high}$.  \cite{otsu_combine}
+\noindent The thresholds $\theta_{high}$ and $\theta_{low}$ have to be set by the user, although there exists the possibility to set these by using the Otsu threshold described in \ref{sec:thresholding} . Using this combination approach, $\theta_{high}$ is set to the Otsu threshold value for $I(x, y)$, and $\theta_{low}$ is set to $0.5 * \theta_{high}$. \cite{otsu_combine}
 
 \end {comment}
 
@@ -178,11 +179,11 @@ Gaussian Mixtures Models (GMMs) are a subclass of mixture models, that is, proba
 
 \[ pdf(x) = \mathcal{N}_n (x\,|\,\mu,\, \Sigma) \]
 
-\noindent Here, $pdf(x)$ denotes the probability, or density, of an $n$-dimensional piece of data $x$, while $\mu$ and $\Sigma$ are the $n$-dimensional mean vector and the $n \times n$ covariance matrix of the distribution. Since the shape such a distribution can take is limited, a single Gaussian cannot accurately model a multimodal distribution (see Figure \ref{fig:normal_vs_gmm}). Instead, a weighted combination of multiple Gaussians can be used instead: \cite[pp. 430]{bishop_pattern}
+\noindent Here, $pdf(x)$ denotes the probability, or density, of an $n$-dimensional piece of data $x$, while $\mu$ and $\Sigma$ are the $n$-dimensional mean vector and the $n \times n$ covariance matrix of the distribution. Since the shape such a distribution can take is limited, a single Gaussian cannot accurately model a multimodal distribution (see Figure \ref{fig:normal_vs_gmm}). Instead, a weighted combination of multiple Gaussians can be used instead:
 
 \[ pdf_m (x) = \sum \limits_{k=1}^{K} \pi_k \, \mathcal{N}_n (x\,|\, \mu_k, \Sigma_k) \]
 
-\noindent A mixture model consists of $K$ models that each have different parameters $\mu$ and $\Sigma$ and are weighted by weights $\pi_k \in \mathbb{R}$, $1 > \pi_k > 0$, with $\sum_{i=1}^{k} \pi_i = 1$.
+\noindent A mixture model consists of $K$ models that each have different parameters $\mu$ and $\Sigma$ and are weighted by weights $\pi_k \in \mathbb{R}$, $1 > \pi_k > 0$, with $\sum_{i=1}^{k} \pi_i = 1$. \cite[pp. 430]{bishop_pattern}
 
 \begin {figure}[!ht]
 	\begin{center}
@@ -192,7 +193,7 @@ Gaussian Mixtures Models (GMMs) are a subclass of mixture models, that is, proba
 	\label{fig:normal_vs_gmm}
 \end {figure}
 
-\noindent The parameters of such a mixture model can be calculated by applying the Expectation-Maximization (EM) algorithm, which can additionally be combined with a K-Means initialization to avoid shallow local minima.\cite{em_algorithm} GMMs can also be used for segmenting images: Grayscale images are simply three-dimensional data in which each pixel coordinate corresponds to an intensity value. If the number of components to be found in the image is known beforehand, as it is in the case of cell segmentation, the intensity values can be segmented according to the fitted GMM (see Figure \ref{fig:gmm_vs_gt}). To do this, for each pixel in the image the posterior probabilities for that pixel in respect to each of the Gaussians is calculated and the Gaussian with the highest probability is chosen as the ``source'' of the pixel:
+\noindent The parameters of such a mixture model can be calculated by applying the Expectation-Maximization \cite{em_algorithm} algorithm, which can additionally be combined with a K-Means initialization to avoid shallow local minima. GMMs can also be used for segmenting images: Images are intepreted as numerical data in which each pixel position corresponds to an intensity value. If the number of components to be found in the image is known beforehand - as it is in the case of cell segmentation - the image can be segmented according to the fitted GMM (see Figure \ref{fig:gmm_vs_gt}). To do this, for each pixel in the image the posterior probabilities of that pixel in respect to each of the Gaussians is calculated and the Gaussian with the highest probability is chosen as the source distribution of the pixel, thus yielding a class with which the pixel is labelled:
 
 \[ label_x = \argmax \limits_{k} \, p(\mu_k, \Sigma_k\, | \, x) \]
 
@@ -231,7 +232,7 @@ The algorithm starts with a guess for the parameters in $\Theta$ and then iterat
 	\label{alg:grad_desc}
 \end{algorithm}
 
-\noindent For convex functions, Gradient Descent always finds the global minimum. For non-convex functions however, the algorithm may get stuck in a local minimum or at saddle points, called ``false minima' (see figure \ref{fig:grad_desc}). Therefore, running the algorithm multiple times with random values or even informed guesses given knowledge about the form of the function to be optimized is advised. The step size $\eta$ has to be chosen depending on the shape of the function to minimize; if $\eta$ is too large, the algorithm will overshoot the minimum and will never converge even if the minimum exists, and if $\eta$ is too small, convergence will take a long time.
+\noindent For convex functions, Gradient Descent always finds the global minimum. For non-convex functions however, the algorithm may get stuck in a local minimum or at saddle points, called ``false minima' (see Figure \ref{fig:grad_desc}). Therefore, running the algorithm multiple times with random values or even informed guesses given knowledge about the form of the function to be optimized is advised. The step size $\eta$ has to be chosen depending on the shape of the function to minimize; if $\eta$ is too large, the algorithm will overshoot the minimum and will never converge even if the minimum exists, and if $\eta$ is too small, convergence will take a long time.
 
 \begin {figure}[!ht]
 	\begin{center}
@@ -367,38 +368,32 @@ Either way, the gradient of $E_p$ has to be calculated. The Perceptron criterion
 
 		\subsection{Multiple Neurons and Backpropagation}
 \label{subsec:mlp_backprop}
-While the Perceptron algorithm works fine for linear problems, those are only a small subset of real-world problems (see figure \ref{fig:perceptron}). The solution to this problem is to add more neurons to the model, which form a network that consists of layers that pass the outputs of neurons in the previous layers through non-linear activation functions and then use the results as inputs. These layers are referred to as the ``input layer'', the initial layer, the ``output layer'', the last layer, and ``hidden layers'', which are all the layers inbetween.
+While the Perceptron algorithm works fine for linear problems, those are only a small subset of real-world problems (see Figure \ref{fig:perceptron}). The solution to this problem is to add more neurons to the model, which form a network that consists of layers that pass the outputs of neurons in the previous layers through non-linear activation functions and then use the results as inputs. These layers are referred to as the ``input layer'', the initial layer, the ``output layer'', the last layer, and ``hidden layers'', which are all the layers inbetween.
 
 	\subsubsection{Multi-Layer Perceptrons}
-The resulting networks are called \textit{Multi-Layer Perceptrons} (MLPs), \textit{Feedforward Artificial Neural Networks}(ANNs), or, in the case of a multitude of layers, \textit{Deep Neural Networks}, and are much more powerful than simple Perceptrons, as they can approximate haphazard continuous functions that operate on closed and bounded subsets of $\mathbb{R}^n$ given that the network possesses at least one hidden layer of neurons. This capability makes using MLPs for learning real-life problems feasible.\cite{universal_approx}\cite{universal_approx2}\\
+The resulting networks are called \textit{Multi-Layer Perceptrons} (MLPs), \textit{Feedforward Artificial Neural Networks}(ANNs), or, in the case of a multitude of layers, \textit{Deep Neural Networks}, and are much more powerful than simple Perceptrons, as they can approximate haphazard continuous functions that operate on closed and bounded subsets of $\mathbb{R}^n$ given that the network possesses at least one hidden layer of neurons. This capability makes using MLPs for learning real-life problems feasible. \cite{universal_approx}\cite{universal_approx2}\\
 
-\noindent Again, each neuron in the network computes a weighted sum of its $i$ inputs, just like in equation \ref{eq:perc_class}, although indexing has been added to identify neurons and weights in the entire network:
+\noindent Again, each neuron in the network computes a weighted sum of its $i$ inputs, just like in Equation \textbf{\ref{eq:perc_class}}, although indexing has been added to identify neurons and weights in the entire network:
 
-\[ a_j^{(l)} = \sum \limits_{i} w^{(l)}_{ji}\,\, y_i + b^{(l)}_{j} \]
+\[ a_j^{(l)} = \sum \limits_{i} w^{(l)}_{ji}\,\, z_i^{(l-1)} + b^{(l)}_{j} \]
 
-\noindent $y_i$ are the input values to the current neuron. Note that these either are the direct inputs $x_i$ to the network, or outputs of other neurons, depending on where in the network the term is evaluated. $w$ is the matrix of weights, and $w^{(l)}_{ji}$ denotes the weight of the connection from the $i$th neuron in the previous layer $l - 1$ to the $j$th neuron in the  layer $l$. The term $b$ is the bias weight associated with the neuron $j$. The bias can be made part of the weight matrix by introducing an additional input dimension with a value of $1$, like it was done for the Perceptron algorithm in section \ref{subsec:perceptron_algo}.
+\noindent Here, $z_i$ are the input values to the current neuron. Note that these either are the direct inputs $x_i$ to the network, or outputs of previous neurons, depending on where in the network the term is evaluated. $w$ is the matrix of weights, and $w^{(l)}_{ji}$ denotes the weight of the connection from the $i$th neuron in the previous layer $l - 1$ to the $j$th neuron in the  layer $l$. The term $b$ is the bias weight associated with the neuron $j$. The bias can also be made part of the weight matrix by introducing an additional input dimension with a value of $1$, like it was done for the Perceptron algorithm in Section \textbf{\ref{subsec:perceptron_algo}}.
 
-Afterwards, the sum $a^{(l)}_j$ is passed into an activation function $h(\cdot)$ to produce the activation of the $j$th neuron in the $l$th layer, $z_j^{(l)}$:
+Afterwards, the sum $a^{(l)}_j$ is passed into an activation function $h(\cdot)$ to produce the output, also called activation, of the $j$th neuron in the $l$th layer, $z_j^{(l)}$
 
 \[ z_j^{(l)} = h(a^{(l)}_j) \]
 
-\noindent In vectorized notation, the activations of an entire layer could therefore be written as the recursive formula
-
-\[ z^{(l)} = h(w^{(l)} z^{(l-1)}) \cite{nielsen_book} \]
-
-\noindent where the activations of the input layer are simply the inputs themselves, thus ending the recursion. Expanding the term for the 2-layer network shown in figure \ref{fig:mlp} gives the following formula for a network output $out_k$:
+\noindent The activations of the input layer are simply the input values $x_1 \dots x_n$. Expanding the term for the 2-layer network shown in Figure \textbf{\ref{fig:mlp}} gives the following formula for the $k$th network output $out_k$:
 
 \[ out_k = \sigma \left ( \sum \limits_{j=0}^{4} w^{(2)}_{kj}\,\, h \left ( \sum \limits_{i=0}^{3} w^{(1)}_{ji} x_i \right ) \right ) \label{eq:mlp_out} \]
 
-\noindent Here, \textbf{$\sigma$} is an output function that is applied in the last layer of the network, and is dependent on the task the network is supposed to fulfill: For regression problems, fitting a function to a set of data and then predicting new values using that function, the identity function can be used, but for binary classification problems, instead of using a step function like in the original Perceptron, one instead uses the \textit{Sigmoid} function and interprets the output as
+\noindent Here, \textbf{$\sigma$} is an output function that is applied in the last layer of the network, and is dependent on the task the network is supposed to fulfill: For regression problems, i.e. fitting a function to a set of data and then predicting new values using that function, the identity function can be used. For binary classification problems, instead of using a step function like in the original Perceptron, one instead uses the \textit{Sigmoid} function and interprets the output as
 
 \[ \sigma_{sig}(x_i) = \begin{cases}
 				x_i \in C_1 \text{ if } \frac{1}{1 + e^{-x_i}} \geq 0.5 \\
 				x_i \in C_2 \text{ else }\\
 			 \end{cases}
 \]
-
-%\noindent For non-binary classification problems, a popular choice is the Softmax function, which assigns probabilities to each possible class that can be interpreted as ``soft'' labels %instead of outputting a hard label.
 
 \noindent Also, the choice of the activation function $h(w, x)$ is different from the Perceptron: It is not chosen to be the Heaviside step function, but instead, to be a non-linear, continuous and differentiable function, such as the general Sigmoid function and its derivative:
 
@@ -417,17 +412,17 @@ Afterwards, the sum $a^{(l)}_j$ is passed into an activation function $h(\cdot)$
 		\label{fig:mlp}
 	\end {figure}
 
-	\footnotetext{There is no consensus on which method of counting is the most appropriate. Sometimes, only the number of hidden layers or even all layers are counted \cite[pp. 229]{bishop_pattern}}
+	\footnotetext{There is no consensus on which method of counting is the most appropriate. Sometimes, only the number of hidden layers or even all layers are counted. \cite[pp. 229]{bishop_pattern}}
 }
 
 \noindent The goal of training an MLP is - as previously for the Perceptron - finding specific weights so that all inputs are classified correctly, or at least, so that the network makes only few mistakes. Therefore, a loss function is added to the end of the network, measuring the correctness of the output. Instead of the Perceptron criterion \ref{eq:perc_error}, a more general loss function is employed which compares the difference between the output $\sigma(x)$ of the network for a sample $x$ and the preferred output for $x$, the \textit{label} or \textit{ground truth} of $x$. Typically, in binary classification problems, Sigmoid outputs are used together with the \textit{Cross-Entropy} loss function, which is defined as 
 
 \[ CE(w) =  -t \, \ln (out_x) + (1 - t) \ln (1 - out_x).\footnote{The error is only given as a function of $w$ because both the input $x$ and its correct label $t$ are fixed in the particular case presented here.}  \]
 
-\noindent For multi-class classifications, an adaption of the Cross-Entropy loss can be used, which is further described in section \ref{subsec:cross_ent}. \cite[pp. 232-236]{bishop_pattern}\\
+\noindent For multi-class classifications, an adaption of the Cross-Entropy loss can be used, which is further described in Section \ref{subsec:cross_ent}. \cite[pp. 232-236]{bishop_pattern}\\
 
 	\subsubsection{The Backpropagation algorithm}
-Training a network with multiple layers is harder than training a single Perceptron because the influence of each of the weights in any layer of the network on the error function has to be computed when using gradient-based optimization methods while the output of the network no longer is the result of a single function, but instead, a composition of an usually large number of functions (see equation \ref{eq:mlp_out}). Although it is possible to manually calculate the partial derivatives for the entire network, this becomes more and more cumbersome as the network grows in size.
+Training a network with multiple layers is harder than training a single Perceptron because the influence of each of the weights in any layer of the network on the error function has to be computed when using gradient-based optimization methods, while the output of the network no longer is the result of a single function, but instead, a composition of an usually large number of functions (see Equation \textbf{\ref{eq:mlp_out}}). Although it is possible to manually calculate the partial derivatives for the entire network, this becomes more and more cumbersome as the network grows in size.
 
 Luckily, there exists an iterative algorithm called \textit{Backpropagation} \cite{backprop} that finds the gradient of the loss with respect to each weight so that an optimization method can be applied to change every weight. The algorithm makes use of the fact that each neuron can be viewed (almost) independently from the rest of the network. Remembering that the analytic way of obtaining the derivative of a composition of functions 
 
@@ -439,19 +434,37 @@ Luckily, there exists an iterative algorithm called \textit{Backpropagation} \ci
 
 \noindent one can see that this concept can also be applied to neurons in a network, because using the output value of a neuron in a previous layer as the input for a node is nothing else than function composition.\\
 
-\noindent Backpropagation thus starts with a \textit{forward pass}, which means that an input vector $x$ is passed through the network and the corresponding sums $a_j$ and activations $z_j$ are calculated and stored. Comparing the final outputs to the ground truth in the loss layer, the network is then traversed in the opposite direction in what is called a \textit{backward pass}, aiming to obtain the influence of each weight in each layer on the final loss, that is, the gradient of the loss function with respect to the weights. After this first phase, the partial derivatives for each weight are known, and the weights are updated in a second phase, in which an optimization algorithm like Gradient Descent is used as described in section \ref{subsec:grad_desc}.\\
+\noindent Backpropagation thus starts with a \textit{forward pass}, which means that an input vector $x$ is passed through the network and the corresponding sums $a_j$ and activations $z_j$ are calculated and stored. Comparing the final outputs to the ground truth in the loss layer, the network is then traversed in the opposite direction in what is called a \textit{backward pass}, aiming to obtain the influence of each weight in each layer on the final loss, that is, the gradient of the loss function with respect to the weights. After this first phase, the partial derivatives for each weight are known, and the weights are updated in a second phase, in which an optimization algorithm like Gradient Descent is used as described in Section \textbf{\ref{subsec:grad_desc}}.\\
 
-\noindent The central idea of the backward pass is that when traversing the network from the output layer to the input layer, the derivatives of the loss function with respect to weights of a layer depend on weights of the layers that precede them. This relationship is described by the formula
+\noindent The central idea of the backward pass is that when traversing the network from the output layer to the input layer, the derivatives of the loss function with respect to the weights of the layer closest to the output of the network depend on outputs of the neurons in the layers that precede that layer. This relationship recursively continues backwards throughout the network and is described by the formula
 
 \begin {align}
-	\frac{\partial E}{\partial w_{ji}} &= \frac{\partial E}{\partial a_j} \frac{\partial a_j}{\partial w_{ji}}
+	\frac{\partial E}{\partial w_{ji}} &= \frac{\partial E}{\partial a_j} \frac{\partial a_j}{\partial w_{ji}} \label{eq:backprop_recur}
 \end {align}
 
-\noindent where $E$ is the loss function of the network. According to the chain rule, the influence of the weight $w_{ji}$ on the loss is equal to the influence of the weight on the sum of inputs $a_j$ times the influence of $a_j$ on the loss function. In literature, the term $\frac{\partial E}{\partial a_j}$ is often denoted as $\delta_j^{(l)}$, the ``error'' of the neuron $j$ in layer $l$. Using this notation and taking the partial derivative of the weighted sum $a_j$, the formula becomes
+\noindent where $E$ is the loss function of the network.\footnote{Because the formula concerns a particular weight $w_{ji}^{(l)}$ in a particular layer $l$, the $l$-superscript is omitted for convenience.} According to the chain rule, the influence of the weight $w_{ji}$ on the loss is equal to the influence of the weighted sum $a_j$ on the loss function multiplied by the influence of the weight $w_{ji}$ on $a_j$. Taking the partial derivative of the weighted sum $a_j$ with respect to the weight $w_{ji}$ means that
 
-\[ \frac{\partial E}{\partial w_{ji}} = \delta_j^{(l)} z_i .\]
+\begin {align}
+	\frac{\partial a_j}{\partial w_{ji}} &= \frac{\partial}{\partial w_{ji}} \bigg ( \sum \limits_{k} w_{jk} z_k \bigg )
+\end {align}
 
-\noindent Since $z_i$, the activation from the input end of the connection that is modified by $w_{ji}$, is already known for all neurons due to the forward pass, the only thing that needs to be computed to figure out the loss gradient are the $\delta$-values. The computation of $\delta_j^{(l)}$ depends on the position of the neuron in the network:
+\noindent where $k$ is the number of neurons in the neurons in the previous layer $l-1$. Because when $k = i$, it holds that
+
+\[ \frac{\partial}{\partial w_{ji}} \bigg ( w_{jk} z_k \bigg ) = z_i \]
+
+\noindent and for $k \neq i$ it holds that 
+
+\[ \frac{\partial}{\partial w_{ji}} \bigg ( w_{jk} z_k \bigg ) = 0 \]
+
+\noindent The derivative of the entire sum is therefore
+
+\[ \frac{\partial}{\partial w_{ji}} \bigg ( \sum \limits_{k} w_{jk} z_k \bigg ) = z_i \]
+
+\noindent In literature, the term $\frac{\partial E}{\partial a_j}$ is often denoted as $\delta_j^{(l)}$, the ``error'' of the neuron $j$ in layer $l$. Using this notation, Equation \textbf{\ref{eq:backprop_recur}} can then be written as
+
+\[ \frac{\partial E}{\partial w_{ji}} = \delta_j^{(l)} z_i \]
+
+\noindent Since $z_i$, the activation from the input end of the connection that is multiplied with $w_{ji}$, is already known for all neurons due to being stored during the forward pass, the only thing that needs to be computed to figure out the loss gradient are the $\delta$-values. The computation of $\delta_j^{(l)}$ depends on the position of the neuron in the network:
 
 \[ \delta_j^{(l)} =  \begin{cases}
 				\frac{\partial E}{\partial a_j} \text{ if neuron } j^{(l)} \text{ is an output neuron} \\
@@ -459,7 +472,7 @@ Luckily, there exists an iterative algorithm called \textit{Backpropagation} \ci
 			     \end{cases}
 \]
 
-\noindent In the case $j$ is an output neuron, the partial is calculated directly. Otherwise, $\delta_j$ depends on the $\delta$-values in the previous layers, necessitating the backward traversion (see figure \ref{fig:backprop}). The definition of $\delta$ for hidden neurons is also the reason why a differentiable function must be chosen as the activation $h(\cdot)$, as stated earlier.
+\noindent In the case that $j$ is an output neuron, the partial derivative is calculated directly. Otherwise, $\delta_j$ depends on the $\delta$-values in deeper layers (see Figure \ref{fig:backprop}). The definition of $\delta$ for hidden neurons is also the reason why a differentiable function must be chosen as the activation $h(\cdot)$. The Backpropagation algorithm continues backwards through the network until the entire weight gradient is known and a single (Stochastic) Gradient Descent step can be taken towards the loss function minimum.
 
 \noindent The main advantage of the algorithm is that it scales linearly with the number of weights, i.e. the algorithm is in $\mathcal{O}(w)$. Furthermore, the fact that all $\delta^{(l)}$-values of a layer have to be calculated to calculate all $\delta^{(l-1)}$-values in the layer that precedes it naturally leads to vectorizing the algorithm layerwise in efficient implementations. \cite{nielsen_book, ng_lecture}\cite[pp. 241-245]{bishop_pattern}
 
@@ -470,14 +483,14 @@ Luckily, there exists an iterative algorithm called \textit{Backpropagation} \ci
 			\def\svgwidth{0.8\columnwidth}
 			\input{img/backprop.pdf_tex}
 		\end{center}
-		\caption[]{Backpropagation algorithm, applied to a hidden layer $l$.\protect\footnotemark$\,$ Steps during the forward pass are shown in blue, while steps during the backward pass are orange. The central neuron is the only neuron in the layer $l$, while there are two neurons each in the hidden layers $l-1$ and $l+1$. The forward pass calculates the weighted sum $a_1^{(l)}$ and the activation $h(a_1^{(l)})$. Once the backward pass reaches the neuron, it calculates $\delta_1^{(l)}$ and the partial derivatives of the weights of layer $l$, that is, the weights of the connections that flow into the central neuron in the forward pass, using the backpropagated value $\delta_k^{(l+1)}$. This is repeated throughout the entire network until the entire weight gradient is known and a single Gradient Descent step can be taken toward the loss function minimum.}
+		\caption[]{Backpropagation calculations, applied to a hidden layer $l$.\protect\footnotemark$\,$ Operations during the forward pass are shown in blue, while operations during the backward pass are orange. The central neuron is the only neuron in the layer $l$, while there are two neurons each in the hidden layers $l-1$ and $l+1$. The forward pass calculates the weighted sum $a_1^{(l)}$ and the activation $h(a_1^{(l)})$. Once the backward pass reaches the neuron again, it calculates $\delta_1^{(l)}$ and the partial derivatives of the weights of layer $l$, that is, the weights of the connections that flow into the central neuron in the forward pass, using the backpropagated value $\delta_k^{(l+1)}$.}
 		\label{fig:backprop}
 	\end {figure}
 
 	\footnotetext{This example is based on a visualization in \cite{karparthy_lecture}.}
 }
 
-\noindent Depending on how deep the networks are, i.e. how many hidden layers there are and how many neurons there are in these hidden layers, neural networks can learn very complex classification boundaries. The role of the activation function is akin to the kernel principle of State Vector Machines (SVMs), since it maps inputs to a representation in which they are linearly separable by a hyperplane (see figure \ref{fig:mlp_trick}).\\
+\noindent Depending on how deep the networks are, i.e. how many hidden layers there are and how many neurons there are in these hidden layers, neural networks can learn very complex classification boundaries. The role of the activation function is akin to the kernel principle of State Vector Machines (SVMs), since it maps inputs to a representation in which they are linearly separable by a hyperplane (see Figure \textbf{\ref{fig:mlp_trick}}).\\
 
 \begin {figure}[!ht]
 		\begin{center}
@@ -487,22 +500,3 @@ Luckily, there exists an iterative algorithm called \textit{Backpropagation} \ci
 		\caption[]{\textbf{Left:} The problem from \ref{fig:perceptron} revisited. An 2-layer MLP with 2 input neurons, 5 hidden neurons and 2 output neurons was trained on the dataset for 10000 iterations using Backpropagation and Gradient Descent and classifies it correctly using a nonlinear classification boundary. \textbf{Right:} Visualization of the transformed data with $(x, y) \Rightarrow (x, y, out(x, y))$. The transformed dataset is then linearly separable by a plane.}
 		\label{fig:mlp_trick}
 	\end {figure}
-
-\noindent Choosing the number of hidden layers and the number of hidden neurons within them wisely is important because bad choices can make the network susceptible to underfitting or overfitting.
-\textit{Underfitting} is the term for the inability of a method to model the data correctly. For example, a linear classifier always underfits on a not-linearly separable dataset because it is not powerful enough to solve the problem. \textit{Overfitting} is the exact opposite and occurs when the model is too complex so that it doesn't model a trend in the data, but instead memorizes the dataset (see figure \ref{fig:overfit}). This is undesirable because such a model cannot generalize well and will make incorrect classifications once it is asked to classify data it hasn't been presented with during training. Therefore, a balance has to be found to equip a model with both enough power to classify correctly while also allowing leeway for generalizing when making predictions on new data.
-
-	\begin {figure}[!ht]
-		\begin{center}
-			\textbf{TODO: uncomment in code}
-			%\scalebox{0.75}{\input{img/fig_overfit.pgf}}
-		\end{center}
-		\caption[]{Overfitting on a dataset, using a 2-layer MLP with 100 hidden neurons and 100,000 iterations of training. A better model would classify the three blue outliers as orange.}
-		\label{fig:overfit}
-	\end {figure}
-
-\noindent The danger of overfitting on data increases with the complexity of the model. As MLPs are highly complex, often using millions of weights, overfitting is often a problem. 
-
-
-
-%	\subsection{Training Optimizations and Regularization}
-
