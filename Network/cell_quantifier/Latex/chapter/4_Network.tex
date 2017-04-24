@@ -8,7 +8,7 @@ Since the task of image segmentation is a popular one, a number of architecture 
 \label{sec:CNN}
 \textit{Convolutional Neural Networks} (CNNs) are a special subtype of ANNs/MLPs that was popularized by LeCun \cite{lecun98} and, more recently, the successes of Krizhevsky \cite{krizhevsky2012} in the domain of image classification, although CNNs have been applied to other problems such as sound analysis as well. The rationale for their creation was that using fully-connected networks like the ones presented in Section \textbf{\ref{subsec:mlp_backprop}} relate all elements of an input vector to every other element, which is generally a good thing to do - however, it ignores the relationship between parts of the input that is given in some datasets and doesn't scale well for very large datasets because of the large number of weights needed. Especially in image data, pixels that are close to each other by some metric are much more likely to be related, while pixels that lie on the other side of the image hardly are relevant to a local pattern the pixels might be forming. Consequently, CNNs encode this spatial relationship by using convolution operations which share weights across all neurons involved in the convolution.\\
 
-\noindent A \textit{convolution} is a mathematical operation which examines the ``neighborhood'' of a function value $x$, including $x$ itself, to compute a new value.  Convolutions were first used in signal processing, but can also be generalized to 2D and 3D spaces, for example blur images or find contours. In image processing, convolutions on an image matrix $I$ are usually performed by defining a small, quadratic \textit{kernels} or \textit{weight matrices} $B$ with uneven dimensions $d \times d$ and $d > 1$. The values in $B$ are the neighborhood weights for some neighborhood in $I$. Visualizing the convolution process, $B$ is aligned with each value in $I$ by its center value, one after another, and a dot product between the neighborhood from $I$ and the matrix $B$ is calculated, which is then the output of the convolution for the center value.
+\noindent A \textit{convolution} is a mathematical operation which examines the ``neighborhood'' of a function value $x$, including $x$ itself, to compute a new value.  Convolutions were first used in signal processing, but can also be generalized to 2D and 3D spaces, for example to blur images or find contours. In image processing, convolutions on an image matrix $I$ are usually performed by defining a small, quadratic \textit{kernels} or \textit{weight matrices} $B$ with uneven dimensions $d \times d$ and $d > 1$. The values in $B$ are the neighborhood weights for some neighborhood in $I$. Visualizing the convolution process, $B$ is aligned with each value in $I$ by its center value, one after another, and a dot product between the neighborhood from $I$ and the matrix $B$ is calculated, which is then the output of the convolution for the center value.
 
 However, for values in $I$ that are on the border of the matrix, this means that some neighborhood values are not defined because the neighborhood would extend over the boundaries of the matrix. In such out-of-bounds cases (OOB), several methods exist to nonetheless perform a convolution. Commonly, OOB values are set to zero and the convolution is performed as usual. An alternative is to treat the matrix like a torus and wrap around once the border is reached. Another variant is to just perform convolutions on those values that have a valid neighborhood, i.e. one that lies completely inside the matrix boundaries, therefore avoiding OOB values altogether, although this shrinks the input matrix each time a convolution is applied because the outer matrix values are ignored. For example, if a $3 \times 3$ kernel is used, a 1-value border of the data is lost (see Figure \textbf{\ref{fig:convolution}}). This last variant is assumed in the following sections.\\
 
@@ -25,7 +25,7 @@ However, for values in $I$ that are on the border of the matrix, this means that
 
 \noindent First, the data is convoluted by using one or multiple kernels (also called filter) to all input values and their local neighborhoods. Filters typically have a size of $k \times k \times d$, where $k$ is the filter size and $d$ is the depth of the dataset, e.g. in an RGB image dataset, the depth is 3 because there are 3 color channels. This means that the convolutions performed in CNNs are almost always multi-dimensional, extending through the whole depth of the stack of input values. The result of these convolutions are as many 2D outputs as there are filters in the layer. These outputs are called \textit{feature maps}, and they then, in turn, provide an input stack for the following layers.
 
-Effectively, applying the a specific filter to every valid position in a feature map means that the same kind of pattern is searched in the entire dataset, resulting in \textit{translation invariance}, i.e. it doesn't matter where the pattern is found for it to be recognized as such.
+Effectively, applying a specific filter to every valid position in a feature map means that the same pattern is searched in the entire image. Given the right filter weights, a certain pattern creates strong responses and it thus ``recognized'' in the image. Using the same weights for each location in the feature map results in \textit{translation invariance}, i.e. it doesn't matter where the pattern is found for it to be recognized because the response only depends on the weights, not the position of the filter.
 
 After convolution, the feature maps are passed through an non-linear activation function $h(\cdot)$ to generate ``activation maps'', like in normal MLPs.
 
@@ -63,10 +63,9 @@ The Sigmoid function
 
 In general, activation functions for which
 
-\[ \lim \limits_{x \rightarrow -\infty} \frac{\partial}{\partial x} h(x) = 0 \,\,\,\, \land \,\,\,\,  \lim \limits_{x \rightarrow +\infty} \frac{\partial}{\partial x} h(x) = 0 \]
+\[ \lim \limits_{x \rightarrow -\infty} \frac{\partial}{\partial x} h(x) = 0 \,\,\,\, \land \,\,\,\,  \lim \limits_{x \rightarrow +\infty} \frac{\partial}{\partial x} h(x) = 0 \label{eq:saturation} \]
 
-\noindent is true are called \textit{saturating} activation functions and possess the undesirable property of leading to vanishing gradients which eventually lead to problems as the number of layers in networks increases.\\ 
- \textbf{TODO: check definition of saturation}\\
+\noindent is true are called \textit{saturating} activation functions and possess the undesirable property of leading to vanishing gradients which eventually cause problems in the training as the number of network layers increases.\\ 
 
 \noindent A newer, popular alternative to the Sigmoid and $\tanh$ functions is the \textit{Rectified Linear Unit} function (ReLU). It is defined as the piecewise function
 
@@ -91,13 +90,13 @@ In general, activation functions for which
 
 \noindent although in implementations, the derivative for zero inputs strays from the mathematical definition and is altered to $\frac{\partial ReLU}{\partial x}\rvert_{x=0} = 0$.\footnote{One example is the ``backward\_cpu'' implementation of the Caffe framework's ReLU layer (\url{https://github.com/BVLC/caffe/blob/master/src/caffe/layers/relu_layer.cpp}).}
 
-ReLUs do not saturate and are cheap to compute compared to activation functions containing exponential functions, although when using large learning rates and large weights, the gradients can ``explode'' during Backpropagation, which is the opposite of the ``vanishing gradient'' problem. To deal with this, \textit{gradient clipping} can be performed. A popular form of gradient clipping is L2 norm gradient regularization, given by
+ReLUs do not saturate\footnote{This depends on the definition of saturation, for which no standard definition seems to exist. Given the definition in \textbf{\ref{eq:saturation}}, this is true, but since ReLUs cull values below zero, they could also be seen as ``semi-saturating'' functions.} and are cheap to compute compared to activation functions containing exponential functions, although when using large learning rates and large weights, the gradients can ``explode'' during Backpropagation, which is the opposite of the ``vanishing gradient'' problem. To deal with this, \textit{gradient clipping} can be performed. A popular form of gradient clipping is L2 norm gradient regularization, given by
 
 \[ \hat{g} = \frac{g\,t}{||g||} \cite{l2clipping} \]
 
 \noindent where $g$ is the gradient vector, $||g||$ is its L2 norm and $\hat{g}$ is the regularized gradient. This regularization is done whenever $||g||$ is larger than some threshold $t$.\\
 
-\noindent Despite this, ReLUs still suffer from the problem that they can ``die'' when the network weights are updated in a way that makes them output activation values of zero forever - for example, when a large negative bias term turns all inputs negative and thus resulting in zero activations. Once a ReLU is dead, the gradient flowing through it will also be zero, and the weights for its neuron won't be updated anymore.
+\noindent Despite this, ReLUs still suffer from the problem that they can ``die'' when the network weights are updated in a way that makes them output activation values of zero forever - for example, when a large negative bias term turns all inputs negative and thus results in zero activations. Once a ReLU is dead, the gradient flowing through it will also be zero, and the weights for its neuron won't be updated anymore, which is another form of the saturation problem.
 
 An attempt at fixing this issue is relaxing the strict below-zero activation so it outputs a downscaled version of the input instead. This principle is called \textit{Leaky ReLU} \cite{lrelu} and formally changes the ReLU definition to 
 
@@ -158,7 +157,7 @@ An attempt at fixing this issue is relaxing the strict below-zero activation so 
 	\end {subfigure}
 	\end{center}
 
-		\caption[]{Multiple activation functions (blue) and their derivatives (orange). \textbf{a):} Sigmoid. \textbf{b):} Tanh. \textbf{c):} ReLU. \textbf{d):} LReLU with $\alpha = 0.1$. \textbf{e):} ELU with $\alpha = 0.5$.}
+		\caption[]{Multiple activation functions (blue) and their derivatives (orange). \textbf{a):} Sigmoid. \textbf{b):} Tanh. \textbf{c):} ReLU. \textbf{d):} LReLU with $\alpha = 0.1$ . \textbf{e):} ELU with $\alpha = 0.5$ .}
 		\label{fig:activation_functions}
 
 \end {figure}
@@ -167,19 +166,28 @@ An attempt at fixing this issue is relaxing the strict below-zero activation so 
 
 	\section{Weight Initialization}
 \label{sec:weight_init}
-Another important decision apart from choosing an appropriate activation function is initializing the weights of the network. A naive approach of setting all weights to zero would lead to absolute failure when the activation function used output zero for a zero input, because then, all gradients would likewise be zero vectors and the weights would never be updated. Setting all weights to the same value also doesn't work well because this would make the neurons symmetric, meaning that neurons update the same way and thus also output the same values, which doesn't lead to good model performance.
+Another important decision apart from choosing an appropriate activation function is initializing the weights of the network. A naive approach of setting all weights to zero would lead to absolute failure when the activation function outputs zero for a zero input, because then, all gradients would likewise be zero vectors and the weights would never be updated. Setting all weights to the same value also doesn't work well because this would make the neurons symmetric, meaning that neurons update the same way and thus also output the same values, which doesn't lead to good model performance.
 
-A more reasonable approach is to initialize the weights as small random numbers, for example sampled from a Gaussian distribution with a small variance - albeit this causes problems when using activation functions with small activation outputs, as the small weights and activations reduce the variance of the activations in the network the further the activations travel. Making the weights larger also doesn't work, as the function will then saturate due to the large weights and the gradient becomes zero.
+A more reasonable approach is to initialize the weights as small random numbers, for example sampled from a Gaussian distribution with a small variance - albeit this causes problems when because the resulting activations are also small and reduce the variance of the activations in the network the further the activations travel during Backpropagation, causing vanishing gradients. Making the weights larger overall also doesn't work, as saturating activation functions will then directly produce derivatives close to zero. \cite{karpathy_lecture2}\\
 
-\textit{Xavier initialization} \cite{glorot} provides a now-standard approximate method to get useful activations throughout all network layers by initializing the weights of a neuron by drawing them from a normal distribution $\mathcal{N}$ with mean $\mu = 0$ and a variance $\sigma^2$ which is calculated for each neuron independently, using the number of inputs $\#in$ to that neuron and the number of outputs $\#out$ of that neuron:
+\noindent \textit{Xavier initialization} \cite{glorot} provides an approximate method to get useful activations throughout the entire network layers by initializing the weights of a neuron by drawing them from a normal distribution $\mathcal{N}$ with mean $\mu = 0$ and a variance $\sigma^2$ which is calculated for each neuron independently, using the number of inputs $\alpha$ to that neuron and the number of outputs $\omega$ of that neuron:
 
-\[ \sigma^2 = \frac{2}{\#in + \#out}\,\,\,\footnote{Some frameworks use the simpler, alternative formula $\frac{1}{\#in}$ instead.} \]
+\[ \sigma^2 = \frac{2}{\alpha + \omega}\,\,\,\footnote{Some frameworks use the simpler, alternative formula $\sigma^2 = \frac{1}{\alpha}$ instead, disregarding the number of outputs.} \]
 
-\noindent In CNNs, $\#in$ for a layer with, for instance, five $3 \times 3 \times 10$ filters is equal to $3 * 3 * 10 = 90$. Xavier initialization is based on the idea that each neuron should be initialized using weights that are neither too small nor too large, i.e. that correspond to the output of a distribution with a resonable variance, e.g. $\sigma^2$ = 1, which in turn depends on the number of inputs and outputs.
+\noindent This ensures that the activation output variance is roughly the same as the input variance and does not decrease in deeper layers.\\ %In the special case of CNNs, $\alpha$ for a layer with, for instance, five $3 \times 3 \times 10$ filters is equal to $3 * 3 * 10 = 90$.\\
 
-However, this formula was derived and tested before ReLUs became commonplace. As \cite{rectifiers} points out, using Xavier initialization with ReLUs is suboptimal because ReLUs set negative activations to zero, unlike symmetric functions such as Sigmoid. Therefore, a slightly different initialization, hereafter referred to as \textit{MSRA initialization}, was proposed. MSRA works well with ReLUs and its related activation functions and uses the variance $\sigma^2$, defined as
+\noindent While non-saturating activation functions like ReLU do not output zero derivatives when using large weights, it is still beneficial to receive normalized inputs to a ReLU as shown in \cite{lecun_norm}. This is because values that are not close to zero do bias the SGD training towards a particular direction, slowing it down. The extreme case happens when all values have the same sign, as this forces the update steps to take steps that are perpendicular to each other. As an example, suppose that the training starts at a point $[2,\, 4]$ and the minimum is at $[6,\, 2]$. If a learning rate $\mu = 1$ is assumed, this takes two steps as opposed to one if only updates with the same sign are allowed:
 
-\[ \sigma^2 = \frac{2}{\#in} \]
+\begin {align}
+	[2,\, 4] + [4,\, 0] &= [6,\, 4]\\
+	[6,\, 4] - [0,\, 2] &= [6,\, 2]
+\end {align}
+
+\noindent As \cite{rectifiers} points out, the Xavier formula was derived and tested before ReLUs became commonplace, and using it to initialize ReLUs is suboptimal because ReLUs set negative activations to zero, unlike functions such as Sigmoid, requiring a different initialization to achieve normalization. Therefore, a slightly approach that adjusts the variance calculation, hereafter referred to as \textit{MSRA initialization}, was proposed. MSRA was found to work well with ReLUs and its related activation functions and uses the variance
+
+\[ \sigma^2 = \frac{2}{\alpha} \]
+
+\noindent instead.
 
 
 	\section {Output- and Loss Functions}

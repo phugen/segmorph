@@ -24,7 +24,7 @@ To evaluate the quality of the segmentations, the average multi-class F-Measure 
 \end {table}
 
 \textbf{TODO: Batchnorm: lower learning rate, higher decay rate, no dropout?}
-\noindent Among the CNNs, the best network \textbf{TODO} was selected and its ReLU activation functions were replaced by LReLUs, PReLUs and ELUs to evaluate the differences in performance with respect to the activation function used.
+\noindent Among the CNNs, the best network \textbf{TODO} was selected and its ReLU activation functions were replaced by LReLUs, PReLUs and ELUs to evaluate the differences in performance with respect to the activation function used. This was done because an exhaustive search for the best combination of weight initialization, activation functions, hyperparameters (for instance learning rate) and techniques like Dropout and Batch Normalization would have exceeded the time limit of this thesis. Also, at the time of writing, it was not yet known how these different approaches interact precisely. For example, Batch Normalization and weight initialization have the same goal but achieve it in different ways, making it unclear whether one or the other performs better in practice.
 
 \begin {table}
 	\centering
@@ -52,10 +52,11 @@ To evaluate the quality of the segmentations, the average multi-class F-Measure 
 \caption[]{Multi-class F-Measure scores of 3 and 4-class segmentations for the \textbf{TODO} network, using \textbf{TODO} activations and either Xavier or MSRA weight initialization.}
 \end {table}
 
-\textbf{TODO: Evaluation of training progress, i.e. validation loss progession}
+\textbf{TODO: Evaluation of training progress, i.e. validation loss progession}\\
+\textbf{TODO: Enable shuffling in tests https://valserb.wordpress.com/2016/05/15/hdf5-shuffle-caffe/}\\
 
 
-To compare the CNN results with the results of the other methods, the problem of matching the output labels with those of the ground truth data has to be dealt with. Because Otsu thresholding, K-Means and Gaussian Mixture Models are all unsupervised methods, i.e. they do not depend on ground truth images, the labels they output have no direct relation to the ground truth labels used in the CNN training. Therefore, all combinations of matching the output labels with the ground truth labels are evaluated and for each, an F-Measure score is calculated. The assignment with the highest score is then assumed to be the correct one.
+\noindent To compare the CNN results with the results of the other methods, the problem of matching the output labels with those of the ground truth data has to be dealt with. Because Otsu thresholding, K-Means and Gaussian Mixture Models are all unsupervised methods, i.e. they do not depend on ground truth images, the labels they output have no direct relation to the ground truth labels used in the CNN training. Therefore, all combinations of matching the output labels with the ground truth labels are evaluated and for each, an F-Measure score is calculated. The assignment with the highest score is then assumed to be the correct one.
 
 
 \begin {table}

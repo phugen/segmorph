@@ -472,7 +472,7 @@ Luckily, there exists an iterative algorithm called \textit{Backpropagation} \ci
 			     \end{cases}
 \]
 
-\noindent In the case that $j$ is an output neuron, the partial derivative is calculated directly. Otherwise, $\delta_j$ depends on the $\delta$-values in deeper layers (see Figure \ref{fig:backprop}). The definition of $\delta$ for hidden neurons is also the reason why a differentiable function must be chosen as the activation $h(\cdot)$. The Backpropagation algorithm continues backwards through the network until the entire weight gradient is known and a single (Stochastic) Gradient Descent step can be taken towards the loss function minimum.
+\noindent In the case that $j$ is an output neuron, the partial derivative is calculated directly. Otherwise, $\delta_j$ depends on the $\delta$-values in deeper layers (see Figure \textbf{\ref{fig:backprop}}). The definition of $\delta$ for hidden neurons is also the reason why a differentiable function must be chosen as the activation $h(\cdot)$. The Backpropagation algorithm continues backwards through the network until the entire weight gradient is known and a single (Stochastic) Gradient Descent step can be taken towards the loss function minimum.
 
 \noindent The main advantage of the algorithm is that it scales linearly with the number of weights, i.e. the algorithm is in $\mathcal{O}(w)$. Furthermore, the fact that all $\delta^{(l)}$-values of a layer have to be calculated to calculate all $\delta^{(l-1)}$-values in the layer that precedes it naturally leads to vectorizing the algorithm layerwise in efficient implementations. \cite{nielsen_book, ng_lecture}\cite[pp. 241-245]{bishop_pattern}
 
@@ -487,7 +487,7 @@ Luckily, there exists an iterative algorithm called \textit{Backpropagation} \ci
 		\label{fig:backprop}
 	\end {figure}
 
-	\footnotetext{This example is based on a visualization in \cite{karparthy_lecture}.}
+	\footnotetext{This example is based on a visualization in \cite{karpathy_lecture}.}
 }
 
 \noindent Depending on how deep the networks are, i.e. how many hidden layers there are and how many neurons there are in these hidden layers, neural networks can learn very complex classification boundaries. The role of the activation function is akin to the kernel principle of State Vector Machines (SVMs), since it maps inputs to a representation in which they are linearly separable by a hyperplane (see Figure \textbf{\ref{fig:mlp_trick}}).\\
@@ -500,3 +500,5 @@ Luckily, there exists an iterative algorithm called \textit{Backpropagation} \ci
 		\caption[]{\textbf{Left:} The problem from \ref{fig:perceptron} revisited. An 2-layer MLP with 2 input neurons, 5 hidden neurons and 2 output neurons was trained on the dataset for 10000 iterations using Backpropagation and Gradient Descent and classifies it correctly using a nonlinear classification boundary. \textbf{Right:} Visualization of the transformed data with $(x, y) \Rightarrow (x, y, out(x, y))$. The transformed dataset is then linearly separable by a plane.}
 		\label{fig:mlp_trick}
 	\end {figure}
+
+\clearpage % workaround for \label in afterpage environment, see https://tex.stackexchange.com/questions/200585/label-is-undefined-when-used-in-afterpage

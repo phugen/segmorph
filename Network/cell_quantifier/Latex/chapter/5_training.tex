@@ -31,7 +31,7 @@ Usually, neural networks do not work well with input of an arbitrary form, which
 
 		\subsection{Normalization}
 \label{subsec:normalization}
-Research \cite{lecun_norm} has shown that neural networks perform consistently better when the input data is normalized, that is, when it is transform into a representation which has zero mean and unit variance. This is achieved by subtracting the mean value of the input image per channel from each channel of that image\footnote{Another approach often used is to compute a mean image from all images in the dataset and substract that from each image. However, in the following experiments, individual means were used.} and then dividing by the image's standard deviation (see Figure \ref{fig:norma}).
+Neural networks perform consistently better when the input data is normalized, that is, when it is transformed into a representation which has zero mean and unit variance (see Section \textbf{\ref{sec:weight_init}}). This is achieved by subtracting the mean value of the input image per channel from each channel of that image\footnote{Another approach often used is to compute a mean image from all images in the dataset and substract that from each image. However, in the following experiments, individual means were used.} and then dividing by the image's standard deviation (see Figure \ref{fig:norma}).
 
 \begin {figure}[!ht]
 	\begin{center}
@@ -88,10 +88,10 @@ Another data augmentation technique is \textit{Elastic Deformation} \cite{elasti
 \end {figure}
 
 
-	\section {Regularization and Optimization in Neural Networks}
-	
-Choosing the number of hidden layers and the number of hidden neurons within them wisely is important because bad choices can make the network susceptible to underfitting or overfitting.
-\textit{Underfitting} is the term for the inability of a method to model the data correctly. For example, a linear classifier always underfits on a not-linearly separable dataset because it is not powerful enough to solve the problem. \textit{Overfitting} is the exact opposite and occurs when the model is too complex so that it doesn't model a trend in the data, but instead memorizes the dataset (see Figure \textbf{\ref{fig:overfit}}). This is undesirable because such a model cannot generalize well and will make incorrect classifications once it is asked to classify data it hasn't been presented with during training. Therefore, a balance has to be found to equip a model with both enough power to classify correctly while also allowing leeway for generalizing when making predictions on new data.
+	\section {Regularization and Optimization}
+\label{sec:reg_opt}
+
+Choosing the number of hidden layers and the number of hidden neurons within them wisely is important because bad choices can make the network susceptible to underfitting or overfitting. \textit{Underfitting} is the term for the inability of a method to model the data correctly. For example, a linear classifier always underfits on a not-linearly separable dataset because it is not powerful enough to solve the problem. \textit{Overfitting} is the exact opposite and occurs when the model is too complex so that it doesn't model a trend in the data, but instead memorizes the dataset (see Figure \textbf{\ref{fig:overfit}}). This is undesirable because such a model cannot generalize well and will make incorrect classifications once it is asked to classify data it hasn't been presented with during training. Therefore, a balance has to be found to equip a model with both enough power to classify correctly while also allowing leeway for generalizing when making predictions on new data.
 
 	\begin {figure}[!ht]
 		\begin{center}
@@ -104,6 +104,10 @@ Choosing the number of hidden layers and the number of hidden neurons within the
 
 \noindent The danger of overfitting on data increases with the complexity of the model. As MLPs and CNNs are highly complex, due to their abundance of weights, overfitting is often a problem. Therefore, several techniques to control overfitting were devised, which are called \textit{regularization} techniques.
 
+Also, in addition to optimizations that target the SGD algorithm specifically, such as Momentum, there are also approaches that are applied to enhance the speed or stability of the training when training MLPs and CNNs especially. These are also discussed in the following sections.
+
+	\subsection{Data Shuffling}
+Research \cite{shuffling, lecun_norm} has shown that training progresses the fastest when the order in which the samples are examined is changed in each training epoch, but only if the samples are independent. For example, temporal data should not be shuffled because this would destroy the relationship between samples that the network is supposed to learn in the first place. In Caffe, enabling shuffling can be done conveniently by setting the \textit{shuffle} parameter in HDF5 input layers, which is implicitly set to \textit{false}, to \textit{true} instead.
 
 
 	\subsection{Early Stopping}
@@ -123,7 +127,7 @@ Choosing the number of hidden layers and the number of hidden neurons within the
 
 \[ \frac{GL(t)}{P_k(t)} > \beta \]
 
-\noindent meaning that training is stopped when the generalization loss is too high and the training error has become stable, making it unlikely for the validation loss to recover (see Figure \ref{fig:early_stopping}). However, determining correct parameters and mathematically analyzing the benefits of Early Stopping is not easy, making this approach largely heuristical. Additionally, Caffe currently does not implement an easy way to apply these algorithms directly to the training, making it necessary to monitor training trends graphically in practice while saving the state of the trained weights frequently so that the training can be interrupted manually when results seem to stop improving.
+\noindent meaning that training is stopped when the generalization loss is too high and the training error has become stable, making it unlikely for the validation loss to recover (see Figure \ref{fig:early_stopping}). However, determining correct parameters and mathematically analyzing the benefits of Early Stopping is not easy, making this approach largely heuristical. Additionally, Caffe currently does not implement an easy way to apply these algorithms directly to the training, making it necessary to manually monitor training trends in practice while saving the state of the trained weights frequently so that the training can be interrupted when results stop improving.
 
 
 \begin {figure}[!ht]
@@ -143,23 +147,35 @@ Choosing the number of hidden layers and the number of hidden neurons within the
 
 	\subsection {Batch Normalization}
 \label{subsec:batchnorm}
-\textit{Batch Normalization} (BN) \cite{batchnorm} is a method to improve generalization capacity and training speed while training either general MLPs or CNNs with the SGD algorithm (or other gradient-based algorithms that use mini-batches). It is known that Backpropagation learning works better if the inputs to the network are normalized (see Section \ref{subsec:normalization}). However, as the input passes through the network, the repeated transformations change the distribution of the data so that unnormalized values are used as input to hidden neurons, referred to as ``internal covariance shift''.
+\textit{Batch Normalization} (BN) \cite{batchnorm, batchnorm_pres} is a method to improve training speed and reduce overfitting while training either general MLPs or CNNs with the SGD algorithm (or other gradient-based algorithms that use mini-batches). It is known that Backpropagation learning works better if the inputs to the network are normalized (see Sections \textbf{\ref{sec:weight_init}} and \textbf{\ref{subsec:normalization}}). However, as the input passes through the network, the repeated transformations change the distribution of the data so that unnormalized values are used as input to hidden neurons, referred to as \textit{internal covariance shift}, which prolongs training as the network has to adapt to unnormalized outputs. One way to try and reduce this shift is by proper initialization of the network weights. BN provides a different way of dealing with covariance shift and claims to diminish the dependence on a good initialization as well as the need for Dropout.
 
-One way to try and reduce this shift is by proper initialization of the network weights (see Section \ref{sec:weight_init}). BN provides a different way of dealing with covariance shift and claims to diminish the dependence on a good initialization as well as the need for Dropout, although at the time of writing, it is still unclear whether using BN really solves all weight initialization problems or if there is a better way to keep the weights in a proper range.
+The way BN reduces this shift is by re-normalizing activations $x_i$ within the network so that the following layers once again receive normalized activations. For this purpose, BN first calculates
 
-The way BN reduces this shift is by re-normalizing data within the network so that the following layers once again receive normalized data. For this purpose, such a layer first normalizes the data by applying the formula 
+\[ \mu_B = \frac{1}{m} \sum \limits_{i=1}^{m} x_i\,\, , \]
 
-\[  \hat{x} = \frac{x - E[x]}{\sqrt{Var[x]} + \epsilon} \]
+\noindent the mean of an SGD mini-batch $B$ with size $m$ and
 
-\noindent where $E$ is the mean of an SGD mini-batch, $Var$ is the covariance and $\epsilon$ is an added constant that provides numerical stability. These calculations are done for each dimension of the input separately. Additionally, it has two variables $\gamma$ and $\beta$ which are learned by Backpropagation. These variables perform an affine transformation of the normalized data given by
+\[ {\sigma^2}_B = \frac{1}{m} \sum \limits_{i=1}^{m} \left ( x_i - \mu_B \right )^2 \,\, , \]
 
-\[ y_i = \gamma \hat{x} + \beta \]
+\noindent the variance of $B$. Then, $x_i$ is normalized by applying the formula
+
+\[  \hat{x_i} = \frac{x_i - \mu_B}{\sqrt{{\sigma^2}_B} + \epsilon} \]
+
+\noindent where $\epsilon$ is a small constant that provides numerical stability. These calculations are done for each dimension of the input separately. Additionally, there exist two variables $\gamma$ and $\beta$ which are learned by Backpropagation. These variables perform an affine transformation of the normalized data given by
+
+\[ y_i = \gamma \hat{x_i} + \beta \]
 
 \noindent This transformation simply provides a means to scale and shift the normalized data. In case the best operation is to not transform the data at all, the parameters can be learned to be set to 
 
-\[ \gamma = \sqrt{Var[x]} \,\,\text{ and } \,\, \beta = E[x] ,\]
+\[ \gamma = \sqrt{{\sigma^2}_B} \,\,\text{ and } \,\, \beta = \mu_B ,\]
 
-\noindent in which case the affine transformation simply recovers the original, un-normalized input to the BN layer. For convolutional layers, BN calculates $\gamma$ and $\beta$ per feature map so that all values in the same feature map are normalized the same way. When using the network for classification of some new data sample $x$ at test time, the BN layers apply the learned transformation to $x$ directly, i.e. the data is transformed directly, not across a mini-batch.
+\noindent in which case the affine transformation simply recovers the original, un-normalized input to the BN layer. For convolutional layers, BN calculates $\gamma$ and $\beta$ per feature map so that all values in the same feature map are normalized the same way. When using the network for classification of some new data sample $x_i$ at test time, the BN layers apply the learned transformation to $x_i$ directly, i.e. the data is transformed using the actual mean and variance of the sample, $E[x]$ and $Var[x]$, not the mini-batch averages:
+
+\[  \hat{x_i} = \frac{x_i - E[x]}{\sqrt{Var[x]} + \epsilon}\,\,  . \]
+
+\noindent This way, inference produces deterministic results that only depend on the input.\\
+
+\noindent BN is also claimed to regularize the network in addition to speeding up training. This is assumed to be the case because the variance and mean values that are are calculated for a sample in a mini-batch are always an average of all samples in the batch, while the batch is chosen randomly from all samples. This means that variance and mean that are used for the BN transformation of a sample are always going to be different, depending on what other samples are included in the mini-batch alongside the sample in question, forcing the network to become robust against this form of ``noise''.
 
 
 	\subsection {Pseudo-Labelling}
