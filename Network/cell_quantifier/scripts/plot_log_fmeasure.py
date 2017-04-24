@@ -1,4 +1,4 @@
-# Plots training and validation loss
+# Plots training and validation F-measure score
 # against the number of training iterations.
 
 import numpy as np
@@ -6,12 +6,13 @@ import matplotlib.pyplot as plt
 import sys
 import os
 
-if len(sys.argv) < 3:
-    print "Usage: python plot_log.py path/to/train_log path/to/val_log"
+if len(sys.argv) < 4:
+    print "Usage: python plot_log.py numclasses path/to/train_log path/to/val_log"
     exit(-1)
 
-train_log = sys.argv[1]
-val_log = sys.argv[2]
+numclasses = int(sys.argv[1])
+train_log = sys.argv[2]
+val_log = sys.argv[3]
 
 
 # Read raw lines
@@ -26,44 +27,48 @@ with open(val_log) as f:
     val_lines = val_lines[2:]
 
 
-
-numclasses = 3 # TODO: change classes from 3 to 4 if needed
-
-
-
 train_classes = [[] for x in range(numclasses)]
 val_classes = [[] for x in range(numclasses)]
 classes = [train_classes, val_classes]
 
-# extract iter/loss pairs per class from
+# extract iter/score pairs per class from
 # training and test values
 for c,l in enumerate([train_lines, val_lines]):
 
     cla = classes[c]
     for x in range(0, len(l)):
 
-        # get iters/loss from lines
-        #print l[x].split(",")[0:4]
-        #print l[x].split(",")[0:4:3]
         pair = l[x].split(",")[0:4:3]
         iters = pair[0]
         loss = pair[1]
 
         # sort by classes
         cindex = x % numclasses
-        cla[cindex].append((int(float(iters)), 1.0 - float(loss))) # 1 - F-Measure for "loss"
+        cla[cindex].append((int(float(iters)), float(loss)))
 
 # numclasses x #Iters x (Iter, Loss)
 train = np.array((classes[0]))
 val = np.array((classes[1]))
 
-# get total loss over all classes
+# get total score over all classes
 train_sum = (train[0, ...] + train[1, ...] + train[2, ...]) / numclasses
 val_sum = (val[0, ...] + val[1, ...] + val[2, ...]) / numclasses
 
 fig, ax = plt.subplots()
-ns = 10 # number of samples to skip - ns=1 makes the plot virtually unreadable
+ns = 1 # number of samples to skip - ns=1 makes the plot virtually unreadable
 talpha = 1.0
+
+# find an show iteration with highest validation F-Measure
+np.set_printoptions(suppress=True)
+
+maxscore = 0
+maxpair = None
+for i in range(0, len(val_sum)):
+    if val_sum[i][1] > maxscore and val_sum[i][0] % 5000 == 0: # TODO: delete condition for data that has proper snapshots!
+        maxscore = val_sum[i][1]
+        maxpair = val_sum[i]
+
+print maxpair
 
 # plot all classes for training error
 #ax.plot(train[0,::ns,0], train[0,::ns,1], color="black", alpha=talpha) # class 0: background
@@ -80,5 +85,5 @@ ax.plot(val_sum[::ns, 0], val_sum[::ns, 1])
 #plt.yscale("log")
 
 ax.set_xlabel("Iterations")
-ax.set_ylabel("Inverse F-Measure score")
+ax.set_ylabel("F-Measure score")
 plt.show()

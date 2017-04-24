@@ -5,6 +5,7 @@
 import caffe
 import sys
 import os
+import glob
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.misc
@@ -19,72 +20,83 @@ caffe.set_mode_gpu()
 
 if len(sys.argv) < 5:
     print "Too few arguments!"
-    print "Usage: python predict.py modelfile weightfile input output_folder"
+    print "Usage: python predict.py modelfile weightfile input_folder output_folder"
     sys.exit(-1)
 
 # set paths to deployment net, trained model weights and the images to predict (in HDF5 format, e.g. validation set)
 model_file = sys.argv[1]
 weights = sys.argv[2]
-input_file = sys.argv[3]
+input_path = sys.argv[3]
 output_path = sys.argv[4]
 
 # initialize U-Net with trained weights
 net = caffe.Net(model_file, 1, weights=weights)
 
+# find all validation files in folder
+filenames = glob.glob(input_path + "*validation.h5")
 
-# get mirrored image and label data from HDF5 file
-input_images = None
-labels = None
+# predict all images in that file one after another
+# without reading all of them into memory at once
 
-with h5py.File(input_file, "r") as f:
-    input_images = np.array(f["data"])
-    labels = np.array(f["label"])
-
-# translate integer labels back to RGB
-tlabels = np.zeros((labels.shape[0], 3, labels.shape[1], labels.shape[2]))
-for index in range(labels.shape[0]):
-
-    # get bool masks for each label
-    bluemask = labels[index] == 3
-    greenmask = labels[index] == 2
-    redmask = labels[index] == 1
-
-    # replace old labels
-    tlabels[index, 2, ...][bluemask == 1] = 1.0
-    tlabels[index, 1, ...][greenmask == 1] = 1.0
-    tlabels[index, 0, ...][redmask == 1] = 1.0
-
-
-# predict all images in the validation set file
-transformer = caffe.io.Transformer({'data': net.blobs['data'].data.shape})
+imoffset = 0 # image number offset for saving outputs
 
 bar = progressbar.ProgressBar()
-for imgno in bar(range(input_images.shape[0])):
+for fi in bar(filenames):
 
-    # load input image
-    net.blobs['data'].data[...] = input_images[imgno, ...]
+    # get mirrored image and label data from HDF5 file
+    input_images = None
+    labels = None
 
-    # center / normalize data
-    transformer.preprocess('data', input_images[imgno, ...])
+    with h5py.File(fi, "r") as f:
+        input_images = np.array(f["data"])
+        labels = np.array(f["label"])
 
-    # make prediction
-    prediction = net.forward()
-    prediction = prediction['softmax']
+    # translate integer labels back to RGB
+    tlabels = np.zeros((labels.shape[0], 3, labels.shape[1], labels.shape[2]))
+    for index in range(labels.shape[0]):
 
-    # set class with maximum probability to max value
-    output = np.zeros((prediction.shape))
+        # get bool masks for each label
+        bluemask = labels[index] == 3
+        greenmask = labels[index] == 2
+        redmask = labels[index] == 1
 
-    for y in range(prediction.shape[2]):
-        for x in range(prediction.shape[3]):
-            maxchannel = prediction[0, :, y, x].argmax()
-            output[0, maxchannel, y, x] = 1.0
+        # replace old labels
+        tlabels[index, 2, ...][bluemask == 1] = 1.0
+        tlabels[index, 1, ...][greenmask == 1] = 1.0
+        tlabels[index, 0, ...][redmask == 1] = 1.0
 
 
-    # interpret probabilities as RGB values, omit BG values
-    scipy.misc.toimage(output[0, 1:4, :, :], cmin=0.0, cmax=1.0).save(output_path + "prediction_" + str(imgno) + ".png")
-    scipy.misc.toimage(tlabels[imgno, ...], cmin=0.0, cmax=1.0).save(output_path + "prediction_" + str(imgno) + "_GT.png")
+    # predict all images in the validation set file
+    transformer = caffe.io.Transformer({'data': net.blobs['data'].data.shape})
 
-print "Predicted " + str(input_images.shape[0]) + " images."
+    for imgno in range(input_images.shape[0]):
+
+        # load input image
+        net.blobs['data'].data[...] = input_images[imgno, ...]
+
+        # center / normalize data
+        transformer.preprocess('data', input_images[imgno, ...])
+
+        # make prediction
+        prediction = net.forward()
+        prediction = prediction['softmax']
+
+        # set class with maximum probability to max value
+        output = np.zeros((1, 4, prediction.shape[2], prediction.shape[3]))
+
+        for y in range(prediction.shape[2]):
+            for x in range(prediction.shape[3]):
+                maxchannel = prediction[0, :, y, x].argmax()
+                output[0, maxchannel, y, x] = 1.0
+
+        # interpret probabilities as RGB values, omit BG values
+        scipy.misc.toimage(output[0, 1:4, :, :], cmin=0.0, cmax=1.0).save(output_path + "prediction_" + str(imgno + imoffset) + ".png")
+        scipy.misc.toimage(tlabels[imgno, ...], cmin=0.0, cmax=1.0).save(output_path + "prediction_" + str(imgno + imoffset) + "_GT.png")
+
+    # save images of next HDF5 file with offset numbering
+    imoffset += input_images.shape[0]
+
+print "Predicted " + str(input_images.shape[0] + imoffset) + " images."
 
 
 

@@ -325,7 +325,7 @@ FN &= \sum \limits_{i=1}^{n} (1 - y_i) t_i
 	&= 2 \left ( \frac{t_j \sum_{i=1}^{n} \left ( y_i + t_i \right ) - \sum_{i=1}^{n} \left ( y_i t_i \right )  }{\left [ \sum_{i=1}^{n} \left ( y_i + t_i \right ) \right ]^2 } \right )
 \end {align}
 
-\noindent For multi-class problems, the approach is changed slightly: The $F_1$ score is calculated for each class $C_j$ in a binary fashion, using the $C_j$ as the ``foreground'' and all other classes $C_i, i \neq j$ as ``background''. This way, the definitions for TP, FP and FN can be used for more than two classes. The average of these multiple F-Measures is then used as the loss.\footnote{It should be noted that the $F_1$ score increases the better the classification becomes. To compare it with traditional loss functions, it is convenient to look at the inverse score $1 - F_1$ instead.}
+\noindent For multi-class problems, the approach is changed slightly: The $F_1$ score is calculated for each class $C_j$ in a binary fashion, using the $C_j$ as the ``foreground'' and all other classes $C_i, i \neq j$ as ``background''. This way, the definitions for TP, FP and FN can be used for more than two classes. The average of these multiple F-Measures is then used as the loss function.\footnote{It should be noted that the $F_1$ score \textbf{increases} the better the classification becomes.}
 
 During the backward pass, the gradients are also calculated per class in a similiar way.
 
