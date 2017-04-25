@@ -12,8 +12,6 @@ class permuter:
 
     def __init__(self, numclasses):
         self.numclasses = numclasses
-        #self.already = [set([]) for x in range(numclasses)] # keep track of which permutations were already done
-        #self.already[0] = set([0]) # don't do identity permutation
         self.swaps = [] # all swap rules
 
         # get all possible combinations to swap
@@ -50,8 +48,8 @@ class permuter:
 
 
     def permute(self, label):
-        ''' Generator function that returns one
-        image at a time. '''
+        ''' Generator function that applies one label
+        permutation at a time. '''
 
         # apply one swap rule at a time
         # and return result
@@ -68,7 +66,7 @@ class permuter:
 
 def fmeasure(labels, gt, numclasses):
     ''' Calculates a multi-class F-Measure comparing all permutations
-    of the labels calculated by an unsupervised algorithm and returs
+    of the labels calculated by an unsupervised algorithm and returns
     the best (maximum) score and the corresponding labels as a result. '''
 
     maxscore = 0

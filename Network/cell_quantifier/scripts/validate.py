@@ -6,8 +6,8 @@ import PIL.Image as Image
 import numpy as np
 import h5py
 
-from fmeasure_validation import labels_as_RGB_image
-from fmeasure_validation import fmeasure
+from permute_validation import labels_as_RGB_image
+from permute_validation import fmeasure
 
 def validate(func, numclasses, inpath, outpath):
     ''' Validates a function func using a HDF5 file
@@ -22,21 +22,21 @@ def validate(func, numclasses, inpath, outpath):
             for no, i in enumerate(range(no_samples)):
 
                 # image is grayscale anyway, reduce to 1 channel
-                # and shave off mirror padding because GMMs doesn't need it
+                # and shave off mirror padding because it is not needed
                 input_img = f["data"][i, 0, 90:334, 90:334]
                 ground_truth = f["label"][i, ...].reshape((input_img.size), 1)
 
                 # get labels from classificator
                 labels = func(input_img)
 
-                # calculate labels that give best fmeasure
+                # calculate labels with best fmeasure
                 fscore, bestlabels = fmeasure(labels, ground_truth, numclasses)
 
                 # log performance
-                log.write(str(no) + " " + str(fscore) + "\n")
+                #log.write(str(no) + " " + str(fscore) + "\n")
 
                 # save output image and GT image with the usual RGB color scheme
                 labelimage = Image.fromarray(labels_as_RGB_image(bestlabels, numclasses))
                 gtimage = Image.fromarray(labels_as_RGB_image(ground_truth, numclasses))
-                labelimage.save(outpath + "GMM_output_" + str(no) + ".png")
-                gtimage.save(outpath + "GMM_output_" + str(no) + "_GT.png")
+                labelimage.save(outpath + "unsupervised_" + str(no) + ".png")
+                gtimage.save(outpath + "unsupervised_" + str(no) + "_GT.png")

@@ -6,7 +6,7 @@ All variants of the U-Net were trained on a NVIDIA TITAN Xp GPU (12 GB VRAM) usi
 
 	\section {Segmentation quality}
 
-To evaluate the quality of the segmentations, the average multi-class F-Measure (see Section \ref{subsec:fmeasure}) of the network outputs for all validation images compared to their ground truth was calculated.\\
+To evaluate the quality of the segmentations, the average multi-class F-Measure (see Section \textbf{\ref{subsec:fmeasure}}) of the network outputs for all validation images compared to their ground truth was calculated.\\
 
 \begin {table}
 	\centering
@@ -60,7 +60,7 @@ To evaluate the quality of the segmentations, the average multi-class F-Measure 
 
 \[ F_{1\mu} = 2 \left ( \frac{PR_\mu \cdot RC_\mu}{PR_\mu + RC_\mu} \right ) \]
 
-\noindent However, here, $PR_\mu$ and $RC_\mu$ denote the micro-average Precision and Recall when comparing the segmented image with the image ground truth. However, $PR_\mu$ and $RC_\mu$ are calculated by calculating the sum of all $TP$, $FP$ and $FN$ values for all images and using these sums to calculate the Precision and Recall over all $n$ validation images, i.e.
+\noindent Here, $PR_\mu$ and $RC_\mu$ denote the micro-average Precision and Recall over the entire validation set. $PR_\mu$ and $RC_\mu$ are calculated by taking the sum of all $TP$, $FP$ and $FN$ values for all images and deriving the Precision and Recall over all $n$ validation images from these sums, i.e.
 
 \[ PR_\mu = \frac{\sum_{i=1}^{n} TP_i}{\sum_{i=1}^{n} (TP_i + FP_i)} \text{ and }  RC_\mu = \frac{\sum_{i=1}^{n} TP_i}{\sum_{i=1}^{n} (TP_i + FN_i)} \]
 
@@ -72,7 +72,7 @@ To evaluate the quality of the segmentations, the average multi-class F-Measure 
 
 \[ PR_M = \frac{1}{n} \sum_{i=1}^{n} \frac{TP_i}{TP_i + FP_i} \text { and } RC_M = \frac{1}{n} \sum_{i=1}^{n} \frac{TP_i}{TP_i + FN_i} \] 
 
-\noindent \cite[pp. 317-318]{information_retrieval} highlights that the Micro F-Measure is dominated by ``large'' classes, meaning classes that occur often in the ground truth data. This shifts the focus of the segmentation effectiveness evaluation towards whether the large classes are segmented correctly. As most pixels in the validation images are background pixels and the correct segmentation of the non-background class pixels is of more interest, the Macro F-Measure is therefore chosen for evaluation because it is biased towards smaller classes.\\
+\noindent \cite[pp. 317-318]{information_retrieval} highlights that the Micro F-Measure is dominated by ``large'' classes, meaning classes that occur often in the ground truth data. This shifts the focus of the segmentation effectiveness evaluation towards whether the large classes are segmented correctly. As most pixels in the validation images are background pixels and the correct segmentation of the non-background class pixels is of more interest, the Macro F-Measure is therefore chosen for assessing which method performs best because it is biased towards smaller classes.\\
 
 \noindent Because Otsu thresholding, K-Means and Gaussian Mixture Models are all unsupervised methods, i.e. they do not depend on ground truth images, the labels they output have no direct relation to the ground truth labels used in the CNN training. Therefore, all combinations of matching the output labels with the ground truth labels are evaluated and for each, a multiclass F-Measure score is calculated. The assignment with the highest score is then assumed to be the correct one, which is then used for the overall evaluation using the Macro F-Measure over all segmentations.
 

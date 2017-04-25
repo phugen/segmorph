@@ -36,9 +36,9 @@ After convolution, the feature maps are passed through an non-linear activation 
 \noindent See Figure \textbf{\ref{fig:convnet}} for an example of a simple CNN architecture.
 
 \begin {figure}[!ht]
-	\begin{center}
+	\begin{flushleft}
 		\includegraphics[scale=0.75]{img/fig_convnet}
-	\end{center}
+	\end{flushleft}
 	\caption{A small Convolutional Neural Network. For simplicity, most neuron connections aren't shown explicitly. \textbf{a):} Input layer. The input size is $6 \times 6 \times 3$, while the kernel size is $3 \times 3 \times 3$. Neurons with valid convolution neighborhoods shown in gray. \textbf{b):} Five feature maps with size $4 \times 4 \times 3$ that are the result of applying five different convolution filters to the input, which are then passed into the activation function $h$ to create activation maps. \textbf{c):} Results of a Maximum Pooling operation with sizes $2 \times 2$ and stride $2$ applied to the activation maps. The colors indicate the downsampled position of the maximum activation in a pooling region. \textbf{d):} Fully-connected output layer that calculates the network outputs via applying the output function $\sigma$. The max-pooled values have been rearranged into a column for clarity.}
 	\label{fig:convnet}
 \end {figure}

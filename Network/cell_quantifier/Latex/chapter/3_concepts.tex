@@ -312,9 +312,9 @@ The \textit{Perceptron classifier}, the function that decides which class a give
 
 \[ E_p(w) = - \sum \limits_{n \in \mathcal{M}} w^T x_n\, t_n, \label{eq:perc_error}\]
 
-\noindent where $\mathcal{M}$ is the set of all data points that were misclassfied, meaning that evaluating equation \ref{eq:perceptron_label} for that data yields a value $< 0$. \cite[pp. 192--194]{bishop_pattern}\\
+\noindent where $\mathcal{M}$ is the set of all data points that were misclassfied, meaning that evaluating equation \textbf{\ref{eq:perceptron_label}} for that data yields a value $< 0$. \cite[pp. 192--194]{bishop_pattern}\\
 
-\noindent The correct Perceptron weights can then be determined by some arbitrary learning algorithm, although here, the Gradient Descent scheme (see algorithm \ref{alg:grad_desc}) is applied to the error function \ref{eq:perc_error}. Either (Batch) Gradient Descent or Stochastic Gradient Descent can be used.
+\noindent The correct Perceptron weights can then be determined by some arbitrary learning algorithm, although here, the Gradient Descent scheme (see algorithm \textbf{\ref{alg:grad_desc}}) is applied to the error function \textbf{\ref{eq:perc_error}}. Either (Batch) Gradient Descent or Stochastic Gradient Descent can be used.
 
 Either way, the gradient of $E_p$ has to be calculated. The Perceptron criterion only depends on the weights $w$, so the gradient vector has the shape
 
@@ -335,7 +335,7 @@ Either way, the gradient of $E_p$ has to be calculated. The Perceptron criterion
 
 \[w_i = w_{i - 1} + x_n t_n * \eta\]
 
-\noindent Using this update rule leads to the training algorithm shown in \ref{alg:perceptron_algorithm}, which is applied to an example dataset in figure \ref{fig:perceptron}.
+\noindent Using this update rule leads to the training algorithm shown in \textbf{\ref{alg:perceptron_algorithm}}, which is applied to an example dataset in Figure \textbf{\ref{fig:perceptron}}.
 
 \begin {figure}[!ht]
 	\begin{center}
@@ -368,7 +368,7 @@ Either way, the gradient of $E_p$ has to be calculated. The Perceptron criterion
 
 		\subsection{Multiple Neurons and Backpropagation}
 \label{subsec:mlp_backprop}
-While the Perceptron algorithm works fine for linear problems, those are only a small subset of real-world problems (see Figure \ref{fig:perceptron}). The solution to this problem is to add more neurons to the model, which form a network that consists of layers that pass the outputs of neurons in the previous layers through non-linear activation functions and then use the results as inputs. These layers are referred to as the ``input layer'', the initial layer, the ``output layer'', the last layer, and ``hidden layers'', which are all the layers inbetween.
+While the Perceptron algorithm works fine for linear problems, those are only a small subset of real-world problems (see Figure \textbf{\ref{fig:perceptron}}). The solution to this problem is to add more neurons to the model, which form a network that consists of layers that pass the outputs of neurons in the previous layers through non-linear activation functions and then use the results as inputs. These layers are referred to as the ``input layer'', the initial layer, the ``output layer'', the last layer, and ``hidden layers'', which are all the layers inbetween.
 
 	\subsubsection{Multi-Layer Perceptrons}
 The resulting networks are called \textit{Multi-Layer Perceptrons} (MLPs), \textit{Feedforward Artificial Neural Networks}(ANNs), or, in the case of a multitude of layers, \textit{Deep Neural Networks}, and are much more powerful than simple Perceptrons, as they can approximate haphazard continuous functions that operate on closed and bounded subsets of $\mathbb{R}^n$ given that the network possesses at least one hidden layer of neurons. This capability makes using MLPs for learning real-life problems feasible. \cite{universal_approx}\cite{universal_approx2}\\
