@@ -9,18 +9,31 @@ All variants of the U-Net were trained on a NVIDIA TITAN Xp GPU (12 GB VRAM) usi
 To evaluate the quality of the segmentations, the average multi-class F-Measure (see Section \textbf{\ref{subsec:fmeasure}}) of the network outputs for all validation images compared to their ground truth was calculated.\\
 
 \begin {table}
-	\centering
-	\begin {tabular}[!ht]{|l|c|c|}
-		\hline
-		\textbf{CNN variant}& \textbf{3 classes}& \textbf{4 classes}\\ \hline
-		Unet& & \\ \hline
-		Unet\_Batchnorm& & \\ \hline
-		Unet\_Weighted& & \\ \hline
-		Unet\_Weighted\_Batchnorm& & \\ \hline
-		Unet\_F1& & \\ \hline
-		Unet\_F1\_Batchnorm & & \\ \hline
-	\end {tabular}
-\caption[]{Multi-class F-Measure scores of 3 and 4-class CNN segmentations.}
+	\begin{flushleft}
+		\begin {tabular}[!ht]{|l|c|c|c|c|}
+			\hline\multicolumn{5}{|l|}{\textbf{3-class Micro F-Measure Scores}} \\ \hline
+			\textbf{Network}& \textbf{Class 1}& \textbf{Class 2}& \textbf{Class 3}& \textbf{Overall} \\ \hline
+			Unet\_Weighted\_3& \cellcolor{green!25}0.936013& \cellcolor{green!25}0.979221& \cellcolor{green!25}0.848447& \cellcolor{green!25}0.959854 \\ \hline
+			Unet\_F1\_3& 0.933723& 0.968166& 0.786455&  0.941755\\ \hline
+			\multicolumn{5}{|l|}{\textbf{3-class Macro F-Measure Scores}} \\ \hline
+			\textbf{Network}& \textbf{Class 1}& \textbf{Class 2}& \textbf{Class 3}& \textbf{Overall} \\ \hline
+			Unet\_Weighted\_3& \cellcolor{green!25}0.841432& \cellcolor{green!25}0.977186& \cellcolor{green!25}0.803589& \cellcolor{green!25}0.876880 \\ \hline
+			Unet\_F1\_3& 0.837715& 0.964669& 0.761217& 0.858995 \\ \hline
+		\end {tabular}
+		\vspace{0.5cm}\\
+		\begin {tabular}[!ht]{|l|c|c|c|c|c|}
+			\hline\multicolumn{6}{|l|}{\textbf{4-class Micro F-Measure Scores}} \\ \hline
+			\textbf{Network}& \textbf{Class 1}& \textbf{Class 2}& \textbf{Class 3}& \textbf{Class 4}& \textbf{Overall} \\ \hline
+			Unet\_Weighted\_4& \cellcolor{green!25}0.63248& 0.978377& \cellcolor{green!25}0.660174& 0.927164& 0.934388 \\ \hline
+			Unet\_F1\_4& 0.632356& \cellcolor{green!25}0.978707& 0.641875& \cellcolor{green!25}0.928546& \cellcolor{green!25}0.935324 \\ \hline
+			\multicolumn{6}{|l|}{\textbf{4-class Macro F-Measure Scores}} \\ \hline
+			\textbf{Network}& \textbf{Class 1}& \textbf{Class 2}& \textbf{Class 3}& \textbf{Class 4}& \textbf{Overall} \\ \hline
+			Unet\_Weighted\_4& \cellcolor{green!25}0.59455& 0.975988& 0.565911& \cellcolor{green!25}0.827576& \cellcolor{green!25}0.746051 \\ \hline
+			Unet\_F1\_4& 0.592614& \cellcolor{green!25}0.976762& \cellcolor{green!25}0.57009& 0.823417& 0.742489 \\ \hline
+		\end {tabular}
+	\end {flushleft}
+
+\caption[]{Micro and Macro F-Measure scores of 3 and 4-class CNN segmentations, using the Weighted Cross-Entropy and the Multiclass F-Measure as loss functions. The best scores in each category, per class, are marked in green.}
 \end {table}
 
 \textbf{TODO: Batchnorm: lower learning rate, higher decay rate, no dropout?}

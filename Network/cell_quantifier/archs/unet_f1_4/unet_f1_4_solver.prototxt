@@ -15,6 +15,6 @@ test_iter: 3456 # total number of test iterations
 test_interval: 1000 # test every <test_interval> iterations
 
 display: 100 # show result every iteration (if lots of NaN/Inf: Diverging!)
-snapshot: 5000 # create a backup of weights trained so far every 5000 iterations
+snapshot: 1000 # create a backup of weights trained so far every 5000 iterations
 snapshot_prefix: "./snapshots/unet_f1_4/unet_f1_4"
 solver_mode: GPU # train on GPU
