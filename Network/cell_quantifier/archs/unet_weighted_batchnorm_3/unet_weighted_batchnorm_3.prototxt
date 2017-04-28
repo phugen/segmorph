@@ -101,7 +101,7 @@ layer { bottom: 'u1a' bottom: 'd1cc' top: 'u1b'   name: 'concat_d1cc_u1a-b'  typ
 layer { bottom: 'u1b'               top: 'u1c'   name: 'conv_u1b-c'     type: "Convolution" param {lr_mult: 1 decay_mult: 1} param {lr_mult: 2 decay_mult: 0}  convolution_param { num_output: 128 pad: 0 kernel_size: 3 engine: CAFFE weight_filler { type: 'xavier' }} }
 layer { bottom: 'u1c'               top: 'normu1c'    name: 'bn_u1c'       type: "BatchNorm"        batch_norm_param { use_global_stats: false moving_average_fraction: 0.999 eps: 1e-5 } param { lr_mult: 0 } param { lr_mult: 0 } param { lr_mult: 0}}
 layer { bottom: 'normu1c'           top: 'scaleu1c'   name: 'sc_u1c'       type: "Scale"            scale_param { axis: 1 filler: { type: 'constant' value: 1 } bias_term: true bias_filler { type: 'constant' value: 0. } } }
-ayer { bottom: 'scaleu1c'           top: 'u1c'   name: 'relu_u1c'       type: "ReLU" }
+layer { bottom: 'scaleu1c'           top: 'u1c'   name: 'relu_u1c'       type: "ReLU" }
 
 layer { bottom: 'u1c'               top: 'u1d'   name: 'conv_u1c-d'     type: "Convolution" param {lr_mult: 1 decay_mult: 1} param {lr_mult: 2 decay_mult: 0}  convolution_param { num_output: 128 pad: 0 kernel_size: 3 engine: CAFFE weight_filler { type: 'xavier' }} }
 layer { bottom: 'u1d'               top: 'normu1d'    name: 'bn_u1d'       type: "BatchNorm"        batch_norm_param { use_global_stats: false moving_average_fraction: 0.999 eps: 1e-5 } param { lr_mult: 0 } param { lr_mult: 0 } param { lr_mult: 0}}

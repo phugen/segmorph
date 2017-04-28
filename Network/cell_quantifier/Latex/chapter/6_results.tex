@@ -4,9 +4,35 @@
 	\section{Hardware}
 All variants of the U-Net were trained on a NVIDIA TITAN Xp GPU (12 GB VRAM) using Caffe's CUDA/cuDNN support.
 
-	\section {Segmentation quality}
+	\section {Segmentation quality evaluation}
 
-To evaluate the quality of the segmentations, the average multi-class F-Measure (see Section \textbf{\ref{subsec:fmeasure}}) of the network outputs for all validation images compared to their ground truth was calculated.\\
+\noindent As there were many possible variations of the U-Net architecture, these variations were tested iteratively, choosing the best network of a number of networks and modifying it further. This was done because an exhaustive search for the best combination of weight initialization, activation functions, hyperparameters like the learning rate and techniques such as Dropout and Batch Normalization would have exceeded the time limit of this thesis. Also, at the time of writing, it was not yet known how these different approaches interact precisely. For example, Batch Normalization and specialized weight initialization schemes have the same goal but achieve it in different ways, making it unclear whether one or the other performs better in practice.\\
+
+\textbf{TODO: Enable shuffling in tests https://valserb.wordpress.com/2016/05/15/hdf5-shuffle-caffe/}\\
+
+\noindent To compare the performance of all methods on the validation set with each other, the \textit{Micro} and \textit{Macro} variants of the F-Measure \cite{micromacro} are a suitable way to quantize how well the segmentation works. The Micro F-Measure is defined by the Precision and Recall quantities (see Section \textbf{\ref{subsec:fmeasure}}) of the validation set:
+
+\[ F_{1\mu} = 2 \left ( \frac{PR_\mu \cdot RC_\mu}{PR_\mu + RC_\mu} \right ) \]
+
+\noindent Here, $PR_\mu$ and $RC_\mu$ denote the micro-average Precision and Recall over the entire validation set. $PR_\mu$ and $RC_\mu$ are calculated by taking the sum of all $TP$, $FP$ and $FN$ values for all images and deriving the Precision and Recall over all $n$ validation images from these sums, i.e.
+
+\[ PR_\mu = \frac{\sum_{i=1}^{n} TP_i}{\sum_{i=1}^{n} (TP_i + FP_i)} \text{ and }  RC_\mu = \frac{\sum_{i=1}^{n} TP_i}{\sum_{i=1}^{n} (TP_i + FN_i)} \]
+
+\noindent The Macro F-Measure likewise is defined as
+
+\[ F_{1M} = 2 \left ( \frac{PR_M \cdot RC_M}{PR_M + RC_M} \right ) \]
+
+\noindent where $PR_M$ and $RC_M$ are the macro-average Precision and Recall. These are calculated for each sample independently, summed, and averaged over all $n$ samples:
+
+\[ PR_M = \frac{1}{n} \sum_{i=1}^{n} \frac{TP_i}{TP_i + FP_i} \text { and } RC_M = \frac{1}{n} \sum_{i=1}^{n} \frac{TP_i}{TP_i + FN_i} \] 
+
+\noindent \cite[pp. 317-318]{information_retrieval} highlights that the Micro F-Measure is dominated by ``large'' classes, meaning classes that occur often in the ground truth data. This shifts the focus of the segmentation effectiveness evaluation towards whether the large classes are segmented correctly. As most pixels in the validation images are background pixels and the correct segmentation of the non-background class pixels is of more interest, the Macro F-Measure is therefore chosen for assessing which method performs best because it is biased towards smaller classes rather than large ones, but for completeness, both quantities are listed.\\
+
+\noindent The first test run pitted two nearly identical U-Net networks against each other, using ReLU activations and Dropout with $p = 0.5$. The only difference was the choice of the loss function. The \textbf{Unet\_Weighted} networks used the weighted Cross-Entropy Loss, while the \textbf{Unet\_F1} networks employed the multi-class F-Measure. Both networks were trained for 70,000 iterations on both the 3-class and the 4-class training set, while testing the network on the respective validation set every 1,000 iterations.
+
+\textbf{Unet\_Weighted} used an initial learning rate of 0.001, a step learning rate decay of a factor $\zeta = 0.1$ every 20,000 iterations and a momentum modifier $\gamma = 0.99$, while \textbf{Unet\_F1} used an initial learning rate of 0.0001, $\zeta = 0.3$ every 20,000 iterations and $\gamma = 0.99$. Both networks used L2 gradient regularization and a mini-batch size of 5.\\
+
+\noindent The results of the training are shown in Table \textbf{\ref{tab:results1}}. They indicate that both networks perform similarly well, although using a Cross-Entropy loss function beats the F-Measure slightly. The Cross-Entropy networks achieved Macro F-Measure scores of $\approx$\textbf{0.877} for 3 classes and $\approx$\textbf{0.746} for 4 classes. Therefore, for the following tests, Cross-Entropy was used as the loss function.\\ 
 
 \begin {table}
 	\begin{flushleft}
@@ -33,11 +59,47 @@ To evaluate the quality of the segmentations, the average multi-class F-Measure 
 		\end {tabular}
 	\end {flushleft}
 
-\caption[]{Micro and Macro F-Measure scores of 3 and 4-class CNN segmentations, using the Weighted Cross-Entropy and the Multiclass F-Measure as loss functions. The best scores in each category, per class, are marked in green.}
+\caption[]{Micro and Macro F-Measure scores of 3 and 4-class CNN segmentations, using the Weighted Cross-Entropy and the Multiclass F-Measure as loss functions. In the 4-class dataset, \textbf{class 1} is the background, \textbf{class 2} is the cell proper, \textbf{class 3} are the Filopodia and \textbf{class 4} are the Lamellopodia, while in the 3-class dataset, \textbf{class 3} represents both Filopodia and Lamellopodia. The best scores in each category, per class, are marked in green.}
+\label{tab:results1}
 \end {table}
 
-\textbf{TODO: Batchnorm: lower learning rate, higher decay rate, no dropout?}
-\noindent Among the CNNs, the best network \textbf{TODO} was selected and its ReLU activation functions were replaced by LReLUs, PReLUs and ELUs to evaluate the differences in performance with respect to the activation function used. This was done because an exhaustive search for the best combination of weight initialization, activation functions, hyperparameters (for instance learning rate) and techniques like Dropout and Batch Normalization would have exceeded the time limit of this thesis. Also, at the time of writing, it was not yet known how these different approaches interact precisely. For example, Batch Normalization and weight initialization have the same goal but achieve it in different ways, making it unclear whether one or the other performs better in practice.
+\textbf{TODO: Evaluation of training progress, i.e. validation loss progession}\\
+
+\noindent The next training case concerned whether using Batch Normalization provides benefits, either in convergence speed or overall score. Therefore, the \textbf{Unet\_Weighted} networks were modified to perform Batch Normalization before each ReLU activation, implemented in Caffe as a ``Batch Normalization'' layer that normalizes its input according to the mini-batch statistics, followed by a ``Scale'' layer that applies the affine transformation.
+
+Again, the network was trained on the 3- and 4-class datasets, this time, as advised in \cite{batchnorm}, with a higher initial learning rate of 0.01, and a faster step learning rate decay that reduces the learning rate by $\zeta = 0.1$ each 3,000 iterations. Momentum was kept at $\gamma = 0.99$ and the network was trained for 70,000 iterations again, testing every 1,000 iterations, and using L2 regularization as well as a mini-batch size of 5. The results of the training are shown in Table \textbf{\ref{tab:results2}}.
+
+\begin {table}
+	\begin{flushleft}
+		\begin {tabular}[!ht]{|l|c|c|c|c|}
+			\hline\multicolumn{5}{|l|}{\textbf{3-class Micro F-Measure Scores}} \\ \hline
+			\textbf{Network}& \textbf{Class 1}& \textbf{Class 2}& \textbf{Class 3}& \textbf{Overall} \\ \hline
+			Unet\_Weighted\_3& 0.936013& 0.979221& 0.848447& 0.959854 \\ \hline
+			Unet\_Weighted\_Batchnorm\_3& & & & \\ \hline
+			\multicolumn{5}{|l|}{\textbf{3-class Macro F-Measure Scores}} \\ \hline
+			\textbf{Network}& \textbf{Class 1}& \textbf{Class 2}& \textbf{Class 3}& \textbf{Overall} \\ \hline
+			Unet\_Weighted\_3& 0.841432& 0.977186&0.803589& 0.876880 \\ \hline
+			Unet\_Weighted\_Batchnorm\_3& & & & \\ \hline
+		\end {tabular}
+		\vspace{0.5cm}\\
+		\begin {tabular}[!ht]{|l|c|c|c|c|c|}
+			\hline\multicolumn{6}{|l|}{\textbf{4-class Micro F-Measure Scores}} \\ \hline
+			\textbf{Network}& \textbf{Class 1}& \textbf{Class 2}& \textbf{Class 3}& \textbf{Class 4}& \textbf{Overall} \\ \hline
+			Unet\_Weighted\_4& 0.63248& 0.978377& 0.660174& 0.927164& 0.934388 \\ \hline
+			Unet\_Weighted\_Batchnorm\_4& & & & & \\ \hline
+			\multicolumn{6}{|l|}{\textbf{4-class Macro F-Measure Scores}} \\ \hline
+			\textbf{Network}& \textbf{Class 1}& \textbf{Class 2}& \textbf{Class 3}& \textbf{Class 4}& \textbf{Overall} \\ \hline
+			Unet\_Weighted\_4& 0.59455& 0.975988& 0.565911& 0.827576& 0.746051 \\ \hline
+			Unet\_Weighted\_Batchnorm\_4& & & & & \\ \hline
+		\end {tabular}
+	\end {flushleft}
+
+\caption[]{Micro and Macro F-Measure scores of 3 and 4-class segmenations using a weighted Cross-Entropy loss with or without batch normalization.}
+\label{tab:results2}
+\end {table}
+
+\noindent It is evident that \\
+
 
 \begin {table}
 	\centering
@@ -65,27 +127,7 @@ To evaluate the quality of the segmentations, the average multi-class F-Measure 
 \caption[]{Multi-class F-Measure scores of 3 and 4-class segmentations for the \textbf{TODO} network, using \textbf{TODO} activations and either Xavier or MSRA weight initialization.}
 \end {table}
 
-\textbf{TODO: Evaluation of training progress, i.e. validation loss progession}\\
-\textbf{TODO: Enable shuffling in tests https://valserb.wordpress.com/2016/05/15/hdf5-shuffle-caffe/}\\
 
-
-\noindent To compare the performance of all methods on the validation set with each other, the \textit{Micro} and \textit{Macro} variants of the F-Measure \cite{micromacro} are a suitable way to quantize how well the segmentation works. The Micro F-Measure is defined by the Precision and Recall quantities (see Section \textbf{\ref{subsec:fmeasure}}) of the validation set:
-
-\[ F_{1\mu} = 2 \left ( \frac{PR_\mu \cdot RC_\mu}{PR_\mu + RC_\mu} \right ) \]
-
-\noindent Here, $PR_\mu$ and $RC_\mu$ denote the micro-average Precision and Recall over the entire validation set. $PR_\mu$ and $RC_\mu$ are calculated by taking the sum of all $TP$, $FP$ and $FN$ values for all images and deriving the Precision and Recall over all $n$ validation images from these sums, i.e.
-
-\[ PR_\mu = \frac{\sum_{i=1}^{n} TP_i}{\sum_{i=1}^{n} (TP_i + FP_i)} \text{ and }  RC_\mu = \frac{\sum_{i=1}^{n} TP_i}{\sum_{i=1}^{n} (TP_i + FN_i)} \]
-
-\noindent The Macro F-Measure likewise is defined as
-
-\[ F_{1M} = 2 \left ( \frac{PR_M \cdot RC_M}{PR_M + RC_M} \right ) \]
-
-\noindent where $PR_M$ and $RC_M$ are the macro-average Precision and Recall. These are calculated for each sample independently, summed, and averaged over all $n$ samples:
-
-\[ PR_M = \frac{1}{n} \sum_{i=1}^{n} \frac{TP_i}{TP_i + FP_i} \text { and } RC_M = \frac{1}{n} \sum_{i=1}^{n} \frac{TP_i}{TP_i + FN_i} \] 
-
-\noindent \cite[pp. 317-318]{information_retrieval} highlights that the Micro F-Measure is dominated by ``large'' classes, meaning classes that occur often in the ground truth data. This shifts the focus of the segmentation effectiveness evaluation towards whether the large classes are segmented correctly. As most pixels in the validation images are background pixels and the correct segmentation of the non-background class pixels is of more interest, the Macro F-Measure is therefore chosen for assessing which method performs best because it is biased towards smaller classes.\\
 
 \noindent Because Otsu thresholding, K-Means and Gaussian Mixture Models are all unsupervised methods, i.e. they do not depend on ground truth images, the labels they output have no direct relation to the ground truth labels used in the CNN training. Therefore, all combinations of matching the output labels with the ground truth labels are evaluated and for each, a multiclass F-Measure score is calculated. The assignment with the highest score is then assumed to be the correct one, which is then used for the overall evaluation using the Macro F-Measure over all segmentations.
 
