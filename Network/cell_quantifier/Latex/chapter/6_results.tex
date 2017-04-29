@@ -8,9 +8,7 @@ All variants of the U-Net were trained on a NVIDIA TITAN Xp GPU (12 GB VRAM) usi
 
 \noindent As there were many possible variations of the U-Net architecture, these variations were tested iteratively, choosing the best network of a number of networks and modifying it further. This was done because an exhaustive search for the best combination of weight initialization, activation functions, hyperparameters like the learning rate and techniques such as Dropout and Batch Normalization would have exceeded the time limit of this thesis. Also, at the time of writing, it was not yet known how these different approaches interact precisely. For example, Batch Normalization and specialized weight initialization schemes have the same goal but achieve it in different ways, making it unclear whether one or the other performs better in practice.\\
 
-\textbf{TODO: Enable shuffling in tests https://valserb.wordpress.com/2016/05/15/hdf5-shuffle-caffe/}\\
-
-\noindent To compare the performance of all methods on the validation set with each other, the \textit{Micro} and \textit{Macro} variants of the F-Measure \cite{micromacro} are a suitable way to quantize how well the segmentation works. The Micro F-Measure is defined by the Precision and Recall quantities (see Section \textbf{\ref{subsec:fmeasure}}) of the validation set:
+\noindent To compare the performance of all methods on the validation set with each other, the \textit{Micro} and \textit{Macro} variants of the F-Measure \cite{micromacro} are a suitable way to quantify how well the segmentation works. The Micro F-Measure is defined by the Precision and Recall quantities (see Section \textbf{\ref{subsec:fmeasure}}) of the validation set:
 
 \[ F_{1\mu} = 2 \left ( \frac{PR_\mu \cdot RC_\mu}{PR_\mu + RC_\mu} \right ) \]
 
@@ -28,11 +26,36 @@ All variants of the U-Net were trained on a NVIDIA TITAN Xp GPU (12 GB VRAM) usi
 
 \noindent \cite[pp. 317-318]{information_retrieval} highlights that the Micro F-Measure is dominated by ``large'' classes, meaning classes that occur often in the ground truth data. This shifts the focus of the segmentation effectiveness evaluation towards whether the large classes are segmented correctly. As most pixels in the validation images are background pixels and the correct segmentation of the non-background class pixels is of more interest, the Macro F-Measure is therefore chosen for assessing which method performs best because it is biased towards smaller classes rather than large ones, but for completeness, both quantities are listed.\\
 
-\noindent The first test run pitted two nearly identical U-Net networks against each other, using ReLU activations and Dropout with $p = 0.5$. The only difference was the choice of the loss function. The \textbf{Unet\_Weighted} networks used the weighted Cross-Entropy Loss, while the \textbf{Unet\_F1} networks employed the multi-class F-Measure. Both networks were trained for 70,000 iterations on both the 3-class and the 4-class training set, while testing the network on the respective validation set every 1,000 iterations.
+\noindent The first test run pitted two nearly identical U-Net networks against each other, using ReLU activations and Dropout with $p = 0.5$. The only difference was the choice of the loss function. The \textbf{Unet\_Weighted} networks used the weighted Cross-Entropy Loss, while the \textbf{Unet\_F1} networks employed the multi-class F-Measure. Both networks were trained for 80,000 iterations (or $\approx$ 30 epochs) on both the 3-class and the 4-class training set, while testing the network on the respective validation set every 1,000 iterations.
 
 \textbf{Unet\_Weighted} used an initial learning rate of 0.001, a step learning rate decay of a factor $\zeta = 0.1$ every 20,000 iterations and a momentum modifier $\gamma = 0.99$, while \textbf{Unet\_F1} used an initial learning rate of 0.0001, $\zeta = 0.3$ every 20,000 iterations and $\gamma = 0.99$. Both networks used L2 gradient regularization and a mini-batch size of 5.\\
 
-\noindent The results of the training are shown in Table \textbf{\ref{tab:results1}}. They indicate that both networks perform similarly well, although using a Cross-Entropy loss function beats the F-Measure slightly. The Cross-Entropy networks achieved Macro F-Measure scores of $\approx$\textbf{0.877} for 3 classes and $\approx$\textbf{0.746} for 4 classes. Therefore, for the following tests, Cross-Entropy was used as the loss function.\\ 
+\noindent The progress of the training is shown in Figure \textbf{\ref{fig:weighted_f1_training}}. The F-Measure scores provide the insight that the proper cells (green) can be discerned from the background much more easily than the Lamellopodia (red) and Filopodia (blue), which mirrors the problems when manually labelling the images. Reducing the dataset to three classes by merging the red and blue classes improves the results for both networks.\\
+
+\begin {figure}[!ht]
+	\begin {subfigure}[b]{0.4\linewidth}
+		\scalebox{0.685}{\input{img/fig_train_unet_weighted_3.pgf}}
+		\caption{\textbf{Unet\_Weighted\_3}}
+	\end {subfigure}\hspace{1.3cm}
+	\begin {subfigure}[b]{0.4\linewidth}
+		\scalebox{0.70}{\input{img/fig_train_unet_weighted_4.pgf}}
+		\caption{\textbf{Unet\_Weighted\_4}}
+	\end {subfigure}
+
+	\begin {subfigure}[b]{0.4\linewidth}
+		\scalebox{0.70}{\input{img/fig_train_unet_f1_3.pgf}}
+		\caption{\textbf{Unet\_F1\_3}}
+	\end {subfigure}\hspace{1.3cm}
+	\begin {subfigure}[b]{0.4\linewidth}
+		\scalebox{0.675}{\input{img/fig_train_unet_f1_4.pgf}}
+		\caption{\textbf{Unet\_F1\_4}}
+	\end {subfigure}
+
+		\caption[]{Training progress of the first collection of networks. The training loss is shown in muted colors, while the validation loss is denoted by bright colors. For Unet\_F1, the Multi-class F-Measure score of each class is shown in the respective color. Repetitions in the validation progress in later epochs happen because shuffling was not used.}
+		\label{fig:weighted_f1_training}
+\end {figure}
+
+\noindent The results of testing the networks on the validation set are shown in Table \textbf{\ref{tab:results1}}. They indicate that both networks perform similarly well, although using a Cross-Entropy loss function beats the F-Measure slightly. The Cross-Entropy networks achieved Macro F-Measure scores of $\approx$\textbf{0.877} for 3 classes and $\approx$\textbf{0.746} for 4 classes. Based on these results, for the following tests, Cross-Entropy was used as the loss function.\\ 
 
 \begin {table}
 	\begin{flushleft}
@@ -59,15 +82,14 @@ All variants of the U-Net were trained on a NVIDIA TITAN Xp GPU (12 GB VRAM) usi
 		\end {tabular}
 	\end {flushleft}
 
-\caption[]{Micro and Macro F-Measure scores of 3 and 4-class CNN segmentations, using the Weighted Cross-Entropy and the Multiclass F-Measure as loss functions. In the 4-class dataset, \textbf{class 1} is the background, \textbf{class 2} is the cell proper, \textbf{class 3} are the Filopodia and \textbf{class 4} are the Lamellopodia, while in the 3-class dataset, \textbf{class 3} represents both Filopodia and Lamellopodia. The best scores in each category, per class, are marked in green.}
+\caption[]{Micro and Macro F-Measure scores achieved by Unet\_Weighted and Unet\_F1 when segmenting the validation set images into 3 and 4 classes. In the 4-class dataset, \textbf{class 1} is the background, \textbf{class 2} is the cell proper, \textbf{class 3} are the Filopodia and \textbf{class 4} are the Lamellopodia, while in the 3-class dataset, \textbf{class 3} represents both Filopodia and Lamellopodia. The best scores in each category, per class, are marked in green.}
 \label{tab:results1}
 \end {table}
 
-\textbf{TODO: Evaluation of training progress, i.e. validation loss progession}\\
+\noindent The second training case tested whether using Batch Normalization provides benefits, either in convergence speed or validation score. Therefore, the \textbf{Unet\_Weighted} networks were modified to perform Batch Normalization before each ReLU activation, implemented in Caffe as a ``Batch Normalization'' layer that normalizes its input according to the mini-batch statistics, followed by a ``Scale'' layer that applies the affine transformation.
 
-\noindent The next training case concerned whether using Batch Normalization provides benefits, either in convergence speed or overall score. Therefore, the \textbf{Unet\_Weighted} networks were modified to perform Batch Normalization before each ReLU activation, implemented in Caffe as a ``Batch Normalization'' layer that normalizes its input according to the mini-batch statistics, followed by a ``Scale'' layer that applies the affine transformation.
+Again, the network was trained on the 3- and 4-class datasets, this time, as advised in \cite{batchnorm}, with a higher initial learning rate of 0.005, and a faster step learning rate decay that reduces the learning rate by $\zeta = 0.1$ every 7,500 iterations. Momentum was kept at $\gamma = 0.99$. However, the network parameters didn't fit into memory with a mini-batch size of 5 because of the added Batch Normalization layers, and therefore the mini-batch size had to be lowered to 2. To be able to still compare the training to previous results, the number of iterations was raised to 200,000 so that the network was trained for $\approx$30 epochs as before. The results of the training are shown in Table \textbf{\ref{tab:results2}}.
 
-Again, the network was trained on the 3- and 4-class datasets, this time, as advised in \cite{batchnorm}, with a higher initial learning rate of 0.01, and a faster step learning rate decay that reduces the learning rate by $\zeta = 0.1$ each 3,000 iterations. Momentum was kept at $\gamma = 0.99$ and the network was trained for 70,000 iterations again, testing every 1,000 iterations, and using L2 regularization as well as a mini-batch size of 5. The results of the training are shown in Table \textbf{\ref{tab:results2}}.
 
 \begin {table}
 	\begin{flushleft}
@@ -98,7 +120,7 @@ Again, the network was trained on the 3- and 4-class datasets, this time, as adv
 \label{tab:results2}
 \end {table}
 
-\noindent It is evident that \\
+\noindent It is evident that \textbf{TODO}\\
 
 
 \begin {table}
@@ -129,7 +151,10 @@ Again, the network was trained on the 3- and 4-class datasets, this time, as adv
 
 
 
-\noindent Because Otsu thresholding, K-Means and Gaussian Mixture Models are all unsupervised methods, i.e. they do not depend on ground truth images, the labels they output have no direct relation to the ground truth labels used in the CNN training. Therefore, all combinations of matching the output labels with the ground truth labels are evaluated and for each, a multiclass F-Measure score is calculated. The assignment with the highest score is then assumed to be the correct one, which is then used for the overall evaluation using the Macro F-Measure over all segmentations.
+\noindent Because Otsu thresholding, K-Means and Gaussian Mixture Models are all unsupervised methods, i.e. they do not depend on ground truth images, the labels they output have no direct relation to the ground truth labels used in the CNN training. Therefore, all combinations of matching the output labels with the ground truth labels are evaluated and for each, a multiclass F-Measure score is calculated. The assignment with the highest score is then assumed to be the correct one, which is then used for the overall evaluation using the Macro F-Measure over all segmentations.\\
+
+\textbf{TODO: Show activation maps of different layers!}\\
+\textbf{TODO: Enable shuffling in tests https://valserb.wordpress.com/2016/05/15/hdf5-shuffle-caffe/}\\
 
 
 \begin {table}

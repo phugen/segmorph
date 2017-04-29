@@ -58,7 +58,7 @@ val = np.array(vloss)
 minloss = 1e10
 minpair = None
 for i in range(0, len(vloss)):
-    if vloss[i][1] <= minloss and vloss[i][0] % 5000 == 0: # TODO: delete step for data that has proper snapshots!
+    if vloss[i][1] <= minloss and vloss[i][0] % 1000 == 0:
         minloss = vloss[i][1]
         minpair = vloss[i]
 
@@ -70,22 +70,28 @@ print minpair
 
 fig, ax = plt.subplots()
 ns = 1 # display every "ns"th sample
-talpha = 1.0
+
+print train.shape
 
 # plot all classes for training error
-#ax.plot(train[0,::ns,0], train[0,::ns,1], color="black", alpha=talpha) # class 0: background
-#ax.plot(train[1,::ns,0], train[1,::ns,1], color="red", alpha=talpha) # class 1: filopodia + lamellopodum
-#ax.plot(train[2,::ns,0], train[2,::ns,1], color="green", alpha=talpha) # class 2: cell proper
-ax.plot(train[::ns, 0], train[::ns, 1]) # total error over all classes
+#ax.plot(train[0,::ns,0], train[0,::ns,1], color="black", linestyle=":") # class 0: background
+#ax.plot(train[1,::ns,0], train[1,::ns,1], color="red", linestyle=":") # class 1: filopodia + lamellopodum
+#ax.plot(train[2,::ns,0], train[2,::ns,1], color="green", linestyle=":") # class 2: cell proper
+ax.plot(train[::ns, 0], train[::ns, 1], color ="lavender") # total error over all classes
 
 # plot all classes for validation error
 #ax.plot(val[0,::ns,0], val[0,::ns,1], color="black") # class 0: background
 #ax.plot(val[1,::ns,0], val[1,::ns,1], color="red") # class 1: filopodia + lamellopodum
 #ax.plot(val[2,::ns,0], val[2,::ns,1], color="green") # class 2: cell proper
-ax.plot(val[::ns, 0], val[::ns, 1])
+ax.plot(val[::ns, 0], val[::ns, 1], color="blue")
 
 #plt.yscale("log")
 
-ax.set_xlabel("Iterations")
+ax.set_xlabel("Epochs")
+iterations = 80000
+epochs = 30
+every = 5 # show every 5th epoch
+plt.xticks(np.arange(0, iterations, iterations / (epochs / every)))
+plt.gca().set_xticklabels(range(0, epochs+1, every))
 ax.set_ylabel("Cross-Entropy loss")
 plt.show()

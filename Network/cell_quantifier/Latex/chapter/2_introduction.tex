@@ -1,5 +1,5 @@
 \chapter{Introduction}
-Medical and biological image analysis usually is a time-consuming task that can only be carried out by domain experts. However, with the rise of sophisticated, computer-assisted image analysis and machine learning algorithms, good results have been achieved even on complex or noisy data. \textbf {TODO cite here}\\
+Medical and biological image analysis usually is a time-consuming task that can only be carried out by domain experts. However, with the rise of sophisticated, computer-assisted image analysis and machine learning algorithms, good automatic results have been achieved even on complex or noisy data. \textbf {TODO cite here}\\
 
 \noindent This thesis deals with the special case of automatically identifying and marking different parts of cells in images that were created using fluorescence microscopy. The cells in question are the cells of the common fruit fly, \textit{Drosophila melanogaster}, which has long been a research subject in biological experiments. To obtain the images, the microscopy samples are stained using a fluorescent that is then exposed to illumination of a certain wavelength. The samples respond by emitting light of a different wavelength which is then filtered and used to create an image.
 
@@ -8,15 +8,15 @@ These microscopy images contain four regions of interest: The background, contai
 \begin {figure}[!ht]	
 	\centering
 	\begin {subfigure}[t]{0.52\linewidth}
-		\textbf{TODO: Uncomment this}
-		%\includegraphics[scale=0.60]{img/fig_problems.png}
+		%\textbf{TODO: Uncomment this}
+		\includegraphics[scale=0.60]{img/fig_problems.png}
 
-		\caption*{Cropped part of a microscopy image, showing challenges segmentation algorithms must overcome. \textbf{Red:} Obscured borders due to cell overlap. \textbf{Green:} Movement blur. \textbf{Blue:} Clipped cells on the borders of the image. \textbf{Orange:} ``Ghost cells'' from an image lower in the stack. Additionally, the illumination in the image varies massively from cell to cell and the contrast between Lamellipodia, Filopodia and the background is low.}
+		\caption*{Cropped part of a microscopy image, showing challenges segmentation algorithms must overcome. \textbf{Red:} Obscured borders due to cell overlap. \textbf{Green:} Movement blur. \textbf{Blue:} Clipped cells on the borders of the image. \textbf{Orange:} ``Ghost cells'' from an image lower in the stack. Additionally, the illumination in the image varies massively from cell to cell and the contrast between Lamellipodia, Filopodia and the background is generally low.}
 	\end {subfigure}
 	\hspace{1cm}
 	\begin {subfigure}[t]{0.35\linewidth}
-		\textbf{TODO: Uncomment this}
-		%\includegraphics[scale=1.0]{img/fig_cell_example.png}
+		%\textbf{TODO: Uncomment this}
+		\includegraphics[scale=1.0]{img/fig_cell_example.png}
 
 		\caption*{A Drosophila cell. Contrast and brightness are enhanced for clarity. The green arrow shows the cell proper, the red arrow shows the Lamellopodium and the blue arrow shows one of many Filopodia.}
 	\end {subfigure}
