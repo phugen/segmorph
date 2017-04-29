@@ -496,14 +496,17 @@ Luckily, there exists an iterative algorithm called \textit{Backpropagation} \ci
 	\footnotetext{This example is based on a visualization in \cite{karpathy_lecture}.}
 }
 
-\noindent Depending on how deep the networks are, i.e. how many hidden layers there are and how many neurons there are in these hidden layers, neural networks can learn very complex classification boundaries. The role of the activation function is akin to the kernel principle of State Vector Machines (SVMs), since it maps inputs to a representation in which they are linearly separable by a hyperplane (see Figure \textbf{\ref{fig:mlp_trick}}).\\
+\noindent Depending on how deep the networks are, i.e. how many hidden layers there are and how many neurons there are in these hidden layers, neural networks can learn very complex classification boundaries, as the role of the activation function is to map inputs to a representation in which they are again linearly separable by a hyperplane (see Figure \textbf{\ref{fig:mlp_trick}}).\\
 
 \begin {figure}[!ht]
-		\begin{center}
-			\textbf{TODO: Change right figure}
-			\input{img/fig_mlp_trick.pgf}
-		\end{center}
-		\caption[]{\textbf{Left:} The problem from Figure \textbf{\ref{fig:perceptron}} revisited. An 2-layer MLP with 2 input neurons, 5 hidden neurons and 2 output neurons was trained on the dataset for 10,000 iterations using Backpropagation and Gradient Descent. The dataset is classified correctly using a nonlinear classification boundary. \textbf{Right:} Visualization of the transformed data with $(x, y) \Rightarrow (x, y, out(x, y))$. The transformed dataset is then linearly separable by a plane.}
+	\begin {subfigure}[b]{0.3\linewidth}
+		\scalebox{1.0}{\input{img/fig_mlp_trick.pgf}}
+	\end {subfigure}
+
+	\begin {subfigure}[b]{0.3\linewidth}
+		\scalebox{1.0}{\input{img/fig_mlp_trick2.pgf}}
+	\end {subfigure}
+		\caption[]{The problem from Figure \textbf{\ref{fig:perceptron}} revisited. An 2-layer MLP with 2 input neurons, 5 hidden neurons and 2 output neurons was trained on the dataset for 10,000 iterations using Backpropagation and Gradient Descent. \textbf{Top row:} Activation outputs of all 5 hidden neurons. \textbf{Bottom, from left to right:} The first figure displays the weighted sum of the activations from the upper row, which is used as the input to the output layer, plotted against the original input values. This representation of the dataset is linearly separable, as opposed to the original dataset. The second figure shows the outputs of the network applied to the original dataset, which is classified perfectly. The classification boundary appears as non-linear in the original dataset space.}
 		\label{fig:mlp_trick}
 	\end {figure}
 

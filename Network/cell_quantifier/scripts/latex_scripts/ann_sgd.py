@@ -30,14 +30,14 @@ y2 = np.array([1 for xi in range(11)])
 y = np.concatenate((y1, y2))
 
 
-h = 5 # number of neurons in layer 1 (hidden layer)
+H = 5 # number of neurons in layer 1 (hidden layer)
 D = 2 # input dimension
 K = 2 # number of output classes
 
 # random weights and biases
-W = 0.01 * np.random.randn(D, h)
-b = np.zeros((1, h))
-W2 = 0.01 * np.random.randn(h, K)
+W = 0.01 * np.random.randn(D, H)
+b = np.zeros((1, H))
+W2 = 0.01 * np.random.randn(H, K)
 b2 = np.zeros((1, K))
 
 # learning rate
@@ -95,45 +95,69 @@ for i in range(10000):
 
 
 
+# show all ReLU outputs side by side
+fig, ax = plt.subplots(nrows=1, ncols=H, sharex=True, sharey=True, figsize=(6,1.75))
+fig.text(0.5, 0.01, "Input value", ha="center")
+fig.text(0.0025, 0.5, "Activation", va="center", rotation="vertical")
+
+relus = np.maximum(0, np.dot(X, W) + b) # get transformed outputs for all ReLUs
+
+for hid in range(H):
+    #ax_tmp = fig.add_subplot(1, H, 1+hid)
+    ax[hid].scatter(X[:setsize, 1], relus[:setsize, hid], c="#ff8c00")
+    ax[hid].scatter(X[setsize+1:, 1], relus[setsize+1:, hid], c="#6699CC")
+    #ax[hid].set_xlabel("Input")
+    #ax[hid].set_ylabel("ReLU output")
+
+plt.tight_layout()
+plt.show()
+
+
+# ReLU activation sum of all hidden layers
+fig = plt.figure()
+ax1 = fig.add_subplot(1, 2, 1)
+
+relusum = (np.dot(relus, W2) + b2)[:,0] # get weighted input before activation
+ax1.scatter(X[:setsize, 1], relusum[:setsize], c="#ff8c00")
+ax1.scatter(X[setsize+1:, 1], relusum[setsize+1:], c="#6699CC")
+ax1.set_xlabel("Input value")
+ax1.set_ylabel("Activation")
+
+# plot output transformation for one of the output units
+'''Z = np.dot(np.maximum(0, np.dot(X, W) + b), W2) + b2 # get transformed outputs
+
+# show outputs
+ax2 = fig.add_subplot(1, 2, 2)
+ax2.scatter(Z[:setsize,0], Z[:setsize, 1], c="#ff8c00")
+ax2.scatter(Z[setsize+1:,0], Z[setsize+1:, 1], c="#6699CC")
+ax2.set_xlabel("x")
+ax2.set_ylabel("y")'''
+
+# plot original dataset on top of mesh classification
 # Classifying dataset by applying learned weights
 
 # create coordinates
-h = 0.01 # mesh resolution
+res = 0.01 # mesh resolution
 x_min, x_max = X[:, 0].min() - 1, X[:, 0].max() + 1
 y_min, y_max = X[:, 1].min() - 1, X[:, 1].max() + 1
-xx, yy = np.meshgrid(np.arange(x_min, x_max, h),
-                     np.arange(y_min, y_max, h))
+xx, yy = np.meshgrid(np.arange(x_min, x_max, res),
+                     np.arange(y_min, y_max, res))
 
 # pass mesh through neural network (forward pass)
 Z = np.dot(np.maximum(0, np.dot(np.c_[xx.ravel(), yy.ravel()], W) + b), W2) + b2 # get probabilities
 Z = np.argmax(Z, axis=1) # choose class with highest probability
 Z = Z.reshape(xx.shape)
 
-# plot original dataset on top of mesh classification
-fig = plt.figure()
-ax1 = fig.add_subplot(1, 2, 1)
+ax3 = fig.add_subplot(1, 2, 2)
+ax3.contourf(xx, yy, Z, cmap=plt.cm.spectral_r, alpha=0.3)
+ax3.contour(xx, yy, Z, cmap=plt.cm.Greys, alpha=1)
 
-ax1.contourf(xx, yy, Z, cmap=plt.cm.spectral_r, alpha=0.3)
-ax1.contour(xx, yy, Z, cmap=plt.cm.Greys, alpha=1)
+ax3.scatter(d1[:,0], d1[:,1], c="#ff8c00")
+ax3.scatter(d2[:,0], d2[:,1], c="#6699CC")
 
-ax1.scatter(d1[:,0], d1[:,1], c="#ff8c00")
-ax1.scatter(d2[:,0], d2[:,1], c="#6699CC")
-
-ax1.set_xlim(xx.min(), xx.max())
-ax1.set_ylim(yy.min(), yy.max())
-ax1.set_xlabel("x")
-ax1.set_ylabel("y")
-
-# plot output transformation for one of the output units
-ax2 = fig.add_subplot(1, 2, 2, projection='3d')
-Z = np.dot(np.maximum(0, np.dot(X, W) + b), W2) + b2 # get transformed outputs
-td1 = np.c_[(d1, Z[range(setsize), 1])] # add hidden layer transformation as 3rd dim
-td2 = np.c_[(d2, Z[range(setsize, setsize + 11), 1])]
-
-ax2.scatter(td1[:,0], td1[:, 1], td1[:, 2], c="#ff8c00")
-ax2.scatter(td2[:,0], td2[:, 1], td2[:, 2], c="#6699CC")
-ax2.set_xlabel("x")
-ax2.set_ylabel("y")
-ax2.set_zlabel("z = net(x, y)")
+ax3.set_xlim(xx.min(), xx.max())
+ax3.set_ylim(yy.min(), yy.max())
+ax3.set_xlabel("x")
+ax3.set_ylabel("y")
 
 plt.show()
