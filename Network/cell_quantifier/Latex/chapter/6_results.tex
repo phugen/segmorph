@@ -51,7 +51,7 @@ All variants of the U-Net were trained on a NVIDIA TITAN Xp GPU (12 GB VRAM) usi
 		\caption{\textbf{Unet\_F1\_4}}
 	\end {subfigure}
 
-		\caption[]{Training progress of the first collection of networks. The training loss is shown in muted colors, while the validation loss is denoted by bright colors. For Unet\_F1, the Multi-class F-Measure score of each class is shown in the respective color. Repetitions in the validation progress in later epochs happen because shuffling was not used.}
+		\caption[Training progress of the first collection of networks.]{Training progress of the first collection of networks. The training loss is shown in muted colors, while the validation loss is denoted by bright colors. For Unet\_F1, the Multi-class F-Measure score of each class is shown in the respective color. Repetitions in the validation progress in later epochs happen because shuffling was not used.}
 		\label{fig:weighted_f1_training}
 \end {figure}
 
@@ -82,7 +82,7 @@ All variants of the U-Net were trained on a NVIDIA TITAN Xp GPU (12 GB VRAM) usi
 		\end {tabular}
 	\end {flushleft}
 
-\caption[]{Micro and Macro F-Measure scores achieved by Unet\_Weighted and Unet\_F1 when segmenting the validation set images into 3 and 4 classes. In the 4-class dataset, \textbf{class 1} is the background, \textbf{class 2} is the cell proper, \textbf{class 3} are the Filopodia and \textbf{class 4} are the Lamellopodia, while in the 3-class dataset, \textbf{class 3} represents both Filopodia and Lamellopodia. The best scores in each category, per class, are marked in green.}
+\caption[Micro and Macro F-Measure scores for Unet\_Weighted and Unet\_F1.]{Micro and Macro F-Measure scores achieved by Unet\_Weighted and Unet\_F1 when segmenting the validation set images into 3 and 4 classes. In the 4-class dataset, \textbf{class 1} is the background, \textbf{class 2} is the cell proper, \textbf{class 3} are the Filopodia and \textbf{class 4} are the Lamellopodia, while in the 3-class dataset, \textbf{class 3} represents both Filopodia and Lamellopodia. The best scores in each category, per class, are marked in green.}
 \label{tab:results1}
 \end {table}
 
@@ -116,7 +116,7 @@ Again, the network was trained on the 3- and 4-class datasets, this time, as adv
 		\end {tabular}
 	\end {flushleft}
 
-\caption[]{Micro and Macro F-Measure scores of 3 and 4-class segmenations using a weighted Cross-Entropy loss with or without batch normalization.}
+\caption[Micro and Macro F-Measure scores for a network with and without Batch Normalization.]{Micro and Macro F-Measure scores of 3 and 4-class segmenations using a weighted Cross-Entropy loss with or without batch normalization.}
 \label{tab:results2}
 \end {table}
 
@@ -133,7 +133,7 @@ Again, the network was trained on the 3- and 4-class datasets, this time, as adv
 		PReLU& & \\ \hline
 		ELU& & \\ \hline
 	\end {tabular}
-\caption[]{Multi-class F-Measure scores of 3 and 4-class segmentations for the \textbf{TODO} network, using different activations functions.}
+\caption[Multi-Class F-Measure scores for networks with different activation functions.]{Multi-class F-Measure scores of 3 and 4-class segmentations for the \textbf{TODO} network, using different activations functions.}
 \end {table}
 
 \noindent Then, the effect of the weight initialization on the best network was compared, using the Xavier and the MSRA initializations.
@@ -146,7 +146,7 @@ Again, the network was trained on the 3- and 4-class datasets, this time, as adv
 		Xavier& & \\ \hline
 		MSRA& & \\ \hline
 	\end {tabular}
-\caption[]{Multi-class F-Measure scores of 3 and 4-class segmentations for the \textbf{TODO} network, using \textbf{TODO} activations and either Xavier or MSRA weight initialization.}
+\caption[Multi-Class F-Measure scores for networks with Xavier and MSRA weight initialization.]{Multi-class F-Measure scores of 3 and 4-class segmentations for the \textbf{TODO} network, using \textbf{TODO} activations and either Xavier or MSRA weight initialization.}
 \end {table}
 
 
@@ -167,5 +167,5 @@ Again, the network was trained on the 3- and 4-class datasets, this time, as adv
 		GMM& & \\ \hline
 		\textbf{TODO-network}& & \\ \hline
 	\end {tabular}
-\caption[]{Multi-class F-Measure scores of 3 and 4-class segmentations. The best network is compared to the outputs of unsupervised methods.}
+\caption[Multi-class F-Measure scores of the best network in comparison to the unsupervised methods.]{Multi-class F-Measure scores of 3 and 4-class segmentations. The best network is compared to the outputs of unsupervised methods.}
 \end {table}

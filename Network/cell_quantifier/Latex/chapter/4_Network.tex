@@ -21,7 +21,7 @@ However, for values in $I$ that are on the border of the matrix, this means that
 		%\textbf{TODO: Uncomment this}
 		\includegraphics[scale=0.55]{img/fig_convolution}
 	\end{center}
-	\caption{A single step of a matrix convolution on an input matrix $I$, using a $3 \times 3$ kernel $B$. The inspected neighborhood that corresponds to the kernel is shown in green, while the convolution center value $x$ and the convolution output $x'$ are marked in orange.}
+	\caption[Matrix convolution.]{A single step of a matrix convolution on an input matrix $I$, using a $3 \times 3$ kernel $B$. The inspected neighborhood that corresponds to the kernel is shown in green, while the convolution center value $x$ and the convolution output $x'$ are marked in orange.}
 	\label{fig:convolution}
 \end {figure}
 
@@ -45,7 +45,7 @@ For an example of a simple CNN architecture, see Figure \textbf{\ref{fig:convnet
 	\begin{flushleft}
 		\includegraphics[scale=0.75]{img/fig_convnet}
 	\end{flushleft}
-	\caption{A small Convolutional Neural Network. For simplicity, most neuron connections aren't shown explicitly. \textbf{a):} Input layer. The input size is $6 \times 6 \times 3$, while the filter size is $3 \times 3 \times 3$. Neurons with valid convolution neighborhoods shown in gray. \textbf{b):} Five feature maps with size $4 \times 4 \times 3$ that are the result of applying five different convolution filters to the input, which are then passed into the activation function $h$ to create activation maps. \textbf{c):} Results of a Maximum Pooling operation with sizes $2 \times 2$ and stride $2$ applied to the activation maps. The colors indicate the downsampled position of the maximum activation in a pooling region. \textbf{d):} Fully-connected output layer that calculates the network outputs via applying the output function $\sigma$. The max-pooled values have been rearranged into a column for clarity.}
+	\caption[A small Convolutional Neural Network.]{A small Convolutional Neural Network. For simplicity, most neuron connections aren't shown explicitly. \textbf{a):} Input layer. The input size is $6 \times 6 \times 3$, while the filter size is $3 \times 3 \times 3$. Neurons with valid convolution neighborhoods shown in gray. \textbf{b):} Five feature maps with size $4 \times 4 \times 3$ that are the result of applying five different convolution filters to the input, which are then passed into the activation function $h$ to create activation maps. \textbf{c):} Results of a Maximum Pooling operation with sizes $2 \times 2$ and stride $2$ applied to the activation maps. The colors indicate the downsampled position of the maximum activation in a pooling region. \textbf{d):} Fully-connected output layer that calculates the network outputs via applying the output function $\sigma$. The max-pooled values have been rearranged into a column for clarity.}
 	\label{fig:convnet}
 \end {figure}
 
@@ -163,7 +163,7 @@ An attempt at fixing this issue is relaxing the strict below-zero activation so 
 	\end {subfigure}
 	\end{center}
 
-		\caption[]{Multiple activation functions (blue) and their derivatives (orange). \textbf{a):} Sigmoid. \textbf{b):} Tanh. \textbf{c):} ReLU. \textbf{d):} LReLU with $\alpha = 0.1$ . \textbf{e):} ELU with $\alpha = 0.5$ .}
+		\caption[Multiple activation functions.]{Multiple activation functions (blue) and their derivatives (orange). \textbf{a):} Sigmoid. \textbf{b):} Tanh. \textbf{c):} ReLU. \textbf{d):} LReLU with $\alpha = 0.1$ . \textbf{e):} ELU with $\alpha = 0.5$ .}
 		\label{fig:activation_functions}
 
 \end {figure}
@@ -345,6 +345,6 @@ See Figure \textbf{\ref{fig:unet_arch}} for a graphical representation of the U-
 
 \begin {figure}[!ht]
 	\scalebox{0.75}{\input{img/unet_arch.pdf_tex}}
-	\caption{The U-Net architecture. The white numbers indicate the number of filters per convolution, while the orange numbers show the number of feature maps that are taken from earlier layers for concatenation \textbf{before} downsampling is performed. In this example, the input is a grayscale image and therefore has one channel only. $C$ is the number of output classes to segment the image into, i.e. 3 or 4 depending on which dataset is used.}
+	\caption[The U-Net architecture.]{The U-Net architecture. The white numbers indicate the number of filters per convolution, while the orange numbers show the number of feature maps that are taken from earlier layers for concatenation \textbf{before} downsampling is performed. In this example, the input is a grayscale image and therefore has one channel only. $C$ is the number of output classes to segment the image into, i.e. 3 or 4 depending on which dataset is used.}
 	\label{fig:unet_arch}
 \end {figure}

@@ -165,7 +165,7 @@ The algorithm is initialized with $k$ either random or differently selected clus
 	\begin {center}
 		\includegraphics[scale=0.8]{img/fig_kmeans}
 	\end{center}
-	\caption{Application of the K-Means algorithm to a test image. \textbf{From left to right}: Input image,  K-Means results with $k=4$, results with $k=6$.}
+	\caption[Application of the K-Means algorithm to a test image.]{Application of the K-Means algorithm to a test image. \textbf{From left to right}: Input image,  K-Means results with $k=4$, results with $k=6$.}
 	\label{fig:kmeans}
 \end {figure}
 
@@ -174,7 +174,7 @@ The algorithm is initialized with $k$ either random or differently selected clus
 
 
 	\section{Gaussian Mixture Models}
-\textit{Gaussian Mixtures Models} (GMMs) are a subclass of mixture models, that is, probabilistic models which are combined with other models of the same distribution type to form a more complex model that is able to model the distribution of a data set more accurately than a simple model could. In the case of GMMs, the base distributions are often $n$-multivariate Gaussian distributions:
+\textit{Gaussian Mixture Models} (GMMs) are a subclass of mixture models, that is, probabilistic models which are combined with other models of the same distribution type to form a more complex model that is able to model the distribution of a data set more accurately than a simple model could. In the case of GMMs, the base distributions are often $n$-multivariate Gaussian distributions:
 
 \[ pdf(x) = \mathcal{N}_n (x\,|\,\mu,\, \Sigma) \]
 
@@ -188,7 +188,7 @@ The algorithm is initialized with $k$ either random or differently selected clus
 	\begin{center}
 		\includegraphics[scale=0.75]{img/fig_normal_vs_gmm}
 	\end{center}
-	\caption{Comparison of a single Gaussian fit (upper) with a GMM fit, using $K=3$, on a two-dimensional dataset randomly sampled from three Gaussian distributions. The single Gaussian fails to capture the structure of the data, while the GMM succeeds.}
+	\caption[Single Gaussian fit vs. a mixture of Gaussians.]{Comparison of a single Gaussian fit (upper) with a GMM fit, using $K=3$, on a two-dimensional dataset randomly sampled from three Gaussian distributions. The single Gaussian fails to capture the structure of the data, while the GMM succeeds.}
 	\label{fig:normal_vs_gmm}
 \end {figure}
 
@@ -199,7 +199,7 @@ The algorithm is initialized with $k$ either random or differently selected clus
 \begin {figure}[!ht]
 	\centering
 	\includegraphics[scale=0.55]{img/fig_gmm_vs_gt}
-	\caption{\textbf{Left:} Input image. \textbf{Right:} Image labels in arbitary colors, assigned by a GMM with $K=4$, fitted to the input image.}
+	\caption[Labels assigned by a GMM.]{\textbf{Left:} Input image. \textbf{Right:} Image labels in arbitary colors, assigned by a GMM with $K=4$, fitted to the input image.}
 	\label{fig:gmm_vs_gt}
 \end {figure}
 
@@ -243,7 +243,7 @@ Gradient Descent starts with a guess for the parameters in $\Theta$, iteratively
 	\begin{center}
 		\includegraphics[scale=0.9]{img/fig_grad_desc}
 	\end{center}
-	\caption{\textbf{Left:} A contour plot of Gradient Descent minimization of $f(a, b) = \sin(a) + \cos^2(b)$. The blue line shows the search path of the algorithm along the negative gradient while estimating the optimal $\Theta$. \textbf{Right}: Effect of the initial guess for $\Theta$ on the optimization. The function $f(a) = \frac{1}{40}a^2 * \frac{1}{2} \cos(a)$ has multiple local minima in the interval [0, 25]. Only the third guess $a=25$ leads to finding the global minimum, while the other two optimization runs get trapped in local minima.}
+	\caption[Gradient Descent minimization.]{\textbf{Left:} A contour plot of Gradient Descent minimization of $f(a, b) = \sin(a) + \cos^2(b)$. The blue line shows the search path of the algorithm along the negative gradient while estimating the optimal $\Theta$. \textbf{Right}: Effect of the initial guess for $\Theta$ on the optimization. The function $f(a) = \frac{1}{40}a^2 * \frac{1}{2} \cos(a)$ has multiple local minima in the interval [0, 25]. Only the third guess $a=25$ leads to finding the global minimum, while the other two optimization runs get trapped in local minima.}
 	\label{fig:grad_desc}
 \end {figure}
 
@@ -276,7 +276,7 @@ Gradient Descent starts with a guess for the parameters in $\Theta$, iteratively
 		\begin{center}
 			\scalebox{0.75}{\input{img/fig_momentum.pgf}}
 		\end{center}
-		\caption[]{The effect of momentum on SGD, applied to fitting a line to a noisy two-dimensional dataset with $\eta = 0.1$. \textbf{Left:} Standard SGD. Near the optimum, the algorithm begins zig-zagging and takes many steps to converge. \textbf{Right:} SGD with momentum and $\gamma = 0.85$. Although the algorithm overshoots the minimum a few times, the number of steps until convergence is much smaller.}
+		\caption[The effect of momentum on SGD.]{The effect of momentum on SGD, applied to fitting a line to a noisy two-dimensional dataset with $\eta = 0.1$. \textbf{Left:} Standard SGD. Near the optimum, the algorithm begins zig-zagging and takes many steps to converge. \textbf{Right:} SGD with momentum and $\gamma = 0.85$. Although the algorithm overshoots the minimum a few times, the number of steps until convergence is much smaller.}
 		\label{fig:momentum}
 	\end {figure}
 
@@ -347,7 +347,7 @@ Either way, the gradient of $E_p$ has to be calculated. The Perceptron criterion
 	\begin{center}
 		\includegraphics[scale=0.6]{img/fig_perceptron}
 	\end{center}
-	\caption{\textbf{Left}: Separating two datasets with the Perceptron algorithm in $\mathbb{R}^2$. The correct classification boundary takes the form of a line, i.e. $0 = w^{T}x = w_0 x + w_1 y + w_2$. The line pictured is given by $w = (-2.285, -2.908, 5.938)$, the weights after 19 iterations. \textbf{Right}: A not-linearly separable data set, on which the algorithm would never converge, because it is based on finding linear classifiers and thus cannot separate the data correctly.}
+	\caption[Separating two datasets with the Perceptron algorithm.]{\textbf{Left}: Separating two datasets with the Perceptron algorithm in $\mathbb{R}^2$. The correct classification boundary takes the form of a line, i.e. $0 = w^{T}x = w_0 x + w_1 y + w_2$. The line pictured is given by $w = (-2.285, -2.908, 5.938)$, the weights after 19 iterations. \textbf{Right}: A not-linearly separable data set, on which the algorithm would never converge, because it is based on finding linear classifiers and thus cannot separate the data correctly.}
 	\label{fig:perceptron}
 \end {figure}
 
@@ -366,7 +366,7 @@ Either way, the gradient of $E_p$ has to be calculated. The Perceptron criterion
 			\EndFor
 		\EndWhile
 	\end{algorithmic}
-	\caption{Stochastic Gradient Descent applied to the task of finding the Perceptron weights $w$. $x$ is assumed to be linearly separable.}
+	\caption[Stochastic Descent used for finding Perceptron weights.]{Stochastic Gradient Descent applied to the task of finding the Perceptron weights $w$. $x$ is assumed to be linearly separable.}
 	\label{alg:perceptron_algorithm}
 \end{algorithm}
 
@@ -414,7 +414,7 @@ Afterwards, the sum $a^{(l)}_j$ is passed into an activation function $h(\cdot)$
 			\def\svgwidth{0.8\columnwidth}
 			\input{img/mlp.pdf_tex}
 		\end{center}
-		\caption[]{An MLP with one hidden layer, forming an acyclic directed graph, where connections are color-coded per layer by the receiving neuron. The layer count $L$ starts at the layer after the input layer\protect\footnotemark. Therefore $L = 2$, with three inputs $x_i$ and neuron counts $D^{(1)} = 4$ and $D^{(2)} = 2$. The variables $b^{(1)}$ and $b^{(2)}$ refer to the biases for the neurons in the layers $(1)$ or $(2)$, respectively. Each neuron has its own, changeable bias value, but for the sake of cleanness, the connections from the biases to each neuron of their corresponding layer are not shown.}
+		\caption[A simple Multi-Layer Perceptron.]{An MLP with one hidden layer, forming an acyclic directed graph, where connections are color-coded per layer by the receiving neuron. The layer count $L$ starts at the layer after the input layer\protect\footnotemark. Therefore $L = 2$, with three inputs $x_i$ and neuron counts $D^{(1)} = 4$ and $D^{(2)} = 2$. The variables $b^{(1)}$ and $b^{(2)}$ refer to the biases for the neurons in the layers $(1)$ or $(2)$, respectively. Each neuron has its own, changeable bias value, but for the sake of cleanness, the connections from the biases to each neuron of their corresponding layer are not shown.}
 		\label{fig:mlp}
 	\end {figure}
 
@@ -478,9 +478,22 @@ Luckily, there exists an iterative algorithm called \textit{Backpropagation} \ci
 			     \end{cases}
 \]
 
-\noindent In the case that $j$ is an output neuron, the partial derivative is calculated directly. Otherwise, $\delta_j$ depends on the $\delta$-values in deeper layers (see Figure \textbf{\ref{fig:backprop}}). The definition of $\delta$ for hidden neurons is also the reason why a differentiable function must be chosen as the activation $h(\cdot)$. The Backpropagation algorithm continues backwards through the network until the entire weight gradient is known and a single (Stochastic) Gradient Descent step can be taken towards the loss function minimum.
+\noindent In the case that $j$ is an output neuron, the partial derivative is calculated directly. Otherwise, $\delta_j$ depends on the $\delta$-values in deeper layers (see Figure \textbf{\ref{fig:backprop}}). The definition of $\delta$ for hidden neurons is also the reason why a differentiable function must be chosen as the activation $h(\cdot)$. The Backpropagation algorithm continues backwards through the network until the entire weight gradient is known and a single (Stochastic) Gradient Descent step can be taken towards the loss function minimum (see Algorithm \textbf{\ref{alg:backprop}}).
 
 \noindent The main advantage of the algorithm is that it scales linearly with the number of weights, i.e. the algorithm is in $\mathcal{O}(w)$. Furthermore, the fact that all $\delta^{(l)}$-values of a layer have to be calculated to calculate all $\delta^{(l-1)}$-values in the layer that precedes it naturally leads to vectorizing the algorithm layerwise in efficient implementations. \cite{nielsen_book, ng_lecture}\cite[pp. 241-245]{bishop_pattern}\\
+
+\begin {algorithm}[!ht]
+	\label{alg:backprop}
+	\begin {algorithmic}[1]
+		\While {loss $\geq$ eps}
+			\State Input a data sample to the network and forward it through the entire network to calculate the current loss.
+			\State Calculate $\delta$ for all output units in the last layer.	
+			\State Use the $\delta$ values from the last layer to recursively calculate all other deltas in the network, going back one layer at a time.
+			\State Calculate all partial derivatives with respect to the weights, so that a single Gradient Descent step can be taken.
+		\EndWhile
+	\end{algorithmic}
+	\caption[The Backprogation algorithm.]{The Backpropagation algorithm training loop. The algorithms runs until manually aborted or until some loss threshold $eps$ is reached.}
+\end{algorithm}
 
 
 \afterpage{
@@ -489,7 +502,7 @@ Luckily, there exists an iterative algorithm called \textit{Backpropagation} \ci
 			\def\svgwidth{0.8\columnwidth}
 			\input{img/backprop.pdf_tex}
 		\end{center}
-		\caption[]{Backpropagation calculations, applied to a hidden layer $l$.\protect\footnotemark$\,$ Operations during the forward pass are shown in blue, while operations during the backward pass are orange. The central neuron is the only neuron in the layer $l$, while there are two neurons each in the hidden layers $l-1$ and $l+1$. The forward pass calculates the weighted sum $a_1^{(l)}$ and the activation $h(a_1^{(l)})$. Once the backward pass reaches the neuron again, it calculates $\delta_1^{(l)}$ and the partial derivatives of the weights of layer $l$, that is, the weights of the connections that flow into the central neuron in the forward pass, using the backpropagated value $\delta_k^{(l+1)}$.}
+		\caption[Backpropagation calculations.]{Backpropagation calculations, applied to a hidden layer $l$.\protect\footnotemark$\,$ Operations during the forward pass are shown in blue, while operations during the backward pass are orange. The central neuron is the only neuron in the layer $l$, while there are two neurons each in the hidden layers $l-1$ and $l+1$. The forward pass calculates the weighted sum $a_1^{(l)}$ and the activation $h(a_1^{(l)})$. Once the backward pass reaches the neuron again, it calculates $\delta_1^{(l)}$ and the partial derivatives of the weights of layer $l$, that is, the weights of the connections that flow into the central neuron in the forward pass, using the backpropagated value $\delta_k^{(l+1)}$.}
 		\label{fig:backprop}
 	\end {figure}
 
@@ -506,7 +519,7 @@ Luckily, there exists an iterative algorithm called \textit{Backpropagation} \ci
 	\begin {subfigure}[b]{0.3\linewidth}
 		\scalebox{1.0}{\input{img/fig_mlp_trick2.pgf}}
 	\end {subfigure}
-		\caption[]{The problem from Figure \textbf{\ref{fig:perceptron}} revisited. An 2-layer MLP with 2 input neurons, 5 hidden neurons and 2 output neurons was trained on the dataset for 10,000 iterations using Backpropagation and Gradient Descent. \textbf{Top row:} Activation outputs of all 5 hidden neurons. \textbf{Bottom, from left to right:} The first figure displays the weighted sum of the activations from the upper row, which is used as the input to the output layer, plotted against the original input values. This representation of the dataset is linearly separable, as opposed to the original dataset. The second figure shows the outputs of the network applied to the original dataset, which is classified perfectly. The classification boundary appears as non-linear in the original dataset space.}
+		\caption[Non-linear separation with an MLP.]{The problem from Figure \textbf{\ref{fig:perceptron}} revisited. An 2-layer MLP with 2 input neurons, 5 hidden neurons and 2 output neurons was trained on a non-linearly separable dataset for 10,000 iterations using Backpropagation and Gradient Descent. \textbf{Top row:} Activation outputs of all 5 hidden neurons for all input points. The larger and more saturated a point is, the higher the activation response, while activations with activations below zero are shown with a fixed base saturation so that the classes remain unambiguous. The distribution of high responses corresponds to a linear classification performed by the hidden neuron. \textbf{Bottom, from left to right:} The left figure shows the activations of the first output neuron. The right figure shows the predictions of the network applied to the original dataset, which is thus classified perfectly. The classification boundary, a combination of all hidden neuron outputs, appears as non-linear in the original dataset space.}
 		\label{fig:mlp_trick}
 	\end {figure}
 

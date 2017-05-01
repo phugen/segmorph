@@ -6,7 +6,7 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
+from matplotlib.colors import hsv_to_rgb
 
 # create not-linearly separable dataset
 means = [[0, 0], [7, 0]]
@@ -97,17 +97,42 @@ for i in range(10000):
 
 # show all ReLU outputs side by side
 fig, ax = plt.subplots(nrows=1, ncols=H, sharex=True, sharey=True, figsize=(6,1.75))
-fig.text(0.5, 0.01, "Input value", ha="center")
-fig.text(0.0025, 0.5, "Activation", va="center", rotation="vertical")
+fig.text(0.5, 0.01, "x", ha="center")
+fig.text(0.0025, 0.5, "y", va="center", rotation="vertical")
 
 relus = np.maximum(0, np.dot(X, W) + b) # get transformed outputs for all ReLUs
 
+# set up grid for contour plot
+res = 2
+x = np.arange(np.min(X[:,0]), np.max(X[:,0]), res)
+y = np.arange(np.min(X[:,1]), np.max(X[:,1]), res)
+mX, mY = np.meshgrid(x, y)
+
 for hid in range(H):
-    #ax_tmp = fig.add_subplot(1, H, 1+hid)
-    ax[hid].scatter(X[:setsize, 1], relus[:setsize, hid], c="#ff8c00")
-    ax[hid].scatter(X[setsize+1:, 1], relus[setsize+1:, hid], c="#6699CC")
-    #ax[hid].set_xlabel("Input")
-    #ax[hid].set_ylabel("ReLU output")
+
+    # calculate size of marker as function of ReLU output
+    basesize = 10 # markers don't get smaller than this
+    mult = 3.5 # multiplicator that decides how size scales
+    sizes = [basesize + mult * x for x in relus[:, hid]]
+
+    # calculate saturation of a marker as function of ReLU output
+    base = 0.15 # at least 25% saturation so the class color remains unambiguous
+    minact = np.min(relus[:, hid])
+    maxact = np.max(relus[:, hid])
+    sats_pre = [base + ((x - minact) / (maxact - minact)) for x in relus[:, hid]]
+
+    # clip saturation values at 1.0 in case base pushed the saturation above 100%
+    sats = [min(x, 1.0) for x in sats_pre]
+
+    # plot activations
+    for idx,val in enumerate(X[:setsize, :]):
+        ax[hid].scatter(val[0], val[1], s=sizes[idx], c=hsv_to_rgb([32.94/360., sats[idx], 0.96])) # orange HSV with saturation map
+
+    for idx,val in enumerate(X[setsize+1:, :]):
+        ax[hid].scatter(val[0], val[1], s=sizes[setsize+idx], c=hsv_to_rgb([210/360., sats[setsize+idx], 0.96])) # blue HSV with saturation map
+
+    ax[hid].set_xlim(X[:,0].min()-0.5, X[:,0].max()+0.5)
+    ax[hid].set_ylim(X[:,1].min()-0.5, X[:,1].max()+0.5)
 
 plt.tight_layout()
 plt.show()
@@ -117,21 +142,31 @@ plt.show()
 fig = plt.figure()
 ax1 = fig.add_subplot(1, 2, 1)
 
-relusum = (np.dot(relus, W2) + b2)[:,0] # get weighted input before activation
-ax1.scatter(X[:setsize, 1], relusum[:setsize], c="#ff8c00")
-ax1.scatter(X[setsize+1:, 1], relusum[setsize+1:], c="#6699CC")
-ax1.set_xlabel("Input value")
-ax1.set_ylabel("Activation")
+# get weighted input before activation
+relusum = np.maximum(0, np.dot(relus, W2) + b2)
 
-# plot output transformation for one of the output units
-'''Z = np.dot(np.maximum(0, np.dot(X, W) + b), W2) + b2 # get transformed outputs
+# plot combined activation for first output unit
+basesize = 10
+mult = 4
+sizes = [basesize + mult * x for x in relusum]
 
-# show outputs
-ax2 = fig.add_subplot(1, 2, 2)
-ax2.scatter(Z[:setsize,0], Z[:setsize, 1], c="#ff8c00")
-ax2.scatter(Z[setsize+1:,0], Z[setsize+1:, 1], c="#6699CC")
-ax2.set_xlabel("x")
-ax2.set_ylabel("y")'''
+base = 0.15
+minact = np.min(relusum[:,0])
+maxact = np.max(relusum[:,0])
+sats_pre = [base + ((x - minact) / (maxact - minact)) for x in relusum[:,0]]
+sats = [min(x, 1.0) for x in sats_pre]
+
+for idx,val in enumerate(X[:setsize, :]):
+    ax1.scatter(val[0], val[1], s=sizes[idx], c=hsv_to_rgb([32.94/360., sats[idx], 0.96])) # orange HSV with saturation map
+
+for idx,val in enumerate(X[setsize+1:, :]):
+    ax1.scatter(val[0], val[1], s=sizes[setsize+idx], c=hsv_to_rgb([210/360., sats[setsize+idx], 0.96])) # blue HSV with saturation map
+
+ax1.set_xlim(X[:,0].min()-0.5, X[:,0].max()+0.5)
+ax1.set_ylim(X[:,1].min()-0.5, X[:,1].max()+0.5)
+ax1.set_xlabel("x")
+ax1.set_ylabel("y")
+
 
 # plot original dataset on top of mesh classification
 # Classifying dataset by applying learned weights
@@ -155,8 +190,8 @@ ax3.contour(xx, yy, Z, cmap=plt.cm.Greys, alpha=1)
 ax3.scatter(d1[:,0], d1[:,1], c="#ff8c00")
 ax3.scatter(d2[:,0], d2[:,1], c="#6699CC")
 
-ax3.set_xlim(xx.min(), xx.max())
-ax3.set_ylim(yy.min(), yy.max())
+ax3.set_xlim(X[:,0].min()-0.5, X[:,0].max()+0.5)
+ax3.set_ylim(X[:,1].min()-0.5, X[:,1].max()+0.5)
 ax3.set_xlabel("x")
 ax3.set_ylabel("y")
 

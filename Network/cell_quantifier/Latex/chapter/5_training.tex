@@ -19,7 +19,7 @@ Another ``3-class'' version of the dataset was created in which the classes for 
 		\end{center}
 	\end {subfigure}
 
-		\caption[]{An example image tile from the 3-class dataset, with corresponding label. The label image is smaller than the input tile because the image tile already includes a mirrored border as padding (see Section \textbf{\ref{subsec:mirror_tiling}}).}
+		\caption[An example image tile from the 3-class dataset.]{An example image tile from the 3-class dataset, with corresponding label. The label image is smaller than the input tile because the image tile already includes a mirrored border as padding (see Section \textbf{\ref{subsec:mirror_tiling}}).}
 		\label{fig:dataset_example}
 	
 
@@ -37,7 +37,7 @@ Neural networks perform consistently better when the input data is normalized, t
 	\begin{center}
 		\scalebox{0.5}{\input{img/fig_norma.pgf}}
 	\end{center}
-	\caption[]{Normalization of two-dimensional example data. The blue data points represent the original dataset, while the orange points show the dataset after normalization.}
+	\caption[Normalization of two-dimensional data.]{Normalization of two-dimensional example data. The blue data points represent the original dataset, while the orange points show the dataset after normalization.}
 	\label{fig:norma}
 \end {figure}
 
@@ -68,7 +68,7 @@ An easy way to multiply the number of samples eightfold is to flip all images on
 		\caption*{Combinations of flipping and rotating a tile. Taking the original, rotated tiles and the vertical, rotated tiles is enough to obtain all possible variations.}
 	\end {subfigure}
 
-		\caption[]{}
+		\caption[Mirror tiling and rotating.]{}
 		\label{fig:tile_mirror_rotate}
 
 \end {figure}
@@ -85,7 +85,7 @@ Another data augmentation technique is \textit{Elastic Deformation} \cite{elasti
 	\begin{center}
 		\includegraphics[scale=0.80]{img/fig_elastic.png}
 	\end{center}
-	\caption[]{\textbf{Left:} Input image with superimposed grid. \textbf{Right:} Elastic deformation with $\alpha = 100$ and $\sigma = 10$.}
+	\caption[Elastic deformation.]{\textbf{Left:} Input image with superimposed grid. \textbf{Right:} Elastic deformation with $\alpha = 100$ and $\sigma = 10$.}
 	\label{fig:elastic}
 \end {figure}
 
@@ -104,7 +104,7 @@ Choosing the number of hidden layers and the number of hidden neurons within the
 			%\textbf{TODO: uncomment in code}
 			\scalebox{0.75}{\input{img/fig_overfit.pgf}}
 		\end{center}
-		\caption[]{Overfitting on a dataset, using a 2-layer MLP with 100 hidden neurons and 100,000 iterations of training. A better model would classify the three blue outliers as orange.}
+		\caption[Overfitting on a dataset.]{Overfitting on a dataset, using a 2-layer MLP with 100 hidden neurons and 100,000 iterations of training. A better model would classify the three blue outliers as orange.}
 		\label{fig:overfit}
 	\end {figure}
 
@@ -113,7 +113,7 @@ Choosing the number of hidden layers and the number of hidden neurons within the
 Also, in addition to optimizations that target the SGD algorithm specifically, such as Momentum, there are also approaches that are applied to enhance the speed or stability of the training when training MLPs and CNNs especially. These are also discussed in the following sections.
 
 	\subsection{Data Shuffling}
-Research \cite{shuffling, lecun_norm} has shown that training progresses the fastest when the order in which the samples are examined is changed in each training epoch, but only if the samples are independent. For example, temporal data should not be shuffled because this would destroy the relationship between samples that the network is supposed to learn in the first place. In Caffe, enabling shuffling can be done conveniently by setting the \textit{shuffle} parameter in HDF5 input layers, which is implicitly set to \textit{false}, to \textit{true} instead.
+Research \cite{shuffling, lecun_norm} has shown that training progresses the fastest when the order in which the samples are examined is changed in each training epoch, but only if the samples are independent. For example, temporal data should not be shuffled because this would destroy the relationship between samples that the network is supposed to learn in the first place. In Caffe, enabling shuffling can be done conveniently by setting the \textit{shuffle} parameter in HDF5 input layers, which is implicitly set to \textit{false}, to \textit{true} instead, which changes the order of the elements in the dataset in each epoch.
 
 
 	\subsection{Early Stopping}
@@ -142,7 +142,7 @@ However, this might prematurely stop the training in phases where the validation
 	\begin{center}
 		\scalebox{0.7}{\input{img/fig_early_stopping.pgf}}
 	\end{center}
-	\caption[]{Stopping points calculated by two Early Stopping algorithms applied to artificially created loss data. The training loss is shown in orange, while the validation loss is shown in blue. \textbf{a):} Using $GL(t) > \alpha$ with $\alpha = 30$. \textbf{b):} Using $\frac{GL(t)}{P_k(t)} > \beta$, with $\beta = 10$ and $k = 10$. The first algorithm stops training even though the minimum validation loss is not reached, while the second algorithm gets closer to the global minimum. }
+	\caption[Early stopping.]{Stopping points calculated by two Early Stopping algorithms applied to artificially created loss data. The training loss is shown in orange, while the validation loss is shown in blue. \textbf{a):} Using $GL(t) > \alpha$ with $\alpha = 30$. \textbf{b):} Using $\frac{GL(t)}{P_k(t)} > \beta$, with $\beta = 10$ and $k = 10$. The first algorithm stops training even though the minimum validation loss is not reached, while the second algorithm gets closer to the global minimum. }
 	\label{fig:early_stopping}
 \end {figure}
 
