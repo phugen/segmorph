@@ -9,19 +9,27 @@ import sys
 import os
 import numpy as np
 import h5py
+import glob
 import scipy.misc
 from PIL import Image
+
+# Google Logging params.
+# Need to be set before importing Caffe!
+os.environ["GLOG_log_dir"] = "." # where to save native log. NOTE: Needs new (December '16+) PyCaffe version to work!
+os.environ["GLOG_stderrthreshold"] = "INFO" # log everything, regardless of severity level
+os.environ["GLOG_alsologtostderr"]= "1" # in addition to logfile, show output on the console!
+
 import caffe
 
 
 
-if(len(sys.argv)) < 2:
+if(len(sys.argv)) < 3:
     print "Too few arguments (" + str(len(sys.argv) - 1) + ")!"
-    print "Usage: python pseudo_labels.py hdf5_path [solverstate_path]"
+    print "Usage: python pseudo_labels.py hdf5_path device_id [solverstate_path]"
     exit(-1)
 
-else:
-    hdf5path = sys.argv[1]
+hdf5path = sys.argv[1]
+device_id = int(sys.argv[2])
 
 
 # As step size increases, make unlabelled data
@@ -49,19 +57,20 @@ weight_decay = 0.0005
 lr_w_mult = 1
 lr_b_mult = 2
 
-base_lr = 0.001 # base learning rate, originally 0.001
+base_lr = 0.005 # base learning rate, originally 0.001
 lr_policy = "step" # drop learning rate in steps by a factor gamma
 gamma = 0.1 # see above
 stepsize = 20000 # drop learning rate every <stepsize> steps
 
 iter_size = 1 # how many images are processed simultaneously in one learning step (batch size)
-max_iter = 300000 # total number of training iterations
+max_iter = 200000 # total number of training iterations
 momentum_weight = 0.99 # weight of previous update
 
-snapshot = 500
+snapshot = 1000
+display = 100 # when to display results in the console
 
 
-caffe.set_device(0)
+caffe.set_device(device_id)
 caffe.set_mode_gpu()
 print "Loading Solver... "
 solver = caffe.get_solver("unet_solver_weighted_pseudo.prototxt")
@@ -71,17 +80,6 @@ if len(sys.argv) > 2:
         solver.restore(sys.argv[2])
 
 print "Training with Pseudo-Labels ..."
-
-# batch sizes of labelled and unlabelled data
-batch_normal = solver.net.blobs['data'].data.shape[0]
-batch_pseudo = solver.net.blobs['data'].data.shape[0]
-
-# get raw labelled and unlabelled data
-images = None
-labels = None
-weights = None
-unlabelled = None
-pseudo_weights = None
 
 
 with h5py.File(hdf5path + "/drosophila_training.h5", "r", libver="latest") as f:
@@ -98,10 +96,31 @@ with h5py.File(hdf5path + "/drosophila_unlabelled.h5", "r", libver="latest") as 
 
 
 
-# TODO: add batchsize > 1 compability, which includes prototxt  on-the-fly writing for data layers!
+# batch sizes of labelled and unlabelled data
+batch_normal = solver.net.blobs['data'].data.shape[0]
+batch_pseudo = solver.net.blobs['data'].data.shape[0]
+
+# get raw labelled and unlabelled data
+images = None
+labels = None
+weights = None
+unlabelled = None
+pseudo_weights = None
+
+# create arrays for saving the (step - 1)th update
+# to use for the "momentum" SGD optimization
+velocity = {}
+
+for layer in solver.net.params:
+    v_w = np.zeros(solver.net.params[layer][0].shape)
+    v_b = np.zeros(solver.net.params[layer][1].shape)
+    velocity[layer] = [v_w, v_b]
+
+
+# TODO: add batchsize > 1 compability, which includes prototxt on-the-fly writing for data layers!
 # TODO: IMPORTANT: Backward doesn't actually update weights (+ momentum) but just calculates diffs.
 # for more info, see: https://github.com/BVLC/caffe/issues/1855
-max_iter = 300000
+max_iter = 70000
 for step in range(max_iter):
 
     # pass normal labels through network and get loss
@@ -109,7 +128,7 @@ for step in range(max_iter):
     solver.net.blobs['label'].data[...] = labels[step % labels.shape[0], ...]
     solver.net.blobs['weights'].data[...] = weights[step % weights.shape[0], ...]
 
-    '''solver.net.forward()
+    solver.net.forward()
     normal_loss = solver.net.blobs['loss'].data[...]
 
     # pass unlabelled data through network to get prediction
@@ -121,41 +140,29 @@ for step in range(max_iter):
     pseudo_scores = solver.net.blobs['score'].data[...]
     pseudo_labels = np.zeros((batch_pseudo, 1, pseudo_scores.shape[2], pseudo_scores.shape[3]), dtype=np.uint8)
 
+    # TODO: convert to list comprehension
     for y in range(pseudo_scores.shape[2]):
         for x in range(pseudo_scores.shape[3]):
             #one_hot = np.zeros((numclasses))
             #one_hot[np.argmax(pseudo_scores[..., y, x])] #score with maximum probability becomes 1, others 0
             pseudo_labels[..., y, x] = np.argmax(pseudo_scores[..., y, x]) #one_hot
+            print pseudo_labels[..., y, x]
 
     # compare prediction for unlabelled image with pseudo-labels of the same image to get pseudo-loss
     solver.net.blobs['label'].data[...] = pseudo_labels[...]
-    solver.net.blobs['weights'].data[...] = weights[step % weights.shape[0], ...] # TODO real weights
+    solver.net.blobs['weights'].data[...] = weights[step % weights.shape[0], ...]
     solver.net.forward(start='rawscores', end=None)
     pseudo_loss = alpha(step) * solver.net.blobs['loss'].data[...]
 
-    # update loss as partially alpha-weighted sum of both losses
+    # update loss as alpha-weighted sum of both losses
     combined_loss = (1 / batch_normal) * normal_loss + (1 / batch_pseudo) * pseudo_loss
     solver.net.blobs['loss'].data[...] = combined_loss
 
     print "Iteration=" + str(step) + " alpha=" + str(alpha(step)) + " Loss=" + str(combined_loss)
 
-    # perform backpropagation with combined loss
-    solver.net.backward()'''
-
-    solver.net.forward()
+    # calculate deltas using combined loss
     solver.net.backward()
 
-    print "Iteration=" + str(step) + " Loss=" + str(solver.net.blobs['loss'].data[...])
-
-
-    # create arrays for saving the (step - 1)th update
-    # to use for the "momentum" SGD optimization
-    velocity = {}
-
-    for layer in solver.net.params:
-        v_w = np.zeros(solver.net.params[layer][0].shape)
-        v_b = np.zeros(solver.net.params[layer][1].shape)
-        velocity[layer] = [v_w, v_b]
 
     # manually update layers according
     # to backward-generated diffs
@@ -178,11 +185,12 @@ for step in range(max_iter):
     # lower learning rate if adequate
     base_lr = base_lr * np.power(gamma, (np.floor(step / stepsize)))
 
-    #solver.step(1)
-
+    # display loss information
+    if step % display == 0:
+        print "Iteration=" + str(step) + " Loss=" + str(solver.net.blobs['loss'].data[...])
 
     # extract forward pass output image and write to file
-    if step % 10 == 0:
+    if step % display == 0:
         features_out = solver.net.blobs['visualize_out'].data[0, ...] # plt needs WxHxC
         features_out = features_out[1:4,:,:] # omit BG probability layer - pixel will become dark if other probabilities are low
 

@@ -483,16 +483,16 @@ Luckily, there exists an iterative algorithm called \textit{Backpropagation} \ci
 \noindent The main advantage of the algorithm is that it scales linearly with the number of weights, i.e. the algorithm is in $\mathcal{O}(w)$. Furthermore, the fact that all $\delta^{(l)}$-values of a layer have to be calculated to calculate all $\delta^{(l-1)}$-values in the layer that precedes it naturally leads to vectorizing the algorithm layerwise in efficient implementations. \cite{nielsen_book, ng_lecture}\cite[pp. 241-245]{bishop_pattern}\\
 
 \begin {algorithm}[!ht]
-	\label{alg:backprop}
 	\begin {algorithmic}[1]
-		\While {loss $\geq$ eps}
+		\While {loss $\geq \epsilon$}
 			\State Input a data sample to the network and forward it through the entire network to calculate the current loss.
 			\State Calculate $\delta$ for all output units in the last layer.	
 			\State Use the $\delta$ values from the last layer to recursively calculate all other deltas in the network, going back one layer at a time.
 			\State Calculate all partial derivatives with respect to the weights, so that a single Gradient Descent step can be taken.
 		\EndWhile
 	\end{algorithmic}
-	\caption[The Backprogation algorithm.]{The Backpropagation algorithm training loop. The algorithms runs until manually aborted or until some loss threshold $eps$ is reached.}
+	\caption[The Backprogation algorithm.]{The Backpropagation algorithm training loop. The algorithms runs until manually aborted or until some loss threshold $\epsilon$ is reached.}
+	\label{alg:backprop}
 \end{algorithm}
 
 

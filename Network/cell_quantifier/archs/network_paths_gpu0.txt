@@ -2,6 +2,7 @@
 #./unet_3/unet_3_solver.prototxt
 #./unet_batchnorm_3/unet_batchnorm_3_solver.prototxt
 #./unet_weighted_3/unet_weighted_3_solver.prototxt
-./unet_weighted_batchnorm_3/unet_weighted_batchnorm_3_solver.prototxt
+#./unet_weighted_batchnorm_3/unet_weighted_batchnorm_3_solver.prototxt
+./unet_weighted_batchnorm_shuffle_3/unet_weighted_batchnorm_shuffle_3_solver.prototxt
 #./unet_f1_3/unet_f1_3_solver.prototxt
 #./unet_f1_3/unet_f1_batchnorm_3_solver.prototxt

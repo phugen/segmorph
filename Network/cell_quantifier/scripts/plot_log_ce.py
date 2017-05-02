@@ -88,7 +88,7 @@ ax.plot(val[::ns, 0], val[::ns, 1], color="blue")
 #plt.yscale("log")
 
 ax.set_xlabel("Epochs")
-iterations = 80000
+iterations = 200000
 epochs = 30
 every = 5 # show every 5th epoch
 plt.xticks(np.arange(0, iterations, iterations / (epochs / every)))

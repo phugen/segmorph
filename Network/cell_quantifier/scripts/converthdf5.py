@@ -194,11 +194,6 @@ def convert2HDF5(path, hdf5path, weight_mode="individual", un_path=None, overrid
     # create enlarged input image by mirroring edges
     paddedFullVolume = preputils.enlargeByMirrorBorder(data_array, border)
 
-    #TODO remove this
-    scipy.misc.toimage(paddedFullVolume[0, ...], cmin=0, cmax=1).save("hide/hide/mirrored_REAL.png")
-    exit(-1)
-
-
 
     PAD_HEIGHT = paddedFullVolume.shape[2]
     PAD_WIDTH = paddedFullVolume.shape[3]

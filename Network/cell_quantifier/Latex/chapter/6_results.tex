@@ -2,11 +2,11 @@
 \label{chap:results}
 
 	\section{Hardware}
-All variants of the U-Net were trained on a NVIDIA TITAN Xp GPU (12 GB VRAM) using Caffe's CUDA/cuDNN support.
+All variants of the U-Net were trained on a NVIDIA TITAN X GPU (12 GB VRAM) using Caffe's CUDA/cuDNN support. \textbf{TODO: Processor, RAM? What else?}
 
 	\section {Segmentation quality evaluation}
 
-\noindent As there were many possible variations of the U-Net architecture, these variations were tested iteratively, choosing the best network of a number of networks and modifying it further. This was done because an exhaustive search for the best combination of weight initialization, activation functions, hyperparameters like the learning rate and techniques such as Dropout and Batch Normalization would have exceeded the time limit of this thesis. Also, at the time of writing, it was not yet known how these different approaches interact precisely. For example, Batch Normalization and specialized weight initialization schemes have the same goal but achieve it in different ways, making it unclear whether one or the other performs better in practice.\\
+\noindent As there are many possible variations of the U-Net architecture, these variations were tested iteratively, choosing the best network of a number of networks and modifying it further. This was done because an exhaustive search for the best combination of weight initialization, activation functions, hyperparameters like the learning rate and techniques such as Dropout and Batch Normalization would have exceeded the time limit of this thesis. Also, at the time of writing, it was not yet known how these different approaches interact precisely. For example, Batch Normalization and specialized weight initialization schemes have the same goal but achieve it in different ways, making it unclear whether one or the other performs better in practice.\\
 
 \noindent To compare the performance of all methods on the validation set with each other, the \textit{Micro} and \textit{Macro} variants of the F-Measure \cite{micromacro} are a suitable way to quantify how well the segmentation works. The Micro F-Measure is defined by the Precision and Recall quantities (see Section \textbf{\ref{subsec:fmeasure}}) of the validation set:
 
