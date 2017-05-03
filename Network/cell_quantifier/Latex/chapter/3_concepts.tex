@@ -35,8 +35,8 @@ Image segmentation is one of the main challenges in image processing and has bee
 \noindent for a histogram of the image consisting of $k$ grayscale intensity bins which each contain the probability for a pixel being in this bin, $p_i$.\footnote{Here, it is assumed that Otsu's algorithm is applied to a grayscale image. For RGB images, each channel can be thresholded separately using the same algorithm, or the image can be converted to grayscale and then be segmented.} $\mu_0$ and $\mu_1$ are the statistical mean values, defined as
 
 \begin {align}
-	\mu_0 &= \sum \limits_{i=1}^{\theta} i \cdot p_i \\
-	\mu_1 &= \sum \limits_{i=\theta + 1}^{k} i \cdot p_i\\
+	\mu_0 &= \frac{1}{w_0} \sum \limits_{i=1}^{\theta} i \cdot p_i \\
+	\mu_1 &= \frac{1}{w_1} \sum \limits_{i=\theta + 1}^{k} i \cdot p_i\\
 \end {align}
 
 \noindent The threshold with the maximum between-class variance corresponds to a segmentation in which the pixels of each class have minimum \textbf{within}-class variance: This means that the pixels of each class are very much alike.
@@ -199,7 +199,7 @@ The algorithm is initialized with $k$ either random or differently selected clus
 \begin {figure}[!ht]
 	\centering
 	\includegraphics[scale=0.55]{img/fig_gmm_vs_gt}
-	\caption[Labels assigned by a GMM.]{\textbf{Left:} Input image. \textbf{Right:} Image labels in arbitary colors, assigned by a GMM with $K=4$, fitted to the input image.}
+	\caption[Labels assigned by a GMM.]{\textbf{Left:} Input image. \textbf{Right:} Image labels in arbitrary colors, assigned by a GMM with $K=4$, fitted to the input image.}
 	\label{fig:gmm_vs_gt}
 \end {figure}
 
@@ -214,15 +214,15 @@ In this section, the concepts behind the optimization of functions via the Gradi
 	\subsection {Gradient Descent}
 \label{subsec:grad_desc}
 
-\textit{Gradient Descent} or is a standard, analytic optimization technique that iteratively optimizes at least once-differentiable, continuous functions, that is, that calculates a vector of parameters $\Theta$ for a function $f$ so that
+\textit{Gradient Descent} is a standard, numeric optimization technique that iteratively optimizes at least once-differentiable, continuous functions, that is, that calculates a vector of parameters $\Theta$ for a function $f$ so that
 
 \[ \Theta = \argmin \limits_{i} f(i) \]
 
-\noindent To find values for $\Theta$, the approach takes advantage of the fact that the negative gradient vector 
+\noindent To find values for $\Theta$, the approach takes advantage of the fact that the gradient vector 
 
 \[ \nabla_f = \left [ \frac{\partial f}{\partial \Theta_0}, \dots, \frac{\partial f}{\partial \Theta_n} \right ] \, ,\]
 
-the vector of all first partial derivatives of $f$, points into the direction of the fastest change, or put graphically, shows the direction of the ``steepest slope''. By taking steps in this direction, the function value is minimized step by step, while maximization works the same, only that the function is negated and then minimized, which results in parameters that maximize the original function. The parameter $\eta$ depicts the step size and is typically a value in the range $(0.0, 1.0]$. \cite[pp. 40--42]{optimization_book}\\
+the vector of all first partial derivatives of $f$, points into the opposite direction of the fastest change, or put graphically, shows the opposite direction of the ``steepest slope''. By taking steps in the \textit{negative} gradient direction, the function value is minimized step by step, while maximization works the same, only that the function is negated and then minimized, which results in parameters that maximize the original function. The parameter $\eta$ depicts the step size and is typically a value in the range $(0.0, 1.0]$. \cite[pp. 40--42]{optimization_book}\\
 
 Gradient Descent starts with a guess for the parameters in $\Theta$, iteratively evaluates the gradient and updates the parameters accordingly until convergence within arbitrary precision is reached (see Algorithm \textbf{\ref{alg:grad_desc}}).
 
@@ -247,9 +247,9 @@ Gradient Descent starts with a guess for the parameters in $\Theta$, iteratively
 	\label{fig:grad_desc}
 \end {figure}
 
-\noindent However, a more interesting application of the Gradient Descent algorithm exists in the context of machine learning, where the function to optimize often has fixed parameters in addition to $\Theta$, such as data from a dataset that is related to the function is some way. In such cases, one can consider one of the subtypes of Gradient Descent; either, evaluating the average gradient using all available data samples at once, called \textit{Batch Gradient Descent}, or using single data points only - as an approximation of the entire dataset - to perform the updates. This is called \textit{Stochastic Gradient Descent} (SGD) and is preferable if working with datasets that are too large to fit into memory. Alternatively, one can use the average gradient of a subset of data points - this method is often referred to as \textit{Mini-Batch} Stochastic Gradient Descent. For example, considering the function
+\noindent However, a more interesting application of the Gradient Descent algorithm than optimizing functions for which all parameters can be freely changed exists in the context of machine learning, where the function to optimize often has fixed parameters in addition to $\Theta$, such as data from a dataset that is related to the function in some way. In such cases, one can consider one of the subtypes of Gradient Descent; either, evaluating the average gradient using all available data samples at once, called \textit{Batch Gradient Descent}, or using single data points only - as an approximation of the entire dataset - to perform the updates. This is called \textit{Stochastic Gradient Descent} (SGD) and is preferable if working with datasets that are too large to fit into memory. Alternatively, one can use the average gradient of a subset of data points - this method is often referred to as \textit{Mini-Batch} Stochastic Gradient Descent. For example, consider the function
 
-\[ f(\Theta) =  \theta_1 x_1 + \theta_2 x_2\]
+\[ f(\Theta) =  \theta_1 (x_1 + x_2) + \theta_2 (2x_1 + 3x_2)\]
 
 \noindent with fixed $x_1$, $x_2$ from some dataset $X$. To minimize this function $f$ with respect to the variable parameters $\Theta$ using the dataset and SGD, the algorithm is modified to only take into consideration a single datapoint $x_i = [x_{i1}, x_{i2}]$ at a time chosen at random from $X$. Then, updating $\Theta$ is done by the formula
 
@@ -263,14 +263,14 @@ Gradient Descent starts with a guess for the parameters in $\Theta$, iteratively
 
 
 	\subsubsection {Momentum}
-\textit{Momentum} is an optimization for the Gradient Descent algorithm that adds an additional factor to the update step which is dependent on the steepness of the traversed function in previous updates. Using the analogy of a marble rolling down a slope, momentum refers to the inertia of the marble that allows it to jump over saddle points or small holes (local minima) on the bowl's surface rather than stopping abruptly once such a location is reached. This changes the SGD update formula to
+\textit{Momentum} is an optimization for the Gradient Descent algorithm that adds an additional term to the update step which is dependent on the steepness of the traversed function in previous updates. Using the analogy of a marble rolling down a slope, momentum refers to the inertia of the marble that allows it to jump over saddle points or small holes (local minima) on the bowl's surface rather than stopping abruptly once such a location is reached. This changes the SGD update formula to
 
 \begin {align}
 	& v_i = \gamma v_ {i-1} + \eta \nabla_f\\ 
 	& \Theta_i = \Theta_{i-1} - v_i
 \end {align}
 
-\noindent where $v$ is the momentum vector with one entry per gradient element and $\gamma$ is a modifier that changes the influence of the momentum on the update.
+\noindent where $v$ is the momentum vector with one entry per gradient element and $\gamma$ is a modifier that changes the influence of the momentum on the update. \textbf{TODO: cite nesterov momentum, heavy ball etc.}
 
 	\begin {figure}[!ht]
 		\begin{center}
@@ -374,7 +374,7 @@ Either way, the gradient of $E_p$ has to be calculated. The Perceptron criterion
 
 		\subsection{Multiple Neurons and Backpropagation}
 \label{subsec:mlp_backprop}
-While the Perceptron algorithm works fine for linear problems, those are only a small subset of real-world problems (see Figure \textbf{\ref{fig:perceptron}}). The solution to this problem is to add more neurons to the model, which form a network that consists of layers that pass the outputs of neurons in the previous layers through non-linear activation functions and then use the results as inputs. These layers are referred to as the ``input layer'', the initial layer, the ``output layer'', the last layer, and ``hidden layers'', which are all the layers in-between.
+While the Perceptron algorithm works fine for linear problems, those are only a small subset of real-world problems (see Figure \textbf{\ref{fig:perceptron}}). The solution to this problem is to add more neurons to the model, which form a network that consists of layers that pass the outputs of neurons in the previous layers through \textit{non-linear} activation functions and then use the results as inputs. These layers are referred to as the ``input layer'', the initial layer, the ``output layer'', the last layer, and ``hidden layers'', which are all the layers in-between.
 
 	\subsubsection{Multi-Layer Perceptrons}
 The resulting networks are called \textit{Multi-Layer Perceptrons} (MLPs), \textit{Feedforward Artificial Neural Networks}(ANNs), or, in the case of a multitude of layers, \textit{Deep Neural Networks}, and are much more powerful than simple Perceptrons, as they can approximate haphazard continuous functions that operate on closed and bounded subsets of $\mathbb{R}^n$ given that the network possesses at least one hidden layer of neurons. This capability makes using MLPs for learning real-life problems feasible. \cite{universal_approx, universal_approx2}\\
@@ -428,7 +428,7 @@ Afterwards, the sum $a^{(l)}_j$ is passed into an activation function $h(\cdot)$
 \noindent For multi-class classifications, an adaption of the Cross-Entropy loss can be used, which is further described in Section \textbf{\ref{subsec:cross_ent}}. \cite[pp. 232-236]{bishop_pattern}\\
 
 	\subsubsection{The Backpropagation algorithm}
-Training a network with multiple layers is harder than training a Perceptron because the influence of each of the weights in any layer of the network on the error function has to be computed when using gradient-based optimization methods, while the output of the network no longer is the result of a single function, but instead, a composition of an usually large number of functions (see Equation \textbf{\ref{eq:mlp_out}}). Although it is generally possible to manually formulate a derivative term for the partial derivatives of the entire network, this becomes more and more cumbersome as the network grows in size.\\
+Training a network with multiple layers is harder than training a Perceptron because the influence of each of the weights in any layer of the network on the error function has to be computed when using gradient-based optimization methods, while the output of the network no longer is the result of a single function, but instead, a composition of a usually large number of functions (see Equation \textbf{\ref{eq:mlp_out}}). Although it is generally possible to manually formulate a derivative term for the partial derivatives of the entire network, this becomes more and more cumbersome as the network grows in size.\\
 
 Luckily, there exists an iterative algorithm called \textit{Backpropagation} \cite{backprop} that finds the gradient of the loss with respect to each weight so that an optimization method can be applied to change every weight. The algorithm makes use of the fact that each neuron can be viewed largely independently from the rest of the network. Remembering that the analytic way of obtaining the derivative of a composition of functions 
 

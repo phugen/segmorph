@@ -95,4 +95,5 @@ every = 5
 plt.xticks(np.arange(0, 80000, 80000/(epochs / every))) # show every 5th epoch
 plt.gca().set_xticklabels(range(0, epochs+1, every))
 ax.set_ylabel("F-Measure score")
+fig.set_size_inches(5, 4)
 plt.show()

@@ -88,10 +88,12 @@ ax.plot(val[::ns, 0], val[::ns, 1], color="blue")
 #plt.yscale("log")
 
 ax.set_xlabel("Epochs")
+#ax.set_ylim([0, 1.3])
 iterations = 200000
 epochs = 30
 every = 5 # show every 5th epoch
 plt.xticks(np.arange(0, iterations, iterations / (epochs / every)))
 plt.gca().set_xticklabels(range(0, epochs+1, every))
 ax.set_ylabel("Cross-Entropy loss")
+fig.set_size_inches(5, 4)
 plt.show()

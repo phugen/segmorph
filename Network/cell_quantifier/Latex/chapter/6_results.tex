@@ -28,38 +28,38 @@ All variants of the U-Net were trained on a NVIDIA TITAN X GPU (12 GB VRAM) usin
 
 \noindent The first test run pitted two nearly identical U-Net networks against each other, using ReLU activations and Dropout with $p = 0.5$. The only difference was the choice of the loss function. The \textbf{Unet\_Weighted} networks used the weighted Cross-Entropy Loss, while the \textbf{Unet\_F1} networks employed the multi-class F-Measure. Both networks were trained for 80,000 iterations (or $\approx$ 30 epochs) on both the 3-class and the 4-class training set, while testing the network on the respective validation set every 1,000 iterations.
 
-\textbf{Unet\_Weighted} used an initial learning rate of 0.001, a step learning rate decay of a factor $\zeta = 0.1$ every 20,000 iterations and a momentum modifier $\gamma = 0.99$, while \textbf{Unet\_F1} used an initial learning rate of 0.0001, $\zeta = 0.3$ every 20,000 iterations and $\gamma = 0.99$. Both networks used L2 gradient regularization and a mini-batch size of 5.\\
+\textbf{Unet\_Weighted} used an initial learning rate of 0.001, a step learning rate decay of a factor $\zeta = 0.1$ every 20,000 iterations and a momentum modifier $\gamma = 0.99$, while \textbf{Unet\_F1} used an initial learning rate of 0.0001, $\zeta = 0.3$ every 20,000 iterations and $\gamma = 0.99$. Both networks used L2 gradient regularization and a mini-batch size of 5.
 
-\noindent The progress of the training is shown in Figure \textbf{\ref{fig:weighted_f1_training}}. The F-Measure scores provide the insight that the proper cells (green) can be discerned from the background much more easily than the Lamellopodia (red) and Filopodia (blue), which mirrors the problems when manually labelling the images. Reducing the dataset to three classes by merging the red and blue classes improves the results for both networks.\\
+The progress of the training is shown in Figure \textbf{\ref{fig:weighted_f1_training}}. The F-Measure scores provide the insight that the proper cells (green) can be discerned from the background much more easily than the Lamellopodia (red) and Filopodia (blue), which mirrors the problems when manually labelling the images. Reducing the dataset to three classes by merging the red and blue classes improves the results for both networks.\\
 
 \begin {figure}[!ht]
 	\begin {subfigure}[b]{0.4\linewidth}
-		\scalebox{0.685}{\input{img/fig_train_unet_weighted_3.pgf}}
+		\scalebox{0.65}{\input{img/fig_train_unet_weighted_3.pgf}}
 		\caption{\textbf{Unet\_Weighted\_3}}
-	\end {subfigure}\hspace{1.3cm}
+	\end {subfigure}\hspace{1.75cm}
 	\begin {subfigure}[b]{0.4\linewidth}
-		\scalebox{0.70}{\input{img/fig_train_unet_weighted_4.pgf}}
+		\scalebox{0.65}{\input{img/fig_train_unet_weighted_4.pgf}}
 		\caption{\textbf{Unet\_Weighted\_4}}
 	\end {subfigure}
 
 	\begin {subfigure}[b]{0.4\linewidth}
-		\scalebox{0.70}{\input{img/fig_train_unet_f1_3.pgf}}
+		\scalebox{0.65}{\input{img/fig_train_unet_f1_3.pgf}}
 		\caption{\textbf{Unet\_F1\_3}}
-	\end {subfigure}\hspace{1.3cm}
+	\end {subfigure}\hspace{1.75cm}
 	\begin {subfigure}[b]{0.4\linewidth}
-		\scalebox{0.675}{\input{img/fig_train_unet_f1_4.pgf}}
+		\scalebox{0.65}{\input{img/fig_train_unet_f1_4.pgf}}
 		\caption{\textbf{Unet\_F1\_4}}
 	\end {subfigure}
 
-		\caption[Training progress of the first collection of networks.]{Training progress of the first collection of networks. The training loss is shown in muted colors, while the validation loss is denoted by bright colors. For Unet\_F1, the Multi-class F-Measure score of each class is shown in the respective color. Repetitions in the validation progress in later epochs happen because shuffling was not used.}
+		\caption[Training progress of the first collection of networks.]{Training progress of the first collection of networks. The training loss is shown in muted colors, while the validation loss is denoted by bright colors. For Unet\_F1, the multi-class F-Measure score of each class is shown in the respective color. Repetitions in the validation progress in later epochs happen because shuffling was not used.}
 		\label{fig:weighted_f1_training}
 \end {figure}
 
-\noindent The results of testing the networks on the validation set are shown in Table \textbf{\ref{tab:results1}}. They indicate that both networks perform similarly well, although using a Cross-Entropy loss function beats the F-Measure slightly. The Cross-Entropy networks achieved Macro F-Measure scores of $\approx$\textbf{0.877} for 3 classes and $\approx$\textbf{0.746} for 4 classes. Based on these results, for the following tests, Cross-Entropy was used as the loss function.\\ 
+\noindent The results of testing the networks on the validation set are shown in Table \textbf{\ref{tab:results1}}. They indicate that both networks perform similarly well, converging at about 25 epochs, although using a Cross-Entropy loss function beats the F-Measure slightly. The Cross-Entropy networks achieved overall Macro F-Measure scores of $\approx$\textbf{0.877} for 3 classes and $\approx$\textbf{0.746} for 4 classes. Based on these results, for the following tests, Cross-Entropy was used as the loss function.\\ 
 
 \begin {table}
 	\begin{flushleft}
-		\begin {tabular}[!ht]{|l|c|c|c|c|}
+		\begin {tabular}[!ht]{|l|l|l|l|l|}
 			\hline\multicolumn{5}{|l|}{\textbf{3-class Micro F-Measure Scores}} \\ \hline
 			\textbf{Network}& \textbf{Class 1}& \textbf{Class 2}& \textbf{Class 3}& \textbf{Overall} \\ \hline
 			Unet\_Weighted\_3& \cellcolor{green!25}0.936013& \cellcolor{green!25}0.979221& \cellcolor{green!25}0.848447& \cellcolor{green!25}0.959854 \\ \hline
@@ -70,7 +70,7 @@ All variants of the U-Net were trained on a NVIDIA TITAN X GPU (12 GB VRAM) usin
 			Unet\_F1\_3& 0.837715& 0.964669& 0.761217& 0.858995 \\ \hline
 		\end {tabular}
 		\vspace{0.5cm}\\
-		\begin {tabular}[!ht]{|l|c|c|c|c|c|}
+		\begin {tabular}[!ht]{|l|l|l|l|l|l|}
 			\hline\multicolumn{6}{|l|}{\textbf{4-class Micro F-Measure Scores}} \\ \hline
 			\textbf{Network}& \textbf{Class 1}& \textbf{Class 2}& \textbf{Class 3}& \textbf{Class 4}& \textbf{Overall} \\ \hline
 			Unet\_Weighted\_4& \cellcolor{green!25}0.63248& 0.978377& \cellcolor{green!25}0.660174& 0.927164& 0.934388 \\ \hline
@@ -82,45 +82,73 @@ All variants of the U-Net were trained on a NVIDIA TITAN X GPU (12 GB VRAM) usin
 		\end {tabular}
 	\end {flushleft}
 
-\caption[Micro and Macro F-Measure scores for Unet\_Weighted and Unet\_F1.]{Micro and Macro F-Measure scores achieved by Unet\_Weighted and Unet\_F1 when segmenting the validation set images into 3 and 4 classes. In the 4-class dataset, \textbf{class 1} is the background, \textbf{class 2} is the cell proper, \textbf{class 3} are the Filopodia and \textbf{class 4} are the Lamellopodia, while in the 3-class dataset, \textbf{class 3} represents both Filopodia and Lamellopodia. The best scores in each category, per class, are marked in green.}
+\caption[Micro and Macro F-Measure scores for Unet\_Weighted and Unet\_F1.]{Micro and Macro F-Measure scores achieved by Unet\_Weighted and Unet\_F1 when segmenting the validation set images into 3 and 4 classes. In the 4-class dataset, \textbf{class 1} is the background, \textbf{class 2} is the cell proper, \textbf{class 3} are the Filopodia and \textbf{class 4} are the Lamellopodia, while in the 3-class dataset, \textbf{class 3} represents both Filopodia and Lamellopodia. The best scores in each category, per class, as well as the overall winner, are marked in green.}
 \label{tab:results1}
 \end {table}
 
-\noindent The second training case tested whether using Batch Normalization provides benefits, either in convergence speed or validation score. Therefore, the \textbf{Unet\_Weighted} networks were modified to perform Batch Normalization before each ReLU activation, implemented in Caffe as a ``Batch Normalization'' layer that normalizes its input according to the mini-batch statistics, followed by a ``Scale'' layer that applies the affine transformation. Also, all Dropout layers were removed, as advised in \cite{batchnorm}.
+\noindent The second training case tested whether using Batch Normalization provides benefits, either in convergence speed or validation score. Therefore, the \textbf{Unet\_\-Weighted} networks were modified to perform Batch Normalization before each ReLU activation, implemented in Caffe as a ``Batch Normalization'' layer that normalizes its input according to the mini-batch statistics, followed by a ``Scale'' layer that applies the affine transformation. Also, all Dropout layers were removed, as advised in \cite{batchnorm}.
 
-Again, the network was trained on the 3- and 4-class datasets, this time, as advised in \cite{batchnorm}, with a higher initial learning rate of 0.005, and a faster step learning rate decay that reduces the learning rate by $\zeta = 0.1$ every 7,500 iterations. Momentum was kept at $\gamma = 0.99$. However, the network parameters didn't fit into memory with a mini-batch size of 5 because of the added Batch Normalization layers, and therefore the mini-batch size had to be lowered to 2. To be able to still compare the training to previous results, the number of iterations was raised to 200,000 so that the network was trained for $\approx$30 epochs as before. The results of the training are shown in Table \textbf{\ref{tab:results2}}.
+Again, the network was trained on the 3- and 4-class datasets, this time, considering the notes on accelerating a network with Batch Normalization in \cite{batchnorm}, with a higher initial learning rate of 0.005, and a faster step learning rate decay that reduces the learning rate by $\zeta = 0.1$ every 7,500 iterations. Momentum was kept at $\gamma = 0.99$. However, the network parameters didn't fit into memory with a mini-batch size of 5 because of the added Batch Normalization layers, and therefore the mini-batch size had to be lowered to 2. To be able to still compare the training to previous results, the number of iterations was raised to 200,000 so that the network was trained for $\approx$30 epochs as before.
 
+The training progress is shown in Figure \textbf{\ref{fig:weighted_weighted_batchnorm_training}}. As expected, the networks converge much faster when using Batch Normalization, taking only about 5 epochs of training until convergence, which is a five-fold reduction of the needed training time.\\
+
+
+\begin {figure}[!ht]
+	\begin {subfigure}[b]{0.4\linewidth}
+		\scalebox{0.65}{\input{img/fig_train_unet_weighted_3.pgf}}
+		\caption{\textbf{Unet\_Weighted\_3}}
+	\end {subfigure}\hspace{1.75cm}
+	\begin {subfigure}[b]{0.4\linewidth}
+		\scalebox{0.65}{\input{img/fig_train_unet_weighted_4.pgf}}
+		\caption{\textbf{Unet\_Weighted\_4}}
+	\end {subfigure}
+
+	\begin {subfigure}[b]{0.4\linewidth}
+		\scalebox{0.65}{\input{img/fig_train_unet_weighted_batchnorm_3.pgf}}
+		\caption{\textbf{Unet\_Weighted\_Batchnorm\_3}}
+	\end {subfigure}\hspace{1.75cm}
+	\begin {subfigure}[b]{0.4\linewidth}
+		\scalebox{0.65}{\input{img/fig_train_unet_weighted_batchnorm_4.pgf}}
+		\caption{\textbf{Unet\_Weighted\_Batchnorm\_4}}
+	\end {subfigure}
+
+		\caption[Training progress of the second collection of networks.]{Training progress of the second collection of networks. The networks with added Batch Normalization converge approximately five times faster while achieving the same or even better results as their counterparts without it.}
+		\label{fig:weighted_weighted_batchnorm_training}
+\end {figure}
+
+\noindent From the test results, shown in Table \textbf{\ref{tab:results2}}, it is evident that the networks with Batch Normalization were better consistently, achieving overall Macro F-Measure scores of $\approx$\textbf{TODO} for 3 classes and $\approx$\textbf{0.776} for 4 classes, which improves on the previous scores.\\
 
 \begin {table}
 	\begin{flushleft}
-		\begin {tabular}[!ht]{|l|c|c|c|c|}
+		\begin {tabular}[!ht]{|l|l|l|l|l|}
 			\hline\multicolumn{5}{|l|}{\textbf{3-class Micro F-Measure Scores}} \\ \hline
 			\textbf{Network}& \textbf{Class 1}& \textbf{Class 2}& \textbf{Class 3}& \textbf{Overall} \\ \hline
 			Unet\_Weighted\_3& 0.936013& 0.979221& 0.848447& 0.959854 \\ \hline
-			Unet\_Weighted\_Batchnorm\_3& & & & \\ \hline
+			Unet\_Weighted\_Batchnorm\_3& 0.927963&  0.978726& 0.840043& 0.958193\\ \hline
 			\multicolumn{5}{|l|}{\textbf{3-class Macro F-Measure Scores}} \\ \hline
 			\textbf{Network}& \textbf{Class 1}& \textbf{Class 2}& \textbf{Class 3}& \textbf{Overall} \\ \hline
 			Unet\_Weighted\_3& 0.841432& 0.977186&0.803589& 0.876880 \\ \hline
-			Unet\_Weighted\_Batchnorm\_3& & & & \\ \hline
+			Unet\_Weighted\_Batchnorm\_3& 0.838410& 0.976738& 0.793799& 0.871384\\ \hline
 		\end {tabular}
 		\vspace{0.5cm}\\
-		\begin {tabular}[!ht]{|l|c|c|c|c|c|}
+		\begin {tabular}[!ht]{|l|l|l|l|l|l|}
 			\hline\multicolumn{6}{|l|}{\textbf{4-class Micro F-Measure Scores}} \\ \hline
 			\textbf{Network}& \textbf{Class 1}& \textbf{Class 2}& \textbf{Class 3}& \textbf{Class 4}& \textbf{Overall} \\ \hline
 			Unet\_Weighted\_4& 0.63248& 0.978377& 0.660174& 0.927164& 0.934388 \\ \hline
-			Unet\_Weighted\_Batchnorm\_4& & & & & \\ \hline
+			Unet\_Weighted\_Batchnorm\_4& \cellcolor{green!25}0.656197& \cellcolor{green!25}0.980057& \cellcolor{green!25}0.730906& \cellcolor{green!25}0.930746& \cellcolor{green!25}0.9441\\ \hline
 			\multicolumn{6}{|l|}{\textbf{4-class Macro F-Measure Scores}} \\ \hline
 			\textbf{Network}& \textbf{Class 1}& \textbf{Class 2}& \textbf{Class 3}& \textbf{Class 4}& \textbf{Overall} \\ \hline
 			Unet\_Weighted\_4& 0.59455& 0.975988& 0.565911& 0.827576& 0.746051 \\ \hline
-			Unet\_Weighted\_Batchnorm\_4& & & & & \\ \hline
+			Unet\_Weighted\_Batchnorm\_4& \cellcolor{green!25}0.621705& \cellcolor{green!25}0.978153& \cellcolor{green!25}0.650606& \cellcolor{green!25}0.836347& \cellcolor{green!25}0.77551\\ \hline
 		\end {tabular}
 	\end {flushleft}
 
-\caption[Micro and Macro F-Measure scores for a network with and without Batch Normalization.]{Micro and Macro F-Measure scores of 3 and 4-class segmenations using a weighted Cross-Entropy loss with or without batch normalization.}
+\caption[Micro and Macro F-Measure scores for a network with and without Batch Normalization.]{Micro and Macro F-Measure scores of 3 and 4-class segmenations achieved by Unet\_Weighted with and without batch normalization.}
 \label{tab:results2}
 \end {table}
 
-\noindent It is evident that \textbf{TODO}\\
+
+In the next round of tests, \textbf{TODO}
 
 
 \begin {table}

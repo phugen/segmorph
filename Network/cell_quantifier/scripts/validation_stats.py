@@ -46,32 +46,28 @@ def getstats(labels, gt, numclasses):
 
     for c in range(numclasses):
 
-        # get 1D representation of labels and GT
-        # since this is easier to manage
-        labels = labels.reshape(labels.size)
-        gt = gt.reshape(labels.size)
-
         # calculate multi-class per-image stats by alternatingly
         # treating each class as "true" and all others as "false"
-        numlabels = labels.size
+        #
+        # NOTE: make use of "hack": Python counts "true" as "1"
+        # and "false" as "0", so np.sum(arr) is the same
+        # as  list(arr).count(True), but much faster!
 
         # true positives (TP):
         # ground truth is class "c" and
         # labels indiciate this class as well
-        tp = [gt[i] == c and labels[i] == c for i in range(numlabels)] \
-             .count(True)
+        tp = np.sum((gt == c) & (labels == c))
 
         # false positives (FP):
         # ground truth is not class "c" but
         # labels indicates "i" nonetheless
-        fp = [gt[i] != c and labels[i] == c for i in range(numlabels)] \
-             .count(True)
+        fp = np.sum((gt != c) & (labels == c))
+
 
         # false negatives (FN):
         # ground truth is class "c" but
         # label indicates another class
-        fn = [gt[i] == c and labels[i] != c for i in range(numlabels)] \
-             .count(True)
+        fn = np.sum((gt == c) & (labels != c))
 
         # store results for current class in sublist
         classwise.append([tp, fp, fn])
@@ -82,7 +78,7 @@ def getstats(labels, gt, numclasses):
 
 
 if len(sys.argv) < 4:
-    print "Usage: python numclasses validation_stats.py input_path output_file"
+    print "Usage: python validation_stats.py numclasses input_path output_file"
     exit(-1)
 
 numclasses = int(sys.argv[1])

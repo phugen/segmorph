@@ -124,3 +124,4 @@ layer { bottom: 'u0d'               top: 'u0d'   name: 'sc_u0d'       type: "Sca
 layer { bottom: 'u0d'               top: 'u0d'   name: 'relu_u0d'       type: "ReLU" }
 
 layer { bottom: 'u0d'               top: 'score' name: 'conv_u0d-score' type: "Convolution"  param {lr_mult: 1 decay_mult: 1} param {lr_mult: 2 decay_mult: 0}  convolution_param { engine: CAFFE num_output: 4 pad: 0 kernel_size: 1 weight_filler { type: 'xavier' }} }
+layer { bottom: 'score'               top: 'softmax' name: 'softmax' type: "Softmax" }

@@ -41,7 +41,7 @@ caffe.set_mode_gpu()
 net = caffe.Net(model_file, 1, weights=weights)
 
 # find all validation files in folder
-filenames = glob.glob(input_path + "*validation.h5")
+filenames = glob.glob(input_path + "*validation*.h5")
 
 # predict all images in that file one after another
 # without reading all of them into memory at once
@@ -55,8 +55,8 @@ for fi in bar(filenames):
     labels = None
 
     with h5py.File(fi, "r") as f:
-        input_images = np.array(f["data"])[0:9, ...] #TODO remove
-        labels = np.array(f["label"])[0:9, ...] # TODO remove
+        input_images = np.array(f["data"])
+        labels = np.array(f["label"])
 
     # translate integer labels back to RGB
     tlabels = np.zeros((labels.shape[0], 3, labels.shape[1], labels.shape[2]))
@@ -84,8 +84,8 @@ for fi in bar(filenames):
         start = 0
         end = batchsize
 
-        if (batchno * batchsize) + end > input_images.shape[0]:
-            end = ((batchno * batchsize) + end) - input_images.shape[0]
+        if (batchno * batchsize) + batchsize > input_images.shape[0]:
+            end = input_images.shape[0] % batchsize
 
         # batch load input images
         for b in range(start, end):
@@ -93,8 +93,8 @@ for fi in bar(filenames):
             input_b = (batchno * batchsize) + b
             net.blobs['data'].data[b, ...] = input_images[input_b, ...]
 
-            # center / normalize data
-            transformer.preprocess('data', input_images[input_b, ...])
+            # center / normalize data # NOTE: not needed because mean is substracted manually before packing HDF files!
+            #transformer.set_mean('data', np.repeat(np.mean(input_images[input_b, ...]), 3)) # "fake" rgb mean = [greymean, greymean, greymean]
 
         # make predictions
         prediction = net.forward()
