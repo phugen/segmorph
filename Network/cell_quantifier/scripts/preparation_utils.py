@@ -26,8 +26,8 @@ def enlargeByMirrorBorder(input_image, border):
                                 input_image.shape[3] + border[0, 0] + border[0, 1]), \
                                 dtype=np.float32)
 
-    print "Original image size: " + str(input_image.shape)
-    print "Enlarged image size: " + str(paddedFullVolume.shape) + "\n"
+    #print "Original image size: " + str(input_image.shape)
+    #print "Enlarged image size: " + str(paddedFullVolume.shape) + "\n"
 
     # fill in original data in center, leaving the zero borders intact
     # image and channel indices have no need for padding, copy them as they are
@@ -35,6 +35,8 @@ def enlargeByMirrorBorder(input_image, border):
                      :, \
                      border[1, 0]:border[1, 0] + input_image.shape[2], \
                      border[0, 0]:border[0, 0] + input_image.shape[3]] = input_image;
+
+    print paddedFullVolume.shape
 
 
     # fill zero-padded areas with meaningful data
@@ -48,8 +50,8 @@ def enlargeByMirrorBorder(input_image, border):
     yfrom = border[1, 0]
     yto   = border[1, 0] + input_image.shape[2]
 
-    print "x: " + str(xfrom) + " to " + str(xto) + " with xpad_l = " + str(xpad_l) + ", xpad_r = " + str(xpad_r)
-    print "y: " + str(yfrom) + " to " + str(yto) + " with ypad_u = " + str(ypad_u) + ", ypad_d = " + str(ypad_d)
+    #print "x: " + str(xfrom) + " to " + str(xto) + " with xpad_l = " + str(xpad_l) + ", xpad_r = " + str(xpad_r)
+    #print "y: " + str(yfrom) + " to " + str(yto) + " with ypad_u = " + str(ypad_u) + ", ypad_d = " + str(ypad_d)
 
     # do mirroring
     paddedFullVolume[:, :, yfrom:yto, 0:xfrom] = paddedFullVolume[:, :, yfrom:yto, xfrom + xpad_l:xfrom - 1:-1] # left

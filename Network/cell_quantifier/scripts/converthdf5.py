@@ -138,7 +138,7 @@ def convert2HDF5(path, hdf5path, weight_mode="individual", un_path=None, overrid
                  .astype(dtype=np.int)
     input_size = downsampleFactor * d4a_size + padInput # size the image needs to be padded to
     output_size = downsampleFactor * d4a_size + padOutput # original size of the image == size before classification
-    border = np.around(np.subtract(input_size, output_size)) / 2; # equal padding on both sides
+    border = np.around(np.subtract(input_size, output_size)) / 2 # equal padding on both sides
     border = np.array(((border[0], border[0]), (border[1], border[1]))) # two dimensional border array: ((up, down), (left, right))
 
     # (d4a_size + 124) % 16 == 0, dimension condition
@@ -170,26 +170,8 @@ def convert2HDF5(path, hdf5path, weight_mode="individual", un_path=None, overrid
 
     input_size = 244 # actual input size without padding
     magic_number = 428 # padded input size that fits the network architecture
-    cheight = data_array.shape[3]
-    cwidth = data_array.shape[2]
-
-    # check height
-    if cheight % magic_number != 0:
-        htilenum = cheight / magic_number # get number of complete tiles
-        hdiff = ((htilenum + 1) * magic_number) - cwidth # get #pixels by which to enlarge vertically
-        print "HDIFF = " + str(hdiff)
-        cborder = np.array(((0, 0), (0, hdiff))) # only bottom border
-        data_array = preputils.enlargeByMirrorBorder(data_array, cborder) # enlarge bottom side by mirroring
-
-    # check width
-    if cwidth % magic_number != 0:
-        wtilenum = cwidth / magic_number
-        wdiff = ((wtilenum + 1) * magic_number) - cheight
-        print "WDIFF = " + str(wdiff)
-        cborder = np.array(((0, wdiff), (0, 0)))
-        data_array = preputils.enlargeByMirrorBorder(data_array, cborder) # enlarge right side by mirroring
-
-    scipy.misc.toimage(data_array[0, ...], cmin=0, cmax=1).save("hide/hide/mirrored.png")
+    #cheight = data_array.shape[3]
+    #cwidth = data_array.shape[2]
 
     # create enlarged input image by mirroring edges
     paddedFullVolume = preputils.enlargeByMirrorBorder(data_array, border)
