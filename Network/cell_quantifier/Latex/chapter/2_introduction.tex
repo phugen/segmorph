@@ -7,22 +7,18 @@ These microscopy images contain four regions of interest: The background, contai
 
 \begin {figure}[!ht]	
 	\centering
-	\begin {subfigure}[t]{0.52\linewidth}
+	\begin {subfigure}[t]{0.50\linewidth}
 		%\textbf{TODO: Uncomment this}
-		\includegraphics[scale=0.60]{img/fig_problems.png}
-
-		\caption*{Cropped part of a microscopy image, showing challenges segmentation algorithms must overcome. \textbf{Red:} Obscured borders due to cell overlap. \textbf{Green:} Movement blur. \textbf{Blue:} Clipped cells on the borders of the image. \textbf{Orange:} ``Ghost cells'' from an image lower in the stack. Additionally, the illumination in the image varies massively from cell to cell and the contrast between Lamellipodia, Filopodia and the background is generally low.}
+		\includegraphics[scale=0.55]{img/fig_problems.png}
 	\end {subfigure}
 	\hspace{1cm}
-	\begin {subfigure}[t]{0.35\linewidth}
+	\begin {subfigure}[t]{0.40\linewidth}
 		%\textbf{TODO: Uncomment this}
-		\includegraphics[scale=1.0]{img/fig_cell_example.png}
-
-		\caption*{A Drosophila cell. Contrast and brightness are enhanced for clarity. The green arrow shows the cell proper, the red arrow shows the Lamellopodium and the blue arrow shows one of many Filopodia.}
+		\includegraphics[scale=1.470]{img/fig_cell_example.png}
 	\end {subfigure}
 
-	\caption[Segmentation challenges and cell parts.]{}
+	\caption[Segmentation challenges and cell parts.]{\textbf{Left:} Cropped part of a microscopy image, showing challenges segmentation algorithms must overcome: Obscured borders due to cell overlap (red), movement blur (green), clipped cells on the borders of the image (blue) and ``ghost cells'' from an image lower in the stack (orange). Additionally, the illumination in the image varies massively from cell to cell and the contrast between Lamellipodia, Filopodia and the background is generally low. \textbf{Right:} A Drosophila cell. Contrast and brightness are enhanced for clarity. The green arrow shows the cell proper, the red arrow shows the Lamellopodium and the blue arrow shows one of many Filopodia.}
 	\label{fig:cell_example}
 \end {figure}
 
-\noindent In Chapter \textbf{\ref{chap:concepts}}, different approaches to the image segmentation problem are explained. The focus is on the function of Multi-Layer Perceptrons and the way they can be trained efficiently, as this approach was assumed to be the most promising one. The following Chapter \textbf{\ref{chap:network}} describes the architecture of a network that was believed to suit the task at hand, and also focuses on the individual layer types, activation functions and loss functions the network works with. Then, in Chapter \textbf{\ref{chap:training}}, information about the data sets used for training and validating the network as well as information about data pre-processing, training parameters and optimization is given. In Chapter \textbf{\ref{chap:results}}, the hardware details of the training- and testing environment are listed and the results of all proposed approaches are compared to each other. In Chapter \textbf{\ref{chap:conclusion}}, a conclusion is derived from the achieved results and finally, in Chapter \textbf{\ref{chap:futurework}}, some ideas that are worth considering but went untested in the course of this thesis are explained. 
+\noindent In Chapter \textbf{\ref{chap:concepts}}, different approaches to the image segmentation problem are explained. The following Chapter \textbf{\ref{chap:network}} describes the architecture of a neural network that was designed with a focus on cell segmentation, and also describes the individual layer types, activation functions and loss functions the network uses. Then, in Chapter \textbf{\ref{chap:training}}, information about the data sets used for training and validating the network as well as information about data pre-processing, training parameters and optimization is given. In Chapter \textbf{\ref{chap:results}}, the hardware details of the training- and testing environment are listed and the results of all proposed approaches are compared to each other. In Chapter \textbf{\ref{chap:conclusion}}, a conclusion is derived from the achieved results and finally, Chapter \textbf{\ref{chap:futurework}} presents some ideas that were considered worth examining but went untested in the course of this thesis due to time constraints. 

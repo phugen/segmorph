@@ -49,13 +49,13 @@ def getstats(labels, gt, numclasses):
         # calculate multi-class per-image stats by alternatingly
         # treating each class as "true" and all others as "false"
         #
-        # NOTE: make use of "hack": Python counts "true" as "1"
+        # NOTE: use "hack": Python counts "true" as "1"
         # and "false" as "0", so np.sum(arr) is the same
         # as  list(arr).count(True), but much faster!
 
         # true positives (TP):
         # ground truth is class "c" and
-        # labels indiciate this class as well
+        # labels indicate this class as well
         tp = np.sum((gt == c) & (labels == c))
 
         # false positives (FP):

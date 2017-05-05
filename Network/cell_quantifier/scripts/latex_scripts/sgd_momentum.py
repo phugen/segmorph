@@ -179,7 +179,8 @@ for index, th in enumerate((thetas, thetas2)):
 # add colorbar for both plots without changing their size
 fig.subplots_adjust(right=0.8)
 cbar_ax = fig.add_axes([0.85, 0.15, 0.05, 0.7])
-fig.colorbar(conts, cax=cbar_ax)
+cbar = fig.colorbar(conts, cax=cbar_ax)
+cbar.set_label('Error')
 
 #plt.tight_layout()
 plt.show()
@@ -211,4 +212,4 @@ y1 =  thetas2[-1, 0] * data[-1,0] + thetas2[-1, 1]
 l = mlines.Line2D([x0,x1], [y0,y1], c="b")
 ax.add_line(l)
 
-plt.show()
+#plt.show()

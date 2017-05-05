@@ -62,12 +62,12 @@ The progress of the training is shown in Figure \textbf{\ref{fig:weighted_f1_tra
 		\begin {tabular}[!ht]{|l|l|l|l|l|}
 			\hline\multicolumn{5}{|l|}{\textbf{3-class Micro F-Measure Scores}} \\ \hline
 			\textbf{Network}& \textbf{Class 1}& \textbf{Class 2}& \textbf{Class 3}& \textbf{Overall} \\ \hline
-			Unet\_Weighted\_3& \cellcolor{green!25}0.936013& \cellcolor{green!25}0.979221& \cellcolor{green!25}0.848447& \cellcolor{green!25}0.959854 \\ \hline
-			Unet\_F1\_3& 0.933723& 0.968166& 0.786455&  0.941755\\ \hline
+			Unet\_Weighted\_3& \cellcolor{green!25}0.938013& \cellcolor{green!25}0.980397& \cellcolor{green!25}0.854026& \cellcolor{green!25}0.96198 \\ \hline
+			Unet\_F1\_3& 0.936029& 0.973609& 0.810895&  0.950532\\ \hline
 			\multicolumn{5}{|l|}{\textbf{3-class Macro F-Measure Scores}} \\ \hline
 			\textbf{Network}& \textbf{Class 1}& \textbf{Class 2}& \textbf{Class 3}& \textbf{Overall} \\ \hline
-			Unet\_Weighted\_3& \cellcolor{green!25}0.841432& \cellcolor{green!25}0.977186& \cellcolor{green!25}0.803589& \cellcolor{green!25}0.876880 \\ \hline
-			Unet\_F1\_3& 0.837715& 0.964669& 0.761217& 0.858995 \\ \hline
+			Unet\_Weighted\_3& \cellcolor{green!25}0.836608& \cellcolor{green!25}0.978505& \cellcolor{green!25}0.808118& \cellcolor{green!25}0.87707 \\ \hline
+			Unet\_F1\_3& 0.834&  0.970874& 0.774561& 0.863294 \\ \hline
 		\end {tabular}
 		\vspace{0.5cm}\\
 		\begin {tabular}[!ht]{|l|l|l|l|l|l|}
@@ -112,23 +112,23 @@ The training progress is shown in Figure \textbf{\ref{fig:weighted_weighted_batc
 		\caption{\textbf{Unet\_Weighted\_Batchnorm\_4}}
 	\end {subfigure}
 
-		\caption[Training progress of the second collection of networks.]{Training progress of the second collection of networks. The networks with added Batch Normalization converge approximately five times faster while achieving the same or even better results as their counterparts without it.}
+		\caption[Training progress of the second collection of networks.]{Training progress of the second collection of networks. The networks with added Batch Normalization converge approximately five times faster while achieving the same or even better results than their counterparts without it on unseen data.}
 		\label{fig:weighted_weighted_batchnorm_training}
 \end {figure}
 
-\noindent From the test results, shown in Table \textbf{\ref{tab:results2}}, it is evident that the networks with Batch Normalization were better consistently, achieving overall Macro F-Measure scores of $\approx$\textbf{TODO} for 3 classes and $\approx$\textbf{0.776} for 4 classes, which improves on the previous scores.\\
+\noindent From the test results, shown in Table \textbf{\ref{tab:results2}}, it is evident that the networks with Batch Normalization were better consistently for the 4-class dataset, achieving an overall Macro F-Measure score of $\approx$\textbf{0.776}, which is an improvement on the previous score of $\approx$\textbf{0.746}. For the easier 3-class dataset however, the overall Macro F-Measure score was $\approx$\textbf{0.871} which is slightly worse than the result of the network without Batch Normalization, which achieved a score of $\approx$\textbf{0.877}. Despite this, it was still deemed advisable to use Batch Normalization from hereafter to reduce the training time of the networks, as the difference in the error might as well be noise resulting from the random initialization of the network.\\
 
 \begin {table}
 	\begin{flushleft}
 		\begin {tabular}[!ht]{|l|l|l|l|l|}
 			\hline\multicolumn{5}{|l|}{\textbf{3-class Micro F-Measure Scores}} \\ \hline
 			\textbf{Network}& \textbf{Class 1}& \textbf{Class 2}& \textbf{Class 3}& \textbf{Overall} \\ \hline
-			Unet\_Weighted\_3& 0.936013& 0.979221& 0.848447& 0.959854 \\ \hline
-			Unet\_Weighted\_Batchnorm\_3& 0.927963&  0.978726& 0.840043& 0.958193\\ \hline
+			Unet\_Weighted\_3& \cellcolor{green!25}0.938013& \cellcolor{green!25}0.980397& \cellcolor{green!25}0.854026& \cellcolor{green!25}0.96198 \\ \hline
+			Unet\_Weighted\_Batchnorm\_3& 0.930361&  0.979158& 0.842506& 0.959217\\ \hline
 			\multicolumn{5}{|l|}{\textbf{3-class Macro F-Measure Scores}} \\ \hline
 			\textbf{Network}& \textbf{Class 1}& \textbf{Class 2}& \textbf{Class 3}& \textbf{Overall} \\ \hline
-			Unet\_Weighted\_3& 0.841432& 0.977186&0.803589& 0.876880 \\ \hline
-			Unet\_Weighted\_Batchnorm\_3& 0.838410& 0.976738& 0.793799& 0.871384\\ \hline
+			Unet\_Weighted\_3& \cellcolor{green!25}0.836608& \cellcolor{green!25}0.978505& \cellcolor{green!25}0.808118& \cellcolor{green!25}0.87707 \\ \hline
+			Unet\_Weighted\_Batchnorm\_3& 0.834678& 0.977221& 0.797476& 0.87166\\ \hline
 		\end {tabular}
 		\vspace{0.5cm}\\
 		\begin {tabular}[!ht]{|l|l|l|l|l|l|}
@@ -143,7 +143,7 @@ The training progress is shown in Figure \textbf{\ref{fig:weighted_weighted_batc
 		\end {tabular}
 	\end {flushleft}
 
-\caption[Micro and Macro F-Measure scores for a network with and without Batch Normalization.]{Micro and Macro F-Measure scores of 3 and 4-class segmenations achieved by Unet\_Weighted with and without batch normalization.}
+\caption[Micro and Macro F-Measure scores for a network with and without Batch Normalization.]{Micro and Macro F-Measure scores of 3 and 4-class segmenations achieved by Unet\_Weighted with and without Batch Normalization.}
 \label{tab:results2}
 \end {table}
 
