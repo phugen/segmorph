@@ -1,6 +1,8 @@
 \chapter{Training}
 \label{chap:training}
 
+The following chapter presents the properties of the dataset that is later used to train a CNN as well as the necessary preprocessing to feed the data into the network. Additionally, the concept of data augmentation is introduced, which is used for creating a larger dataset to train on. Finally, various regularization techniques are considered that are employed to improve the results of the classification by combating overfitting.
+
 	\section{Dataset}
 The dataset used in the following experiments is made up of 90 microscopy images and their label images from three experiments on slightly different types of live \textit{Drosophila} cells. The dimension of all images is $960 \times 608$ pixels ($w \times h$) and the images are given in grayscale. The labelled images are of dimension $3 \times 960 \times 608 \times$ ($d \times w \times h$), where the background class is represented by RGB[0, 0, 0] (black), the cell body proper is marked as RGB[0, 255, 0] (green), the Lamellopodia are RGB[255, 0, 0] (red) and the Filopodia are RGB[0, 0, 255] (blue).
 
@@ -19,7 +21,7 @@ Another ``3-class'' version of the dataset was created in which the classes for 
 		\end{center}
 	\end {subfigure}
 
-		\caption[An example image tile from the 3-class dataset.]{An example image tile from the 3-class dataset, with corresponding label. The label image is smaller than the input tile because the image tile already includes a mirrored border as padding (see Section \textbf{\ref{subsec:mirror_tiling}}).}
+		\caption[An example image tile from the 3-class dataset.]{An example image tile from the 3-class dataset with corresponding label image. The label image is smaller than the input tile because the image tile already includes a mirrored border as padding (see Section \textbf{\ref{subsec:mirror_tiling}}).}
 		\label{fig:dataset_example}
 	
 
@@ -35,7 +37,7 @@ Neural networks perform consistently better when the input data is normalized, t
 
 \begin {figure}[!ht]
 	\begin{center}
-		\scalebox{0.5}{\input{img/fig_norma.pgf}}
+		\scalebox{1.0}{\input{img/fig_norma.pgf}}
 	\end{center}
 	\caption[Normalization of two-dimensional data.]{Normalization of two-dimensional example data. The blue data points represent the original dataset, while the orange points show the dataset after normalization.}
 	\label{fig:norma}

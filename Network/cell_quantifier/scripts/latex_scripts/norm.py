@@ -25,7 +25,9 @@ norm_data[:,0] = (norm_data[:,0] - mu[0]) / sigma[0]
 norm_data[:,1] = (norm_data[:,1] - mu[1]) / sigma[1]
 
 # plot difference
-fig = plt.figure()
+fig = plt.figure(figsize=(4,2.5))
+plt.xlabel("x")
+plt.ylabel("y")
 ax1 = fig.add_subplot(111)
 ax1.scatter(data[:,0], data[:,1], s=4)
 ax1.scatter(norm_data[:,0], norm_data[:,1], s=4)
@@ -35,4 +37,5 @@ ax1.set_ylim(-6, 6)
 ax1.axhline(y=0, color='k')
 ax1.axvline(x=0, color='k')
 
+plt.tight_layout()
 plt.show()

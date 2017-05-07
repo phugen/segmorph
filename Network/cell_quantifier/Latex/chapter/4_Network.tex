@@ -6,76 +6,92 @@ Since the task of image segmentation is a popular one, a number of architecture 
 
 	\section{Convolutional Neural Networks}
 \label{sec:CNN}
-\textit{Convolutional Neural Networks} (CNNs) are a special subtype of MLPs that was popularized by LeCun \cite{lecun98} and, more recently, the successes of Krizhevsky \cite{krizhevsky2012} in the domain of image classification, although CNNs can be applied to other problems such as sound analysis \cite{CNN_sound} as well, given an adequate mapping of the problem. 
+\textit{Convolutional Neural Networks} (CNNs) are a special subtype of MLPs that were popularized by LeCun \cite{lecun98} and, more recently, the successes of Krizhevsky \cite{krizhevsky2012} in the domain of image classification, although CNNs can be applied to other problems such as sound analysis \cite{CNN_sound} as well, given an adequate mapping of the problem. 
 
-The rationale for their creation was that using fully-connected networks like the ones presented in Section \textbf{\ref{subsec:mlp_backprop}} relate all elements of an input vector to every other element, which is generally a good thing to do - however, it ignores the relationship between parts of the input that is given in some datasets and doesn't scale well for very large datasets because of the large number of weights needed. Especially in image data, pixels that are close to each other by some metric are much more likely to be related, while pixels that lie on opposite sides of the image hardly are part of the same pattern, as patterns in image are usually local. Consequently, CNNs encode this spatial relationship by using convolution operations, also called convolutional \textit{layers}, which share weights across all neurons involved in the convolution.\\
+The rationale for their creation was that using fully-connected networks like the ones presented in Section \textbf{\ref{subsec:mlp_backprop}} relate all elements of an input vector to every other element, which is generally a good thing to do. However, this doesn't scale well for very large datasets because of the large number of weights needed. In image data, pixels that are close to each other by some metric are much more likely to be related, while pixels that lie on opposite sides of the image hardly are part of the same pattern, as patterns in images are usually local. Consequently, CNNs encode this spatial relationship by using convolution operations, also called convolutional \textit{layers}, which share weights across all neurons involved in the convolution and thus scale much better.\\
 
-\noindent A \textit{convolution} is a mathematical operation which examines the ``neighborhood'' of a function value $x$, including $x$ itself, to compute a new value.  Convolutions were first used in signal processing, but can also be generalized to 2D and 3D spaces, for example to blur images or find contours.
+\noindent A \textit{convolution} is a mathematical operation which combines two functions into a new one. Mathematically, a convolution of two functions of a variable $x$ is defined as
 
-In image processing, convolutions on an image matrix $I$ are usually performed by defining a small, quadratic \textit{kernels} or \textit{weight matrices} $B$ with uneven dimensions $d \times d$ and $d > 1$. The values in $B$ are the neighborhood weights for some neighborhood in $I$. Visualizing the convolution process, $B$ is aligned with each value in $I$ by its center value, one after another, and a dot product between the neighborhood from $I$ and the matrix $B$ is calculated, which is then the output of the convolution for the center value.
+\[ f(x) * g(x) = \int \limits_{-\infty}^{\infty} f(u)g(x - u) \, \text{d}u \,, \]
 
-However, for values in $I$ that are on the border of the matrix, this means that some neighborhood values are not defined because the neighborhood would extend over the boundaries of the matrix. In such out-of-bounds cases (OOB), several methods exist to nonetheless perform a convolution. Commonly, OOB values are set to zero and the convolution is performed as usual. An alternative is to treat the matrix like a torus and wrap around once the border is reached. Another variant is to just perform convolutions on those values that have a valid neighborhood, i.e. one that lies completely inside the matrix boundaries, therefore avoiding OOB values altogether, although this shrinks the input matrix each time a convolution is applied because the outer matrix values are ignored. For example, if a $3 \times 3$ kernel is used, a 1-value border of the data is lost (see Figure \textbf{\ref{fig:convolution}}). This last variant is assumed in the following sections.\\
+for a dummy variable $u$ that, for instance, denotes time. Convolutions were first used in physical signal processing, but can also be generalized to 2D and 3D spaces, for example to blur images or find contours. In case of an image that is $x \times y$ pixels large, the formula has to be changed to account for the two variables $x$ and $y$ of the image function $I(x, y)$ as well as the fact that pixels are discrete, i.e. not a double integral, but instead a double summation over all pixels is used:
+
+\[ F(x, y) = I(x, y) * g(x, y) = \sum \limits_i \sum \limits_j I(x, y) \, g(x - i, y - j) \,, \] 
+
+In image processing, convolutions on an image are usually performed by defining small, quadratic \textit{kernels} or \textit{weight matrices} with odd dimensions $d \geq 1$, i.e.  $d \times d$ matrices. Using the notation
+
+\[ f(x, y) = g(-x, -y) \,, \]
+
+a values of the kernel matrix are used as the outputs of $f$ and can then be interpreted as the neighborhood weights for some neighborhood of a pixel in $I$. Visualizing the convolution process, the matrix of values of $f$ is aligned with each value in the matrix of values of $I$ by its center value, one after another, and a dot product between the neighborhood from $I$ and the $f$ matrix is calculated, which is then the output of the convolution for the center value. Mathematically, this is expressed by rewriting the convolution formula as
+
+\[ F(x, y) = \sum \limits_i \sum \limits_j I(x + i, y + j) \, f(i, j) \,, \]
+
+which is a more intuitive description of what a convolution amounts to, especially in the context of Figure \textbf{\ref{fig:convolution}}, which shows how a convolution is applied to an image. \cite[pp. 32-33]{machine_vision}\\
+
+However, there also exist definitions of the convolution operation that compute outputs for values in $I$ that are on the border of the matrix, this means that some neighborhood values in $I$ are not defined because the neighborhood would extend over the boundaries of the matrix. In such out-of-bounds cases (OOB), several methods exist to nonetheless perform a convolution. Commonly, OOB values are set to zero and the convolution is performed as usual. An alternative is to treat the matrix like a torus and wrap around once the border is reached.
+
+A normal convolution as defined above thus shrinks the input matrix each time it is applied because it only assigns new values to elements that have a valid neighborhood. For example, if a $3 \times 3$ kernel is used, a 1-value border of the data is lost. This definition of convolution is used in the following sections.\\
 
 \begin {figure}[!ht]
 	\begin{center}
 		%\textbf{TODO: Uncomment this}
 		\includegraphics[scale=0.55]{img/fig_convolution}
 	\end{center}
-	\caption[Matrix convolution.]{A single step of a matrix convolution on an input matrix $I$, using a $3 \times 3$ kernel $B$. The inspected neighborhood that corresponds to the kernel is shown in green, while the convolution center value $x$ and the convolution output $x'$ are marked in orange.}
+	\caption[Matrix convolution.]{A single step of a matrix convolution on an input matrix $I$, using a $3 \times 3$ kernel $f$, producing an output $x'$. The inspected neighborhood of the image value $x$, marked in orange, is overlayed by the kernel shown in green. Note that the output is smaller because values without valid neighborhoods are not calculated.}
 	\label{fig:convolution}
 \end {figure}
 
-\noindent Concretely, a convolution layer in a CNN typically consists of three sub-components:\footnote{The definition of what a exactly constitutes a ``layer'' is hazy in literature. Sometimes, the subcomponents of a convolutional operation are called layers themselves rather than referring to all steps that follow the convolution including itself at once, and ``convolutional layer'' only refers to the part of the operation that actually performs the convolution.}\\
+\noindent Concretely, a convolution layer in a CNN typically consists of three sub-components:\footnote{The definition of what a exactly constitutes a ``layer'' is hazy in literature. Sometimes, the subcomponents of a convolutional operation in a neural network are called layers themselves rather than summarizing them. In such cases, ``convolutional layer'' only refers to the part of the operation that actually performs the convolution.}\\
 
 \noindent First, the data is convoluted by applying one or multiple kernels, which are called filters in this context, to all input values and their local neighborhoods. Filters typically have a size of $k \times k \times d$, where $k$ is the filter size and $d$ is the depth of the dataset, e.g. in an RGB image dataset, the depth is 3 because there are 3 color channels. The convolutions performed in CNNs are multi-dimensional in the depth dimension, extending through the whole depth of the stack of input values. The result of these convolutions are as many 2D outputs as there are filters in the layer. These outputs are called \textit{feature maps}, and they then, in turn, provide an input stack for the following layers.
 
-Effectively, applying a specific filter to every valid position in a feature map means that the same pattern is searched in the entire image. Given the right filter weights, a certain pattern creates strong responses and it thus ``recognized'' in the image. Using the same weights for each location in the feature map results in \textit{translation invariance}, i.e. it doesn't matter where the pattern is found for it to be recognized because the response only depends on the weights, not the position of the filter.
+Effectively, applying a specific filter to every valid position in a feature map means that the same pattern is searched in the entire image. Given the right filter weights, a certain pattern creates strong responses and is thus ``recognized'' in the image. Using the same weights for each location in the feature map results in \textit{translation invariance}, i.e. it doesn't matter where the pattern is found for it to be recognized because the response only depends on the weights, not the position of the filter.
 
-After the convolution, the feature maps are passed through an non-linear activation function $h(\cdot)$ to generate ``activation maps'', i.e. a number of activations arranged two-dimensionally. Usually, this combination of convolution and activation is repeated multiple times, using the previous activation maps as input for the next convolution.
+After the convolution, the feature maps are passed through a non-linear activation function $h$ to generate ``activation maps'', i.e. a number of activations arranged two-dimensionally. Usually, this combination of convolution and activation is repeated multiple times, using the previous activation maps as input for the next convolution.
 
-\noindent Finally, the generated activation maps are exposed to a pooling operation such as \textit{Maximum Pooling}. Maximum pooling is a downsampling method that reduces the complexity of the network by replacing groups of values that are apart by a certain stride in the activation map with the maximum value within that group, resulting in a condensed activation map, while performing this calculation for each depth slice of the data independently. Intuitively, some of the information about where a pattern was detected by a filter while creating the feature map is given up in order to make the network easier to manage by reducing the valid convolution filter positions, although the relative spatial relationships between patterns are kept intact.
+\noindent As the third step and last step of a convolutional layer, the generated activation maps are exposed to a pooling operation such as \textit{Maximum Pooling}. Maximum Pooling is a downsampling method that reduces the complexity of the network by replacing groups of values that are apart by a certain stride in the activation map with the maximum value within that group, resulting in a condensed activation map, while performing this calculation for each depth slice of the data independently. Intuitively, some of the information about where a pattern was detected by a filter while creating the feature map is given up in order to make the network easier to manage by reducing the valid convolution filter positions, although the relative spatial relationships between patterns are kept intact. Note that pooling is optional and usually is not performed after each convolution-activation operation, but rather after doing multiple of these (see Section \textbf{\ref{sec:unet}}).
 
-The last step in a CNN network is a to feed the final activation maps into a fully-connected layer that calculates a desired number of output values like in a common MLP. \cite[pp. 330-345]{deeplearning_book}\\
+Finally, the resulting downsampled activation maps are fed into a fully-connected layer that calculates a desired number of output values like in a common MLP. \cite[pp. 330-345]{deeplearning_book}\\
 
-\noindent The training of such a network proceeds via by Backpropagation like described in Section \textbf{\ref{subsec:mlp_backprop}}, only that the network has to learn the weights of the filters in addition to those of the fully-connected layer. Training the filters results in a hierarchy in which filters that are closer to the input detect low-level features such as edges, while further along the network, filter responses may be triggered by more complex objects only.\\
+\noindent The training of such a network proceeds via Backpropagation as described in Section \textbf{\ref{subsec:mlp_backprop}}, only that the network has to learn the weights of the filters in addition to those of the fully-connected layer. Training the filters results in a hierarchy in which filters that are closer to the input detect low-level features such as edges, while further along the network, filter responses may be triggered by more complex objects only.\\
 
 For an example of a simple CNN architecture, see Figure \textbf{\ref{fig:convnet}}.
 
 \begin {figure}[!ht]
 	\begin{flushleft}
-		\includegraphics[scale=0.75]{img/fig_convnet}
+		\includegraphics[scale=0.60]{img/fig_convnet}
 	\end{flushleft}
-	\caption[A small Convolutional Neural Network.]{A small Convolutional Neural Network. For simplicity, most neuron connections aren't shown explicitly. \textbf{a):} Input layer. The input size is $6 \times 6 \times 3$, while the filter size is $3 \times 3 \times 3$. Neurons with valid convolution neighborhoods shown in gray. \textbf{b):} Five feature maps with size $4 \times 4 \times 3$ that are the result of applying five different convolution filters to the input, which are then passed into the activation function $h$ to create activation maps. \textbf{c):} Results of a Maximum Pooling operation with sizes $2 \times 2$ and stride $2$ applied to the activation maps. The colors indicate the downsampled position of the maximum activation in a pooling region. \textbf{d):} Fully-connected output layer that calculates the network outputs via applying the output function $\sigma$. The max-pooled values have been rearranged into a column for clarity.}
+	\caption[A small Convolutional Neural Network.]{A small Convolutional Neural Network. For simplicity, most neuron connections are not shown explicitly. \textbf{a):} Input layer. The input size is $6 \times 6 \times 3$, while the filter size is $3 \times 3 \times 3$. Neurons with valid convolution neighborhoods shown in gray. \textbf{b):} Five feature maps with size $4 \times 4 \times 3$ that are the result of applying five different convolution filters to the input, which are then passed into the activation function $h$ to create activation maps. \textbf{c):} Results of a Maximum Pooling operation with sizes $2 \times 2$ and stride $2$ applied to the activation maps. The colors indicate the downsampled position of the maximum activation in a pooling region. \textbf{d):} Fully-connected output layer that calculates the network outputs via applying the output function $\sigma$. The max-pooled values have been rearranged into a column for clarity.}
 	\label{fig:convnet}
 \end {figure}
 
 
 	\section {Activation Functions}
-Even though previously, the Sigmoid function was given as an example of a suitable activation function for MLPs, recent research \cite{glorot, rectifiers} has shown that better alternatives exist, and it is hardly used anymore. This is mainly because Sigmoids contribute to the problem of ``vanishing gradients'' during Backpropagation which causes earlier layers in a deep network to train much more slowly than layers near the output layer. ``Vanishing gradients'' happen when the magnitude of the gradient is close to zero, which in turn causes the training to change the network weights in affected layers by only a tiny amount, severely hampering the training progress in these layers.
+Even though previously, the Sigmoid function was given as an example of a suitable activation function for MLPs, recent research \cite{glorot, rectifiers} has shown that better alternatives exist, and it is hardly used anymore. This is mainly because Sigmoids contribute to the problem of ``vanishing gradients'' during Backpropagation, which causes earlier layers in a deep network to train much slower compared to layers near the output layer. ``Vanishing gradients'' happen when the magnitude of the gradient is close to zero, which in turn causes the training to change the network weights in affected layers by only a tiny amount, severely hampering the training progress in these layers.
 
 The Sigmoid function
 
 \[ \sigma(x) = \frac{1}{1 + e^{-x}} \]
 
-\noindent is especially prone to this because its derivative outputs values in the range $\left [0, \frac{1}{4} \right ]$ only. Combined with weights initialized to small values, e.g. Gaussian-distributed weights with zero mean and unit variance, the repeated application of the chain rule results in many terms in the range $\left [0, 1\right ]$ being multiplied with each other, leading to very small gradients the closer the algorithm gets to the input layer. The same is true for the $tanh$ activation function
+\noindent is especially prone to this because its derivative outputs values in the range $\left [0, 1/4 \right ]$ only. Combined with weights initialized to small values, e.g. Gaussian-distributed weights with zero mean and unit variance, the repeated application of the chain rule results in many terms in the range $\left [0, 1\right ]$ being multiplied with each other, leading to very small gradients the closer the algorithm gets to the input layer. The same is true for the $\tanh$ activation function
 
 \begin {align}
-	tanh(x) &= \frac{1 - e^{-2x}}{1 + e^{-2x}}\\
+	\tanh(x) &= \frac{1 - e^{-2x}}{1 + e^{-2x}}\\
 		  &= 2 \left ( \frac{1}{1 + e^{-(2x)}} \right ) - 1\\
 		  &= 2 \sigma(2x) - 1
 \end {align}
 
-\noindent although its derivative is always in $[0, 1]$ and thus it decays more slowly as it passes through the network. However, in comparison with the Sigmoid, $tanh$ has the advantage of being zero-centered, because data that is not zero-centered can be detrimental for Gradient Descent training (see Section \textbf{\ref{sec:weight_init}} for more information).\\
+\noindent although its derivative is always in $[0, 1]$ and thus it decays more slowly as it passes through the network. However, in comparison with the Sigmoid, $\tanh$ has the advantage of being zero-centered, because data that is not zero-centered can be detrimental for Gradient Descent training (see Section \textbf{\ref{sec:weight_init}} for more information).\\
 
 In general, activation functions for which
 
-\[ \lim \limits_{x \rightarrow -\infty} \frac{\partial}{\partial x} h(x) = 0 \,\,\,\, \land \,\,\,\,  \lim \limits_{x \rightarrow +\infty} \frac{\partial}{\partial x} h(x) = 0 \label{eq:saturation} \]
+\[ \lim \limits_{x \rightarrow \pm \infty} \frac{\partial}{\partial x} h(x) = 0 \label{eq:saturation} \]
 
-\noindent is true are called \textit{saturating} activation functions and possess the undesirable property of leading to vanishing gradients which eventually cause problems in the training as the number of network layers increases.\\ 
+\noindent is true are called \textit{saturating} activation functions and possess the undesirable property of leading to vanishing gradients, which eventually cause problems in the training as the number of network layers increases.\\ 
 
-\noindent A newer, popular alternative to the Sigmoid and $\tanh$ functions is the \textit{Rectified Linear Unit} function (ReLU). It is defined as the piecewise function
+\noindent A more recent, popular alternative to the Sigmoid and $\tanh$ functions is the \textit{Rectified Linear Unit} function (ReLU). It is defined as the piecewise function
 
-\[  ReLU(x) = \begin{cases}
+\[  \text{ReLU}(x) = \begin{cases}
 			0 \text{ if } x \leq 0\\
 			x \text{ else}
 		 \end{cases}
@@ -83,24 +99,24 @@ In general, activation functions for which
 
 \noindent or simply
 
-\[ ReLU(x) = \max(0, x) \]
+\[ \text{ReLU}(x) = \max(0, x) \]
 
-\noindent with its derivative given by 
+\noindent with its derivative being 
 
-\[ \frac{\partial ReLU}{\partial x} = \begin{cases}
+\[ \frac{\partial \text{ReLU}}{\partial x} = \begin{cases}
 							1 \text { if } x > 0\\
 							0 \text { if } x < 0\\
 							 \text{undefined if } x = 0
-						        \end{cases},
+						        \end{cases} \,,
 \]
 
-\noindent although in implementations, the derivative for zero inputs strays from the mathematical definition and is altered to $\frac{\partial ReLU}{\partial x}\rvert_{x=0} = 0$.\footnote{One example is the ``backward\_cpu'' implementation of the Caffe framework's ReLU layer (\url{https://github.com/BVLC/caffe/blob/master/src/caffe/layers/relu_layer.cpp}).}
+\noindent although in implementations, the derivative for zero inputs strays from the mathematical definition and is altered to $\frac{\partial \text{ReLU}}{\partial x}\rvert_{x=0} = 0$.\footnote{One example is the ``backward\_cpu'' implementation of the Caffe framework's ReLU layer (\url{https://github.com/BVLC/caffe/blob/master/src/caffe/layers/relu_layer.cpp}).}
 
-ReLUs do not saturate\footnote{This depends on the definition of saturation, for which no standard definition seems to exist. Given the definition in \textbf{\ref{eq:saturation}}, this is true, but since ReLUs cull values below zero, they could also be seen as ``semi-saturating'' functions.} and are cheap to compute compared to activation functions containing exponential functions, although when using large learning rates and large weights, the gradients can ``explode'' during Backpropagation, which is the opposite of the ``vanishing gradient'' problem. To deal with this, \textit{gradient clipping} can be performed. A popular form of gradient clipping is L2 norm gradient regularization, given by
+ReLUs do not saturate\footnote{This depends on the definition of saturation, for which no standard definition seems to exist. Given the definition in \textbf{\ref{eq:saturation}}, this is true, but since ReLUs cull values below zero, they could also be seen as ``semi-saturating'' functions.} and are cheap to compute compared to activation functions containing exponential expressions, although when using large learning rates and large weights, the gradients can ``explode'' during Backpropagation, which is the opposite of the ``vanishing gradient'' problem. To deal with this, \textit{gradient clipping} can be performed. A popular form of gradient clipping is $L^2$ norm gradient regularization, given by
 
-\[ \hat{g} = \frac{g\,t}{||g||} \cite{l2clipping} \]
+\[ \hat{g} = \frac{g\,t}{||g||} \,, \]
 
-\noindent where $g$ is the gradient vector, $||g||$ is its L2 norm and $\hat{g}$ is the regularized gradient. This regularization is done whenever $||g||$ is larger than some threshold $t$.\\
+\noindent where $g$ is the gradient vector, $||g||$ is its $L^2$ norm and $\hat{g}$ is the regularized gradient. This regularization is done whenever $||g||$ is larger than some threshold $t$. \cite{l2clipping}\\
 
 \noindent Despite this, ReLUs still suffer from the problem that they can ``die'' when the network weights are updated in a way that makes them output activation values of zero forever - for example, when a large negative bias term turns all inputs negative and thus results in zero activations. Once a ReLU is dead, the gradient flowing through it will also be zero, and the weights for its neuron won't be updated anymore, which is another form of the saturation problem.
 
@@ -114,23 +130,28 @@ An attempt at fixing this issue is relaxing the strict below-zero activation so 
 
 \noindent for some small scaling parameter $0 < \alpha < 1$. Consequently, its (zero input-altered) derivative becomes
 
-\[ \frac{\partial LReLU}{\partial x} = \begin{cases}
+\[ \frac{\partial \text{LReLU}}{\partial x} = \begin{cases}
 							1 \text { if } x > 0\\
 							\alpha \text{ else}
-						        \end{cases}
+						        \end{cases} \,.
 \]
 
-\noindent When the leak parameter $\alpha$ is made an additional weight to be trained by Backpropagation, the resulting activation function is called \textit{Parametric ReLU} (PReLU). \cite{rectifiers} Another alternative is the \textit{Exponential ReLU} (ELU) \cite{elu} which aims to combine leakiness with activations close to zero mean to speed up learning. It is defined by
+\noindent When the leak parameter $\alpha$ is made an additional weight to be trained by Backpropagation, the resulting activation function is called \textit{Parametric ReLU} (PReLU). \cite{rectifiers} Another alternative is the \textit{Exponential ReLU} (ELU), \cite{elu} which aims to combine leakiness with activations close to zero mean to speed up learning. It is defined by
 
 \begin {align}
-	ELU(x) &= \begin{cases}
+	\text{ELU}(x) &= \begin{cases}
 			x \text { if } x \geq 0\\
 			\alpha(e^x - 1) \text{ else}
 		     \end{cases}\\
-	\frac{\partial ELU}{\partial x} &= \begin{cases}
+\end {align}
+
+and its derivative 
+
+\begin {align}
+	\frac{\partial \text{ELU}}{\partial x} &= \begin{cases}
 								1 \text { if } x \geq 0\\
-								ELU(x) + \alpha \text{ else}
-		    				     \end{cases},
+								\text{ELU}(x) + \alpha \text{ else}
+		    				     \end{cases} \,,
 \end {align}
 
 \noindent where $\alpha$ is a learnable parameter.
@@ -138,32 +159,32 @@ An attempt at fixing this issue is relaxing the strict below-zero activation so 
 
 \begin {figure}[!ht]
 	\begin{center}
-	\begin {subfigure}[{position=b}]{0.3\linewidth}
-		\scalebox{0.60}{\input{img/fig_sigmoid.pgf}}
+	\begin {subfigure}[b]{0.32\linewidth}
+		\scalebox{0.65}{\input{img/fig_sigmoid.pgf}}
 		\caption{}
 	\end {subfigure}
-	\begin {subfigure}[{position=b}]{0.3\linewidth}
-		\scalebox{0.60}{\input{img/fig_tanh.pgf}}
+	\begin {subfigure}[b]{0.32\linewidth}
+		\scalebox{0.65}{\input{img/fig_tanh.pgf}}
 		\caption{}
 	\end {subfigure}
 	\end{center}
 
 	\begin {center}
-	\begin {subfigure}[{position=b}]{0.3\linewidth}
-		\scalebox{0.60}{\input{img/fig_relu.pgf}}
+	\begin {subfigure}[b]{0.32\linewidth}
+		\scalebox{0.65}{\input{img/fig_relu.pgf}}
 		\caption{}
 	\end {subfigure}
-	\begin {subfigure}[{position=b}]{0.3\linewidth}
-		\scalebox{0.60}{\input{img/fig_lrelu.pgf}}
+	\begin {subfigure}[b]{0.32\linewidth}
+		\scalebox{0.65}{\input{img/fig_lrelu.pgf}}
 		\caption{}
 	\end {subfigure}
-	\begin {subfigure}[{position=b}]{0.3\linewidth}
-		\scalebox{0.60}{\input{img/fig_elu.pgf}}
+	\begin {subfigure}[b]{0.32\linewidth}
+		\scalebox{0.65}{\input{img/fig_elu.pgf}}
 		\caption{}
 	\end {subfigure}
 	\end{center}
 
-		\caption[Multiple activation functions.]{Multiple activation functions (blue) and their derivatives (orange). \textbf{a):} Sigmoid. \textbf{b):} Tanh. \textbf{c):} ReLU. \textbf{d):} LReLU with $\alpha = 0.1$ . \textbf{e):} ELU with $\alpha = 0.5$ .}
+		\caption[Multiple activation functions.]{Multiple activation functions (blue) and their derivatives (orange). \textbf{a):} Sigmoid. \textbf{b):} $\tanh$. \textbf{c):} ReLU. \textbf{d):} LReLU with $\alpha = 0.3$. \textbf{e):} ELU with $\alpha = 0.5$.}
 		\label{fig:activation_functions}
 
 \end {figure}
@@ -172,21 +193,21 @@ An attempt at fixing this issue is relaxing the strict below-zero activation so 
 
 	\section{Weight Initialization}
 \label{sec:weight_init}
-Another important decision apart from choosing an appropriate activation function is initializing the weights of the network. A naive approach of setting all weights to zero would lead to absolute failure when the activation function outputs zero for a zero input, because then, all gradients would likewise be zero vectors and the weights would never be updated. Setting all weights to the same value also doesn't work well because this would make the neurons symmetric, meaning that neurons update the same way and thus also output the same values, which doesn't lead to good model performance.
+Another important decision apart from choosing an appropriate activation function is initializing the weights of the network. A naive approach of setting all weights to zero would lead to absolute failure when the activation function outputs zero for a zero input, because then, all gradients would likewise be zero vectors and the weights would never be updated. Setting all weights to the same value also does not work well because this would make the neurons symmetric, meaning that neurons update the same way and thus also output the same values, which doesn't lead to good model performance.
 
-A more reasonable approach is to initialize the weights as small random numbers, for example sampled from a Gaussian distribution with a small variance - albeit this causes problems when because the resulting activations are also small and reduce the variance of the activations in the network the further the activations travel during Backpropagation, causing vanishing gradients. Making the weights larger overall also doesn't work, as saturating activation functions will then directly produce derivatives close to zero. \cite{karpathy_lecture2}\\
+A more reasonable approach is to initialize the weights as small random numbers, for example sampled from a Gaussian distribution with a small variance - albeit this causes problems because the resulting activations are also small and reduce the variance of the activations in the network the further the activations travel during Backpropagation, causing vanishing gradients. Making the weights larger overall also does not work, as saturating activation functions will then directly produce derivatives close to zero. \cite{karpathy_lecture2}\\
 
-\noindent \textit{Xavier initialization} \cite{glorot} provides an approximate method to get useful activations throughout the entire network layers by initializing the weights of a neuron by drawing them from a normal distribution $\mathcal{N}$ with mean $\mu = 0$ and a variance $\sigma^2$ which is calculated for each neuron independently, using the number of inputs $\alpha$ to that neuron and the number of outputs $\omega$ of that neuron:\footnote{Some frameworks use the simpler, alternative formula $\sigma^2 = \frac{1}{\alpha}$ instead, disregarding the number of outputs.}
+\noindent \textit{Xavier initialization} \cite{glorot} provides an approximate method to get useful activations throughout the entire network layers by initializing the weights of a neuron by drawing them from a normal distribution $\mathcal{N}$ with mean $\mu = 0$ and a variance $\sigma^2$ which is calculated for each neuron independently, using the number of inputs $\alpha$ to that neuron and the number of outputs $\omega$ of that neuron:\footnote{Some frameworks use the simpler, alternative formula $\sigma^2 = 1/\alpha$ instead, disregarding the number of outputs.}
 
-\[ \sigma^2 = \frac{2}{\alpha + \omega}\,\,\, \]
+\[ \sigma^2 = \frac{2}{\alpha + \omega} \,. \]
 
 \noindent This ensures that the activation output variance is roughly the same as the input variance and does not decrease in deeper layers.\\ %In the special case of CNNs, $\alpha$ for a layer with, for instance, five $3 \times 3 \times 10$ filters is equal to $3 * 3 * 10 = 90$.\\
 
-\noindent While non-saturating activation functions like ReLU do not output zero derivatives when using large weights, it is still beneficial to receive normalized inputs to a ReLU as shown in \cite{lecun_norm}. This is because values that are not close to zero do bias the SGD training towards a particular direction, slowing it down. The extreme case happens when all values have the same sign, as this forces the update steps to take steps that are perpendicular to each other. As an example, suppose that the training starts at a point $[2,\, 4]$ and the minimum is at $[6,\, 2]$. If a learning rate $\mu = 1$ is assumed, this takes two steps as opposed to one if only updates with the same sign are allowed:
+\noindent While non-saturating activation functions like ReLU do not output zero derivatives when using large weights, it is still beneficial to receive normalized inputs to a ReLU as shown in \cite{lecun_norm}. This is because values that are not close to zero do bias the SGD training towards a particular direction, slowing it down. The extreme case happens when all values have the same sign, as this forces the SGD algorithm to take steps that are perpendicular to each other. As an example, suppose that the training starts at a point $(2,\, 4)$ and the minimum is at $(6,\, 2)$. If a learning rate $\mu = 1$ is assumed, this takes two steps as opposed to one if only updates with the same sign are allowed:
 
 \begin {align}
-	[2,\, 4] + [4,\, 0] &= [6,\, 4]\\
-	[6,\, 4] - [0,\, 2] &= [6,\, 2]
+	(2,\, 4) + (4,\, 0) &= (6,\, 4)\\
+	(6,\, 4) - (0,\, 2) &= (6,\, 2) \,.
 \end {align}
 
 \noindent As \cite{rectifiers} points out, the Xavier formula was derived and tested before ReLUs became commonplace, and using it to initialize ReLUs is suboptimal because ReLUs set negative activations to zero, unlike functions such as Sigmoid, requiring a different initialization to achieve normalization. Therefore, a slightly different approach that adjusts the variance calculation, hereafter referred to as \textit{MSRA initialization}, was proposed. MSRA was found to work well with ReLUs and its related activation functions and uses the variance
@@ -205,54 +226,56 @@ In the following, output and loss functions for CNNs as well as the derivatives 
 
 \textit{Softmax} is a vector function that can be used as an output function to transform network scores. The Softmax function for some input vector $z$ is defined as
 
-\[y = Softmax(z) = \frac{e^{z}}{\sum_{c=0}^{C} e^{z_c}},\]
+\[y = \text{Softmax}(z) = \frac{\text{e}^{z}}{\sum_{c=0}^{C} \text{e}^{z_c}},\]
 
-\noindent where $e$ is the exponential function and $z$ has a dimension of $1 \times C$, where in this case, $C$ is the number of classes to be predicted by the network. The Softmax function acts as a normalizer that ``squashes'' the values of its input vector into the range $[0, 1]$ with respect to the differences between the vector values, so that the sum of all values is $1$. For example, let 
+\noindent where e is the exponential function and $z$ has a dimension of $1 \times C$, where in this case $C$ is the number of classes to be predicted by the network. The Softmax function acts as a normalizer that ``squashes'' the values of its input vector into the range $[0, 1]$ with respect to the differences between the vector values, so that the sum of all values is $1$. For example, let 
 
-\[ z = [-2.432, 1.832, 0.299] \]
+\[ z = [-2.432, 1.832, 0.299]^T \]
 
 \noindent Then 
 
-\[ y = [0.011, 0.813, 0.176] \]
+\[ y = [0.011, 0.813, 0.176]^T \]
 
 \noindent is the Softmax output for $z$. These processed values can be interpreted as probabilities as opposed to the raw output. However, the above definition of the Softmax function can become numerically unstable when the exponentiation yields large values because dividing by large numbers could potentially produce zero values due to insufficient floating-point precision. To prevent this, the calculation can be made robust by defining it as
 
 \begin {align}
 	z' &= z - \max \limits_{i}(0, z_i)\\
-	y &= \frac{e^{c'}}{\sum_{c=0}^{C} e^{z'_{{c}}}}
+	y &= \frac{\text{e}^{c'}}{\sum_{c=0}^{C} \text{e}^{z'_{{c}}}} \,,
 \end {align}
 
 \noindent which avoids dividing by large numbers but still gives the same result. \cite[p. 81]{deeplearning_book}
 
-The partial derivatives of the Softmax output vector $y$ with respect to the input vector $z$ form a Jacobian matrix and can be notated concisely as
+The partial derivatives of the Softmax output vector $y$ with respect to the input vector $z$ be notated concisely as
 
 \begin {align}
-	\frac{\partial y_i}{\partial z_i} = \bigg \{ \begin {array}{ll}
+	\frac{\partial y_i}{\partial z_j} = \bigg \{ \begin {array}{ll}
 								y_i(1 - y_i)& \text{ if } i = j \\
 								-y_i y_j& \text{ if } i \neq j
-							\end{array}
-	\label{eq:softmax_deriv}\,\,\cite[\text{ p. 209}]{bishop_pattern}
+							\end{array} \,,
+	\label{eq:softmax_deriv}
 \end {align}
+
+i.e. as a Jacobian matrix. \cite[\text{ p. 209}]{bishop_pattern}
 
 
 		\subsection{Cross-Entropy Loss}
 \label{subsec:cross_ent}
 
-A common loss layer in MLPs that perform multi-class classification is the \textit{Cross-Entropy Loss} layer. In many frameworks, the layer's implementation actually consists of two steps: First, the input $z$ of the layer is transformed by the Softmax function, and is then used as an argument for the loss function.
+A common loss layer in MLPs that perform multi-class classification is the \textit{Cross-Entropy Loss} layer. In many frameworks, the layer's implementation consists of two steps: First, the input $z$ of the layer is transformed by the Softmax function and is then used as an argument for the loss function.
 
 The \textit{Cross-Entropy Loss} function compares a true probability distribution $p$ to a model probability distribution $q$. For a vector of calculated Softmax probabilities $z_i$, it is defined as follows:
 
-\[CE(p, q) = -\sum \limits_{i = 0}^{K} p(i) \ln q(i)\]
+\[ \text{CE}(p, q) = -\sum \limits_{i = 0}^{K} p(i) \ln q(i) \,. \]
 
 \noindent In a pixel classification task such as cell classification, each pixel belongs to one of many mutually exclusive classes. Therefore, the true probability of the $i$th pixel's ground truth label is $1.0$, while all others are $0.0$. For example, if the third class is assumed to be the ground-truth class, the vector of $p$ values for some pixel $i$ will be $[0.0,\, 0.0,\, 1.0,\, 0.0]$. The loss for an entire input image is then calculated as the sum of the losses of all pixels divided by the number of pixels.\\
 
-\noindent To use the Cross-Entropy loss in combination with a Softmax input during Backpropagation, $\delta$ is needed. As the Cross-Entropy performs the output calculation for the network and therefore directly influences the loss, $\delta$ is defined as simply
+\noindent To use the Cross-Entropy loss in combination with a Softmax input during Backpropagation, the $\delta$ value is needed. As the Cross-Entropy performs the output calculation for the network and therefore directly influences the loss, $\delta$ is defined as simply
 
-\begin {align} \delta &= \frac{\partial CE}{\partial a_j}\\  
-			    &= y_i - t_i \hspace{2em}\cite[\text{ p. 209}]{bishop_pattern}
+\begin {align} \delta &= \frac{\partial \text{CE}}{\partial a_j}\\  
+			    &= y_i - t_i \hspace{2em} \,,
 \end {align}
 
-\noindent where $i$ is the index of the Softmax probability for a class $C_i$ and $t_i$ is the ground truth probability. For classification with mutually exclusive classes, i.e. $t_i = 1.0$ when $C_i$ is the correct class and $t_i = 0.0$ otherwise, this means that $\delta$ can be calculated by just subtracting $1$ from the predicted Softmax probability of the true class.
+\noindent where $i$ is the index of the Softmax probability for a class $C_i$ and $t_i$ is the ground truth probability. \cite[\text{ p. 209}]{bishop_pattern} For classification with mutually exclusive classes, i.e. $t_i = 1.0$ when $C_i$ is the correct class and $t_i = 0.0$ otherwise, this means that $\delta$ can be calculated by just subtracting $1$ from the predicted Softmax probability of the true class.
 
 
 		\subsection{Weighted Cross-Entropy Loss}
@@ -261,7 +284,7 @@ Using a Cross-Entropy loss function for pixel classification assumes that all pi
 
 To combat this problem, one can introduce a pixelwise weight map for each training sample whose values depend on the ground truth class and the position of each pixel. Therefore, the Cross-Entropy loss formula changes to
 
-\[ CE(p, q) = -\sum \limits_{i = 0}^{K} w(i) \bigg ( p(i) \ln q(i) \bigg ) \]
+\[ \text{CE}(p, q) = -\sum \limits_{i = 0}^{K} w(i) \bigg ( p(i) \ln q(i) \bigg ) \,, \]
 
 \noindent where $w$ is a weight map for each pixel, and $w(i)$ is the weight for a pixel $i$.
 
@@ -269,11 +292,11 @@ One way to construct such a weight map is given in \cite{unet}, using the weight
 
 \[ w(i) = w_c(i) + w_0 \left ( \exp \left (- \frac{(d_1(i) + d_2(i))^2}{2\sigma^2} \right ) \right ), \]
 
-\noindent where $w_c(i)$ is the class-specific weight for the $i$th pixel's ground truth class, $d_1$ and $d_2$ are the Euclidean distances to the nearest and second-nearest non-background pixel and $w_0$ and $\sigma$ are additional weights that govern the influence and behavior of the distance-based modifier term. The class-specific weights $w_c(i)$ can either be set by counting all pixels of all classes in all sample labels to perform \textit{average weighting}, in which all sample use the same class weights, or to do the same for each sample, resulting in \textit{individual weighting}. The class weights are then calculated as their inverse probability, i.e.
+\noindent where $w_c(i)$ is the class-specific weight for the $i$th pixel's ground truth class, $d_1$ and $d_2$ are the Euclidean distances to the nearest and second-nearest non-background pixel and $w_0$ and $\sigma$ are additional weights that govern the influence and behavior of the distance-based modifier term. The class-specific weights $w_c(i)$ can either be set by counting all pixels of all classes in all sample labels to perform \textit{average weighting} in which all samples use the same class weights, or to do the same for each sample, resulting in \textit{individual weighting}. The class weights are then calculated as their inverse probability, i.e.
 
-\[ w_c(i) = 1 - \frac{\#c}{\#all}, \]
+\[ w_c(i) = 1 - \frac{\text{\#c}}{\text{\#all}}, \]
 
-\noindent where $\#c$ is the number of pixels that belong to a class $C$ and $\#all$ is the number of pixels in the sample (or in all samples, depending on the weighting mode). This way, classes that occur less frequently are given a harsher penalty when misclassified, making them more important during training.
+\noindent where \#c is the number of pixels that belong to a class $C$ and \#all is the number of pixels in the sample (or in all samples, depending on the weighting mode). This way, classes that occur less frequently are given a harsher penalty when misclassified, making them more important during training.
 
 For this thesis, the weight map was generated using average weighting for the class weights $w_c$ and omitting the modifier term (see Figure \textbf{\ref{fig:weight_map}}). The reason for this is that the modifier term was originally introduced in \cite{unet} to give a large weight to narrow strips of background pixels that were artificially inserted to act as a border between two overlapping cells. Detecting these borders was not a priority, and since calculating the distance to the next non-background pixel for each pixel takes some time even when employing spatial search data structures such as a PR-Tree,  a simple weight map rather than a complex one was adopted during early network tests where the data set was still subject to change and had to be recalculated occasionally.\\
 
@@ -292,20 +315,20 @@ For this thesis, the weight map was generated using average weighting for the cl
 
 \end {figure}
 
-\noindent The calculation of $\delta$ for Backpropagation is defined as follows:\footnote{The usual index $j$ for $\delta$ was omitted here and in the derivative of the Softmax because there is only one neuron in the loss layer anyway. Here, $j$ instead refers to the $j$th element of the vector $a$.} \\
+\noindent The calculation of the $\delta$ value for Backpropagation is defined as follows:\footnote{The usual index $j$ for $\delta$ was omitted here and in the derivative of the Softmax because there is only one neuron in the loss layer anyway. Here, $j$ instead refers to the $j$th element of the vector $a$.} \\
 
 
 \begin {align}
-	\delta &= \frac{\partial CE}{\partial a_j} \\
+	\delta &= \frac{\partial \text{CE}}{\partial a_j} \\
 		&= \frac{\partial}{\partial a_j} \left ( w \left ( - \sum \limits_{j=1}^{C} t_j \ln(y_j) \right ) \right ) \\ \intertext{where $w$ refers to the weight constant, $t_j$ is the ground truth probability and $y_j$ is the Softmax probability for the current pixel. Then}
-		&= w \left ( - \sum \limits_{j=1}^{C} t_j \frac{\partial \ln(y_j)}{\partial a_j} \right ) \\
+		\delta &= w \left ( - \sum \limits_{j=1}^{C} t_j \frac{\partial \ln(y_j)}{\partial a_j} \right ) \\
 		&= w \left (- \sum \limits_{j=1}^{C} t_j \frac{1}{y_j} \frac{\partial y_j}{\partial a_j} \right ) \\
 		&= w \left ( - \frac{t_i}{y_i} \frac{\partial y_i}{\partial a_j} - \sum \limits_{j \neq i}^{C} \frac{t_j}{y_j} \frac{\partial y_j}{\partial a_j} \right ) \\ \intertext{using the derivative of the Softmax from Equation \textbf{\ref{eq:softmax_deriv}}, it follows that}
-		&= w \left ( - \frac{t_i}{y_i} y_i (1 - y_i) - \sum \limits_{j \neq i}^{C} \frac{t_j}{y_j} (- y_j y_i) \right ) \\
+		\delta &= w \left ( - \frac{t_i}{y_i} y_i (1 - y_i) - \sum \limits_{j \neq i}^{C} \frac{t_j}{y_j} (- y_j y_i) \right ) \\
 		&= w \left ( - t_i + t_i y_i - \sum \limits_{j \neq i}^{C} - t_j y_i \right ) \\
 		&= w \left ( - t_i - \sum \limits_{j=1}^{C} - t_j y_i  \right ) \\
-		&= w \left ( - t_i + y_i \sum \limits_{j=1}^{C} t_j \right ) \\ \intertext{because $t_j = 0$ for all $C_j$ except the ground truth class, this can be simplified to} 
-		&= w \left (- t_i + y_i \right ) \\ \tag*{$\blacksquare$} 
+		&= w \left ( - t_i + y_i \sum \limits_{j=1}^{C} t_j \right ) \\ \intertext{Because $t_j = 0$ for all $C_j$ except the ground truth class, this can be simplified to} 
+		\delta &= w \left (- t_i + y_i \right )
 \end {align}
 
 \noindent which is almost the same as the derivative of the normal Cross-Entropy loss.
@@ -316,47 +339,46 @@ For this thesis, the weight map was generated using average weighting for the cl
 
 An alternative to solving the problem of unbalanced classes in the training data is using the \textit{F-Measure}, also called \textit{DICE similarity}, as a loss function instead. The F-Measure is a statistical similarity function which has been shown to perform well when using SGD-trained CNNs on unbalanced data for binary segmentations. \cite{fmeasure3, fmeasure4, fmeasure5} It is based on the quantities of \textit{Precision} and \textit{Recall} over the training sample in comparison to its ground truth. The precision is defined as
 
-\[ PR = \frac{TP}{TP + FP} \]
+\[ \text{PR} = \frac{\text{TP}}{\text{TP} + \text{FP}} \]
 
 \noindent whereas the recall is defined as
 
-\[ RC = \frac{TP}{TP + FN} \]
+\[ \text{RC} = \frac{\text{TP}}{\text{TP} + \text{FN}} \,, \]
 
 \noindent where TP is the number of true positives, FP is the number of false positives, and FN is the number of false negatives. Traditionally, these values are defined as set theory operations, but to make the F-Measure differentiable, they are redefined as follows:
 
 \begin {align}
-TP &= \sum \limits_{i=1}^{n} y_i t_i \\
-FP &= \sum  \limits_{i=1}^{n} y_i (1 - t_i) \\
-FN &= \sum \limits_{i=1}^{n} (1 - y_i) t_i
+\text{TP} &= \sum \limits_{i=1}^{n} y_i t_i \\
+\text{FP} &= \sum  \limits_{i=1}^{n} y_i (1 - t_i) \\
+\text{FN} &= \sum \limits_{i=1}^{n} (1 - y_i) t_i \,.
 \end {align}
 
-\noindent with $y_i$ and $t_i$ being the Softmax probability of the foreground class and the corresponding ground truth probability of a pixel $i$ in an image with $n$ pixels. The $F_1$ score for an image is then defined as
+\noindent Here, $y_i$ and $t_i$ are the Softmax probability of the foreground class and the corresponding ground truth probability of a pixel $i$ in an image with $n$ pixels. The $F_1$ score for an image is then defined as
 
 \begin {align}
- 	F_1 &= 2 \left ( \frac{PR \cdot RC}{PR + RC} \right ) \\
-		&= 2 \left ( \frac{\sum_{i=1}^{n} y_i t_i }{ \sum_{i=1}^{n} (y_i + t_i) } \right )
+ 	F_1 &= 2 \left ( \frac{\text{PR} \cdot \text{RC}}{\text{PR} + \text{RC}} \right ) \\
+		&= 2 \left ( \frac{\sum_{i=1}^{n} y_i t_i }{ \sum_{i=1}^{n} (y_i + t_i) } \right ) \,,
 \end {align}
 
 \noindent and the derivative to use during Backpropagation is
 
 \begin {align}
 	\delta &= \frac{\partial F_1}{\partial y_j}\\
-	&= 2 \left ( \frac{t_j \sum_{i=1}^{n} \left ( y_i + t_i \right ) - \sum_{i=1}^{n} \left ( y_i t_i \right )  }{\left [ \sum_{i=1}^{n} \left ( y_i + t_i \right ) \right ]^2 } \right )
+	&= 2 \left ( \frac{t_j \sum_{i=1}^{n} \left ( y_i + t_i \right ) - \sum_{i=1}^{n} \left ( y_i t_i \right )  }{\left [ \sum_{i=1}^{n} \left ( y_i + t_i \right ) \right ]^2 } \right ) \,.
 \end {align}
 
 \noindent For multi-class problems, the approach is changed slightly: The $F_1$ score is calculated for each class $C_j$ in a binary fashion, using the $C_j$ as the ``foreground'' and all other classes $C_i, i \neq j$ as ``background''. This way, the definitions for TP, FP and FN can be used for more than two classes. The average of these multiple F-Measures is then used as the loss function.\footnote{It should be noted that the $F_1$ score \textbf{increases} the better the classification becomes.}
 
-During the backward pass, the gradients are also calculated per class in a similiar way.
+During the backward pass, the gradients are also calculated per class in a similiar way. \textbf{TODO}
 
 
 	\section {U-Net}
+\label{sec:unet}
 The U-Net \cite{unet} is a CNN architecture which aims to produce segmentation maps for images of cells. It was implemented using Caffe \cite{caffe}, a CNN library that allows CNN layers - such as the ones described in the previous section - to be put together to form a network.\\
 
-The U-Net first performs a series of standard computations, alternating $3 \times 3$ convolutions followed by ReLU activations and $2 \times 2$ Maximum Pooling downsampling operations with stride $2$ while steadily increasing the number of filters after each pooling operation from 64 up to 1024. It differs from normal CNNs in that it then begins alternating upsampling operations with $3 \times 3$ convolutions and thus enlarges the feature maps again while reducing the number of filters. This results in a nearly symmetric architecture which give the network its name. The network is also a fully-convolutional network, so it does not have a final fully-connected layer to perform pixel classification. Instead, a $1 \times 1$ convolution with a number of filters that corresponds to the number of classes in the final segmentation map is used for classification.
+The U-Net first performs a series of standard computations, alternating $3 \times 3$ convolutions followed by ReLU activations and $2 \times 2$ Maximum Pooling downsampling operations with stride $2$ while steadily increasing the number of filters after each pooling operation from 64 up to 1024. It differs from normal CNNs in that it then begins alternating upsampling operations with $3 \times 3$ convolutions and thus enlarges the feature maps again while reducing the number of filters. This results in a nearly symmetric architecture which gives the network its name. The network is also a fully-convolutional network, so it does not have a final fully-connected layer to perform pixel classification. Instead, a $1 \times 1$ convolution with a number of filters that corresponds to the number of classes in the final segmentation map is used for classification.
 
-Additionally, the network allows feature concatenation by using shortcut connections (called ``skip-layer connections'' in \cite{bishop_pattern}), taking the non-padded part of the feature maps from the corresponding sampling level after each upsampling operation and concatenating them with the upsampled maps. This is done to boost the precision of the segmentation output - downsampling reduces locality information which is nonetheless needed when creating a high-definition segmentation map, so this is a way to reduce the complexity of the network while still achieving precise results.\\
-
-See Figure \textbf{\ref{fig:unet_arch}} for a graphical representation of the U-Net architecture.\\
+Additionally, the network allows feature concatenation by using shortcut connections (called ``skip-layer connections'' in \cite{bishop_pattern}), taking the non-padded part of the feature maps from the corresponding sampling level after each upsampling operation and concatenating them with the upsampled maps. This is done to boost the precision of the segmentation output - downsampling reduces locality information, which is nonetheless needed when creating a high-definition segmentation map, so this is a way to reduce the complexity of the network while still achieving precise results (see Figure \textbf{\ref{fig:unet_arch}} for a graphical representation of the U-Net architecture).\\
 
 \begin {figure}[!ht]
 	\scalebox{0.75}{\input{img/unet_arch.pdf_tex}}

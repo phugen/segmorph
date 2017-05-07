@@ -20,7 +20,7 @@
 %%   \import{<path to file>}{<filename>.pdf_tex}
 %% Alternatively, one can specify
 %%   \graphicspath{{<path to file>/}}
-%%
+%% 
 %% For more information, please see info/svg-inkscape on CTAN:
 %%   http://tug.ctan.org/tex-archive/info/svg-inkscape
 %%
@@ -36,7 +36,7 @@
   }%
   \providecommand\rotatebox[2]{#2}%
   \ifx\svgwidth\undefined%
-    \setlength{\unitlength}{480bp}%
+    \setlength{\unitlength}{720bp}%
     \ifx\svgscale\undefined%
       \relax%
     \else%
@@ -49,8 +49,6 @@
   \global\let\svgscale\undefined%
   \makeatother%
   \begin{picture}(1,0.5)%
-    \put(0,0){\includegraphics[width=\unitlength,page=1]{img/fig_convolution.pdf}}%
-    \put(0.26666667,0.06904761){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{}}}%
-    \put(0,0){\includegraphics[width=\unitlength,page=2]{img/fig_convolution.pdf}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=1]{fig_convolution.pdf}}%
   \end{picture}%
 \endgroup%
