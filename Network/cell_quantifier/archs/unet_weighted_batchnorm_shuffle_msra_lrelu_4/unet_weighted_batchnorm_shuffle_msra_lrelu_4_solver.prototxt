@@ -1,0 +1,20 @@
+net: "./unet_weighted_batchnorm_shuffle_msra_lrelu_4/unet_weighted_batchnorm_shuffle_msra_lrelu_4.prototxt" # the destination of the network structure file
+
+base_lr: 0.01 # base learning rate, originally 0.001
+lr_policy: "step" # drop learning rate in steps by a factor gamma
+gamma: 0.1 # see above
+stepsize: 3000 # drop learning rate every <stepsize> steps
+
+iter_size: 1 # how many images are processed simultaneously in one learning step (batch size)
+max_iter: 200000 # total number of training iterations
+momentum: 0.99 # weight of previous update
+regularization_type: "L2" # max-norm weight clipping, see Dropout paper
+
+test_initialization: true # determines whether net is tested at iteration 0
+test_iter: 3456 # total number of test iterations
+test_interval: 1000 # test every <test_interval> iterations
+
+display: 100 # show result every iteration (if lots of NaN/Inf: Diverging!)
+snapshot: 1000 # create a backup of weights trained so far every 1000 iterations
+snapshot_prefix: "./snapshots/unet_weighted_batchnorm_shuffle_msra_lrelu_4/unet_weighted_batchnorm_shuffle_msra_lrelu_4"
+solver_mode: GPU # train on GPU

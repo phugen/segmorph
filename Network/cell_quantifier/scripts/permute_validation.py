@@ -26,8 +26,6 @@ class permuter:
             if self.__is_valid(self.swaps, rule) and rule != tuple(range(self.numclasses)):
                 self.swaps.append(rule)
 
-        print self.swaps
-
 
     def __is_valid(self, swaps, rule):
         ''' Checks if a swap rule is valid. A swap rule is valid if it is
@@ -55,7 +53,7 @@ class permuter:
         # and return result
         for rule in self.swaps:
             perm = np.array((label))
-            print "Permuting according to " + str(rule)
+            #print "Permuting according to " + str(rule)
 
             for idx, sw in enumerate(rule):
                 perm[label == idx] = sw
@@ -73,7 +71,9 @@ def fmeasure(labels, gt, numclasses):
     bestlabels = None
     numlabels = labels.size
     permu = permuter(numclasses) # initialize permutation class
-    permgen = permu.permute(labels) # initialize permutation generator #NOTE: can be done better.. creating permutations in permute func
+
+    #NOTE: can be done better.. creating permutations in permute func
+    permgen = permu.permute(labels) # initialize permutation generator
 
 
     # test all possible permutations
@@ -87,23 +87,28 @@ def fmeasure(labels, gt, numclasses):
         eps = 1e-10 # prevent division by zero
         for c in range(numclasses):
 
-            # true positives (TP):
-            # ground truth is class "i" and
-            # labels indiciate this class as well
-            tp = [gt[i][0] == c and labels[i] == c for i in range(numlabels)] \
-                 .count(True) + eps
+            # calculate multi-class per-image stats by alternatingly
+            # treating each class as "true" and all others as "false"
+            #
+            # NOTE: use "hack": Python counts "true" as "1"
+            # and "false" as "0", so np.sum(arr) is the same
+            # as  list(arr).count(True), but much faster!
 
-            # false negatives (FN):
-            # ground truth is class "i" but
-            # label indicates another class
-            fn = [gt[i][0] == c and labels[i] != c for i in range(numlabels)] \
-                 .count(True) + eps
+            # true positives (TP):
+            # ground truth is class "c" and
+            # labels indicate this class as well
+            tp = np.sum((gt == c) & (labels == c)) + eps
 
             # false positives (FP):
-            # ground truth is not class "i" but
+            # ground truth is not class "c" but
             # labels indicates "i" nonetheless
-            fp = [gt[i][0] != c and labels[i] == c for i in range(numlabels)] \
-                 .count(True) + eps
+            fp = np.sum((gt != c) & (labels == c)) + eps
+
+
+            # false negatives (FN):
+            # ground truth is class "c" but
+            # label indicates another class
+            fn = np.sum((gt == c) & (labels != c)) + eps
 
             # precision
             prec = tp / float(tp + fp)
@@ -120,7 +125,7 @@ def fmeasure(labels, gt, numclasses):
         # update current best score if needed
         if fscore >= maxscore:
             maxscore = max(maxscore, fscore)
-            bestlabels = list(labels) # copy list contents
+            bestlabels = labels # copy list contents
 
         # permute the labels until all
         # valid permutations are done
@@ -133,7 +138,7 @@ def fmeasure(labels, gt, numclasses):
     # after all permutations,
     # return maximum score and the
     # labels associated with that score
-    print "Maxscore: " + str(maxscore)
+    #print "Maxscore: " + str(maxscore)
     return maxscore, bestlabels
 
 
@@ -141,7 +146,7 @@ def fmeasure(labels, gt, numclasses):
 def labels_as_RGB_image(labels, numclasses):
     ''' Converts a label list back to an RGB image.'''
 
-    labels = np.array(labels).reshape((244, 244))
+    labels = labels.reshape((244, 244))
     outimg = np.zeros((3, 244, 244), dtype=np.uint8)
 
     # translate labels to colors
