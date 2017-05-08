@@ -37,10 +37,10 @@ def otsu4func(input_img):
     labels[input_img >= threshs[2] / 255.] = 3
 
 
-    return labels labels.reshape(dims)
+    return labels.reshape(dims)
 
 
 classes = 4
 inpath = "../training_4final/drosophila_4classdata_avgweight/"
 
-validate(otsu3func, classes, inpath, "otsu_validation/otsu4/")
+validate(otsu4func, classes, inpath, "otsu_validation/otsu4/")

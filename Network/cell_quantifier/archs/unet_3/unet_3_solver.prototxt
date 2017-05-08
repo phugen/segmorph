@@ -11,10 +11,10 @@ momentum: 0.99 # weight of previous update
 regularization_type: "L2" # max-norm weight clipping, see Dropout paper
 
 test_initialization: true # determines whether net is tested at iteration 0
-test_iter: 3456 # total number of test iterations
+test_iter: 1568 # total number of test iterations
 test_interval: 1000 # test every <test_interval> iterations
 
-display: 1 # show result every iteration (if lots of NaN/Inf: Diverging!)
-snapshot: 5000 # create a backup of weights trained so far every 1000 iterations
+display: 100 # show result every iteration (if lots of NaN/Inf: Diverging!)
+snapshot: 1000 # create a backup of weights trained so far every 1000 iterations
 snapshot_prefix: "./snapshots/unet_3/unet_3"
 solver_mode: GPU # train on GPU

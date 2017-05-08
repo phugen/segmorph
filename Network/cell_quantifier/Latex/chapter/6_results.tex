@@ -53,7 +53,7 @@ The progress of the training is shown in Figure \textbf{\ref{fig:weighted_f1_tra
 		\caption{\textbf{Unet\_F1\_4}}
 	\end {subfigure}
 
-		\caption[Training progress of the first collection of networks.]{Training progress of the first collection of networks. The training loss is shown in muted colors, while the validation loss is denoted by bright colors. For Unet\_F1, the multi-class F-Measure score of each class is shown in the respective color. Repetitions in the validation progress in later epochs happen because shuffling was not used.}
+		\caption[Training progress of the first collection of networks.]{Training progress of the first collection of networks. The training loss is shown in muted colors, while the validation loss is denoted by bright colors. For Unet\_F1, the multi-class F-Measure score of each class is shown in the respective color. Repetitions in the validation progress in later epochs happen because shuffling was not used for the validation data.}
 		\label{fig:weighted_f1_training}
 \end {figure}
 
@@ -163,15 +163,15 @@ In the next round of tests, the effect of shuffling on the training of weighted 
 	\end {subfigure}
 
 	\begin {subfigure}[b]{0.4\linewidth}
-		%\scalebox{0.65}{\input{img/fig_train_unet_weighted_batchnorm_shuffle_3.pgf}}
+		\scalebox{0.65}{\input{img/fig_train_unet_weighted_batchnorm_shuffle_3.pgf}}
 		\caption{\textbf{Unet\_W\_BN\_S\_3}}
 	\end {subfigure}\hspace{1.75cm}
 	\begin {subfigure}[b]{0.4\linewidth}
-		%\scalebox{0.65}{\input{img/fig_train_unet_weighted_batchnorm_shuffle_4.pgf}}
+		\scalebox{0.65}{\input{img/fig_train_unet_weighted_batchnorm_shuffle_4.pgf}}
 		\caption{\textbf{Unet\_W\_BN\_S\_4}}
 	\end {subfigure}
 
-		\caption[Training progress of the third collection of networks.]{Training progress of the third collection of networks. The networks with enabled shuffling \textbf{TODO}}
+		\caption[Training progress of the third collection of networks.]{Training progress of the third collection of networks. The networks with enabled shuffling converge even faster than the ones without shuffling, while the minimum loss remains roughly the same.}
 		\label{fig:weighted_batchnorm_shuffle_training}
 \end {figure}
 
@@ -212,15 +212,6 @@ In the next round of tests, the effect of shuffling on the training of weighted 
 \noindent As the next evaluation step, the effect of the weight initialization on \textbf{Unet\_W\_BN\_S} was compared, using the Xavier and the MSRA initializations. It was believed that MSRA should work better for all networks using ReLU activations or its variations. The networks up to this point used the Xavier initialization, so the networks with MSRA initialization received an additional \textbf{\_MS} tag. The number of epochs was reduced to \textbf{TODO}. The training progress is shown in Figure \textbf{\ref{fig:weighted_batchnorm_shuffle_msra_training}}.\\
 
 \begin {figure}[!ht]
-	\begin {subfigure}[b]{0.4\linewidth}
-		%\scalebox{0.65}{\input{img/fig_train_unet_weighted_batchnorm_shuffle_3.pgf}}
-		\caption{\textbf{Unet\_W\_BN\_S\_3}}
-	\end {subfigure}\hspace{1.75cm}
-	\begin {subfigure}[b]{0.4\linewidth}
-		%\scalebox{0.65}{\input{img/fig_train_unet_weighted_batchnorm_shuffle_4.pgf}}
-		\caption{\textbf{Unet\_W\_BN\_S\_4}}
-	\end {subfigure}
-
 	\begin {subfigure}[b]{0.4\linewidth}
 		%\scalebox{0.65}{\input{img/fig_train_unet_weighted_batchnorm_shuffle_msra_3.pgf}}
 		\caption{\textbf{Unet\_W\_BN\_S\_MS\_3}}
@@ -348,7 +339,7 @@ Finally, the choice of the activation function used throughout the network was e
 \end {table}
 
 
-\noindent Because Otsu thresholding, K-Means and Gaussian Mixture Models are all unsupervised methods, i.e. they do not depend on ground truth images, the labels they output have no direct relation to the ground truth labels used in the CNN training. Therefore, all combinations of matching the output labels with the ground truth labels are evaluated and for each, a multiclass F-Measure score is calculated. The assignment with the highest score is then assumed to be the correct one, which is then used for the overall evaluation using the Macro F-Measure over all segmentations.\\
+\noindent Because Otsu thresholding, K-Means and Gaussian Mixture Models are all unsupervised methods, i.e. they do not depend on ground truth images, the labels they output have no direct relation to the ground truth labels used in the CNN training. Therefore, all combinations of matching the output labels with the ground truth labels are evaluated and for each, a multi-class F-Measure score is calculated. The assignment with the highest score is assumed to be the correct one, which is then used for comparing the performance of the unsupervised methods to the CNN performance.\\
 
 
 \begin {table}
@@ -356,42 +347,36 @@ Finally, the choice of the activation function used throughout the network was e
 		\begin {tabular}[!ht]{|l|l|l|l|l|}
 			\hline\multicolumn{5}{|l|}{\textbf{3-class Micro F-Measure Scores}} \\ \hline
 			\textbf{Network}& \textbf{Class 1}& \textbf{Class 2}& \textbf{Class 3}& \textbf{Overall} \\ \hline
-			Otsu\_3& & & &  \\ \hline
-			GMM\_3& 0.324832& 0.885069& 0.272645& 0.754098 \\ \hline
+			\textbf{TODOnetwork}\_3& & & &  \\ \hline
+			Kmeans\_3& 0.565397& 0.911659& 0.181797& 0.825470 \\ \hline
+			Otsu\_3& 0.826101& 0.947856& 0.289651& 0.892829 \\ \hline
+			GMM\_3& 0.592882& 0.916301& 0.452048& 0.835872 \\ \hline
 			\multicolumn{5}{|l|}{\textbf{3-class Macro F-Measure Scores}} \\ \hline
 			\textbf{Network}& \textbf{Class 1}& \textbf{Class 2}& \textbf{Class 3}& \textbf{Overall} \\ \hline
-			Otsu\_3& & & &\\ \hline
-			GMM\_3& 0.381444& 0.865184& 0.314865& 0.521572 \\ \hline
+			\textbf{TODOnetwork}\_3& & & &  \\ \hline
+			Kmeans\_3& 0.658413& 0.915943& 0.269968& 0.621344 \\ \hline
+			Otsu\_3& 0.728980& 0.945487& 0.286169& 0.692639 \\ \hline
+			GMM\_3& 0.658694& 0.921221& 0.475517& 0.686258 \\ \hline
 		\end {tabular}
 		\vspace{0.5cm}\\
 		\begin {tabular}[!ht]{|l|l|l|l|l|l|}
 			\hline\multicolumn{6}{|l|}{\textbf{4-class Micro F-Measure Scores}} \\ \hline
 			\textbf{Network}& \textbf{Class 1}& \textbf{Class 2}& \textbf{Class 3}& \textbf{Class 4}& \textbf{Overall} \\ \hline
-			Otsu\_4& & & & &  \\ \hline
-			GMM\_4& 0.175092& 0.780829& 0.149978& 0.398891& 0.616558 \\ \hline
+			\textbf{TODOnetwork}\_4& & & & &  \\ \hline
+			Kmeans\_4& 0.267928& 0.905374& 0.141975& 0.517766& 0.801337 \\ \hline
+			Otsu\_4& 0.289285& 0.951719& 0.215767& 0.826893& 0.887743 \\ \hline
+			GMM\_4& 0.266052& 0.901548& 0.340378& 0.578745& 0.793159 \\ \hline
 			\multicolumn{6}{|l|}{\textbf{4-class Macro F-Measure Scores}} \\ \hline
 			\textbf{Network}& \textbf{Class 1}& \textbf{Class 2}& \textbf{Class 3}& \textbf{Class 4}& \textbf{Overall} \\ \hline
-			Otsu\_4& & & & &  \\ \hline
-			GMM\_4& 0.256801& 0.736912& 0.182794& 0.509556& 0.437025 \\ \hline
+			\textbf{TODOnetwork}\_4& & & & &  \\ \hline
+			Kmeans\_4& 0.339741& 0.912653& 0.158299& 0.611075& 0.516103 \\ \hline
+			Otsu\_4& 0.272577& 0.949255& 0.216902& 0.7244& 0.556941 \\ \hline
+			GMM\_4& 0.29571& 0.907527& 0.316250& 0.646682& 0.555062 \\ \hline
 		\end {tabular}
 	\end {flushleft}
-\caption[Multi-class F-Measure scores for final network and other image segmentation metods.]{Multi-class F-Measure scores of 3 and 4-class segmentations for the \textbf{TODO} network and the Otsu, K-Means and GMM methods.}
+\caption[Multi-class F-Measure scores for final network and other image segmentation metods.]{Multi-class F-Measure scores of 3 and 4-class segmentations for the \textbf{TODO} network and the K-Means, Otsu and GMM methods.}
 \label{tab:resultsfinal}
 \end {table}
 
-
+\textbf{TODO: Fix axes of training progress plots!}\\
 \textbf{TODO: Show activation maps of different layers!}\\
-
-
-\begin {table}
-	\centering
-	\begin {tabular}[!ht]{|l|c|c|}
-		\hline
-		\textbf{Method}& \textbf{3 classes}& \textbf{4 classes}\\ \hline
-		Otsu& & \\ \hline
-		K-Means& & \\ \hline
-		GMM& & \\ \hline
-		\textbf{TODO-network}& & \\ \hline
-	\end {tabular}
-\caption[Multi-class F-Measure scores of the best network in comparison to the unsupervised methods.]{Multi-class F-Measure scores of 3 and 4-class segmentations. The best network is compared to the outputs of unsupervised methods.}
-\end {table}

@@ -19,7 +19,7 @@ from PIL import Image
 
 if len(sys.argv) < 6:
     print "Too few arguments!"
-    print "Usage: python predict.py device_id batchsize modelfile weightfile input_file output_folder"
+    print "Usage: python predict_single.py device_id batchsize modelfile weightfile input_file output_folder"
     sys.exit(-1)
 
 # set paths to deployment net, trained model weights and the images to predict (in HDF5 format, e.g. validation set)

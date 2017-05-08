@@ -1,5 +1,5 @@
 name: 'unet_weighted_4-deploy'
-layer { top: 'data' name: 'data' type: 'Input'  input_param { shape: { dim: 3 dim: 3 dim: 428 dim: 428 } } }
+layer { top: 'data' name: 'data' type: 'Input'  input_param { shape: { dim: 5 dim: 3 dim: 428 dim: 428 } } }
 
 layer { bottom: 'data'              top: 'd0b'   name: 'conv_d0a-b'     type: "Convolution" param {lr_mult: 1 decay_mult: 1} param {lr_mult: 2 decay_mult: 0}  convolution_param { num_output: 64 pad: 0 kernel_size: 3 engine: CAFFE weight_filler { type: 'xavier' }} }
 layer { bottom: 'd0b'               top: 'd0b'   name: 'relu_d0b'       type: "ReLU" }

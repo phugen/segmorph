@@ -105,7 +105,7 @@ def convert2HDF5(path, hdf5path, weight_mode="individual", un_path=None, overrid
 
         # label_array_int is already initialized with background label values = 0
         # now simply use masks to place appropriate integer labels for each value
-        label_array_int[index][bluemask == 1] = 1 # TODO: change back to 3 if needed
+        label_array_int[index][bluemask == 1] = 3 # TODO: change back to 3 if needed
         label_array_int[index][greenmask == 1] = 2
         label_array_int[index][redmask == 1] = 1
 

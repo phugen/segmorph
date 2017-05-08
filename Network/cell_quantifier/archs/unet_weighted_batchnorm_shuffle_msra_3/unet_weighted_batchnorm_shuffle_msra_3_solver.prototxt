@@ -11,7 +11,7 @@ momentum: 0.99 # weight of previous update
 regularization_type: "L2" # max-norm weight clipping, see Dropout paper
 
 test_initialization: true # determines whether net is tested at iteration 0
-test_iter: 3456 # total number of test iterations
+test_iter: 1568 # total number of test iterations
 test_interval: 1000 # test every <test_interval> iterations
 
 display: 100 # show result every iteration (if lots of NaN/Inf: Diverging!)

@@ -36,10 +36,10 @@ class permuter:
             return False
 
         # check symmetry
-        for idx in range(len(rule)):
-            s = rule[idx]
-            if not rule[s] != idx:
-                return False
+        #for idx in range(len(rule)):
+        #    s = rule[idx]
+        #    if not rule[s] != idx:
+        #        return False
 
         # rule is valid.
         return True

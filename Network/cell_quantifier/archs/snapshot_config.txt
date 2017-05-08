@@ -1,0 +1,14 @@
+#device_id,path/to/deploy.prototxt,path/to/validation_hdf5/,path/to/snapshots/,use_fmeasure
+0,unet_weighted_3/unet_weighted_3_deploy.prototxt,data3/,snapshots/unet_weighted_3/,False
+0,unet_f1_3/unet_f1_3_deploy.prototxt,data3/,snapshots/unet_f1_3/,True
+0,unet_batchnorm_3/unet_batchnorm_3_deploy.prototxt,data3/,snapshots/unet_batchnorm_3/,False
+0,unet_weighted_batchnorm_3/unet_weighted_batchnorm_3_deploy.prototxt,data3/,snapshots/unet_weighted_batchnorm_3/,False
+0,unet_weighted_batchnorm_shuffle_3/unet_weighted_batchnorm_shuffle_3_deploy.prototxt,data3/,snapshots/unet_weighted_batchnorm_shuffle_3/,False
+0,unet_weighted_batchnorm_shuffle_msra_3/unet_weighted_batchnorm_shuffle_msra_3_deploy.prototxt,data3/,snapshots/unet_weighted_batchnorm_shuffle_msra_3/,False
+#
+1,unet_weighted_4/unet_weighted_4_deploy.prototxt,data4/,snapshots/unet_weighted_4/,False
+1,unet_f1_4/unet_f1_4_deploy.prototxt,data4/,snapshots/unet_f1_4/,True
+1,unet_batchnorm_4/unet_batchnorm_4_deploy.prototxt,data4/,snapshots/unet_batchnorm_4/,False
+1,unet_weighted_batchnorm_4/unet_weighted_batchnorm_4_deploy.prototxt,data4/,snapshots/unet_weighted_batchnorm_4/,False
+1,unet_weighted_batchnorm_shuffle_4/unet_weighted_batchnorm_shuffle_4_deploy.prototxt,data4/,snapshots/unet_weighted_batchnorm_shuffle_4/,False
+1,unet_weighted_batchnorm_shuffle_msra_4/unet_weighted_batchnorm_shuffle_msra_4_deploy.prototxt,data4/,snapshots/unet_weighted_batchnorm_shuffle_msra_4/,False

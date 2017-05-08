@@ -58,7 +58,7 @@ val = np.array(vloss)
 minloss = 1e10
 minpair = None
 for i in range(0, len(vloss)):
-    if vloss[i][1] <= minloss and vloss[i][0] % 1000 == 0:
+    if vloss[i][1] < minloss and vloss[i][0] % 1000 == 0:
         minloss = vloss[i][1]
         minpair = vloss[i]
 

@@ -30,9 +30,9 @@ def validate(func, numclasses, inpath, outpath):
             no_samples = f["data"].shape[0]
 
             # TODO: remove
-            if idx < 9:
-                imoffset +=no_samples
-                continue
+            #if idx < 3: #or idx > 1:
+            #    imoffset +=no_samples
+            #    continue
 
             print "Predicting file number " + str(idx) + "/" + str(len(valfiles)-1) + ":"
             bar = progressbar.ProgressBar()
