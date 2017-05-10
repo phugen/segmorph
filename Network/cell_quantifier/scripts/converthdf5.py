@@ -105,7 +105,7 @@ def convert2HDF5(path, hdf5path, weight_mode="individual", un_path=None, overrid
 
         # label_array_int is already initialized with background label values = 0
         # now simply use masks to place appropriate integer labels for each value
-        label_array_int[index][bluemask == 1] = 3 # TODO: change back to 3 if needed
+        label_array_int[index][bluemask == 1] = 1 # TODO: change back to 3 if needed
         label_array_int[index][greenmask == 1] = 2
         label_array_int[index][redmask == 1] = 1
 
@@ -318,6 +318,41 @@ def convert2HDF5(path, hdf5path, weight_mode="individual", un_path=None, overrid
                         pixel_weights[index, y, x] = w_c[val]
 
 
+    #TODO REMOVE THIS ----------------------------------------------------------------------------------------------
+    training_images = np.array([paddedSubImages[index, ...] for index in range(paddedSubImages.shape[0]) if index % 5 != 0])
+
+    validation_images = paddedSubImages[::5, ...]
+    validation_labels = subLabels[::5, ...]
+    validation_weights = pixel_weights[::5, ...]
+
+    training_means = [np.mean(training_images[:, 0, ...]), \
+                      np.mean(training_images[:, 1, ...]), \
+                      np.mean(training_images[:, 2, ...])]
+
+    training_stds = [np.std(training_images[:, 0, ...]), \
+                     np.std(training_images[:, 1, ...]), \
+                     np.std(training_images[:, 2, ...])]
+
+    for i in range(3):
+        validation_images[:, i, ...] -= training_means[i]
+
+    for i in range(3):
+        validation_images[:, i, ...] /= training_stds[i]
+
+
+    # Create HDF5 datasets WITH weightmaps
+    if WEIGHT_MODE == "individual" or WEIGHT_MODE == "override":
+
+        preputils.writeOrAppendHDF5(hdf5path + "_validation.h5", \
+                                    validation_images, validation_labels, validation_weights)
+
+    print "Wrote " + str(len(validation_images)) + " validation images to file."
+
+    return
+    #-------------------------------------------------------------------------------------------------------------
+
+
+
     # Data augmentation: Flip and rotate images
     # to get more training samples
     flippedRotatedImages = preputils.getFlipRotationCombinations(paddedSubImages, 3)
@@ -330,6 +365,7 @@ def convert2HDF5(path, hdf5path, weight_mode="individual", un_path=None, overrid
 
     # split images and labels into training and validation set
     ratio = 5 # split ratio, each x-th training sample used for validation
+
 
     # TRAINING set:
     training_images = [flippedRotatedImages[index, ...] for index in range(flippedRotatedImages.shape[0]) if index % ratio != 0]

@@ -41,6 +41,6 @@ def otsu4func(input_img):
 
 
 classes = 4
-inpath = "../training_4final/drosophila_4classdata_avgweight/"
+inpath = "../training_4final/unaltered_4class_avgweight_validation/"
 
 validate(otsu4func, classes, inpath, "otsu_validation/otsu4/")

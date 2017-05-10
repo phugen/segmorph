@@ -17,7 +17,7 @@ def GMMfunc(input_img):
     return labels
 
 
-classes = 4
-inpath = "../training_4final/drosophila_4classdata_avgweight/"
+classes = 3
+inpath = "../training_4final/unaltered_3class_avgweight_validation/"
 
-validate(GMMfunc, classes, inpath, "GMM_validation/gmm4/")
+validate(GMMfunc, classes, inpath, "GMM_validation/gmm3/")

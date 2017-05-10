@@ -26,6 +26,6 @@ def kmeans4func(input_img):
 
 
 classes = 4
-inpath = "../training_4final/drosophila_4classdata_avgweight/"
+inpath = "../training_4final/unaltered_4class_avgweight_validation/"
 
 validate(kmeans4func, classes, inpath, "kmeans_validation/kmeans4/")
