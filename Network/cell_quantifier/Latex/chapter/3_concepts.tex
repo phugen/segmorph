@@ -34,7 +34,7 @@ Image segmentation is one of the main challenges in image processing and has bee
 
 \noindent The threshold with the maximum between-class variance corresponds to a segmentation in which the pixels of each class have minimum \textbf{within}-class variance: This means that the pixels of each class are very much alike.
 
-\begin {figure}[!ht]
+\begin {figure}[!htb]
 	\begin {subfigure}[t]{0.3\linewidth}
 		\scalebox{0.65}{\inputpgf{img}{fig_otsu_histogram.pgf}}
 	\end {subfigure}
@@ -139,7 +139,7 @@ K-Means \cite{kmeans} is a general-purpose data clustering algorithm whose aim i
 
 The algorithm is initialized with $k$ either random or differently selected cluster centers. Then, the algorithm executes the two steps described in Algorithm \textbf{\ref{alg:kmeans_pseudo}} alternatingly until either a set number of iterations is reached or the overall difference between the current and the last centroid positions falls below a threshold $\epsilon$  (see Figure \textbf{\ref{fig:kmeans}}).
 
-\begin {algorithm}[!ht]
+\begin {algorithm}[!htb]
 	\caption{K-Means ($\epsilon$, iter\_max)}\label{alg:kmeans_pseudo}
 	\begin {algorithmic}[1]
 		\State iter = 0
@@ -154,7 +154,7 @@ The algorithm is initialized with $k$ either random or differently selected clus
 	\end{algorithmic}
 \end{algorithm}
 
-\begin {figure}[!ht]
+\begin {figure}[!htb]
 	\begin {center}
 		\includegraphics[scale=0.8]{img/fig_kmeans}
 	\end{center}
@@ -177,7 +177,7 @@ The algorithm is initialized with $k$ either random or differently selected clus
 
 \noindent This mixture model consists of $K$ models that each have different parameters $\mu$ and $\Sigma$ and have real weights $\pi_k \in \, (0, 1)$, with $\sum_{i=1}^{k} \pi_i = 1$. \cite[pp. 430]{bishop_pattern}
 
-%\begin {figure}[!ht]
+%\begin {figure}[!htb]
 %	\begin{center}
 %		\includegraphics[scale=0.75]{img/fig_normal_vs_gmm}
 %	\end{center}
@@ -185,7 +185,7 @@ The algorithm is initialized with $k$ either random or differently selected clus
 %	\label{fig:normal_vs_gmm}
 %\end {figure}
 
-\begin {figure}[!ht]
+\begin {figure}[!htb]
 	\centering
 	\includegraphics[scale=0.55]{img/fig_gmm_vs_gt}
 	\caption[Labels assigned by a GMM.]{\textbf{Left:} Input image. \textbf{Right:} Image labels in arbitrary colors, assigned by a GMM with $K=4$, fitted to the input image.}
@@ -233,7 +233,7 @@ Gradient Descent starts with a guess for the parameters in $\Theta$, iteratively
 
 \noindent For convex functions, Gradient Descent always finds the global minimum. For non-convex functions however, the algorithm may get stuck in a local minimum or at saddle points, also called ``false minima'' (see Figure \textbf{\ref{fig:grad_desc}}). Therefore, running the algorithm multiple times with random starting parameters or even taking informed guesses, given knowledge about the form of the function to be optimized, is advised. The step size $\eta$ has to be chosen depending on the shape of the function to minimize. If $\eta$ is too large, the algorithm will overshoot the minimum repeatedly and will never converge. If $\eta$ is too small, convergence will take a long time.\\
 
-\begin {figure}[!ht]
+\begin {figure}[!htb]
 	\begin{center}
 		\includegraphics[scale=0.9]{img/fig_grad_desc}
 	\end{center}
@@ -266,7 +266,7 @@ Gradient Descent starts with a guess for the parameters in $\Theta$, iteratively
 
 \noindent where $v$ is the momentum vector with one entry per gradient element and $\gamma$ is a modifier that changes the influence of the momentum on the update. \textbf{TODO: cite nesterov momentum, heavy ball etc.}
 
-	\begin {figure}[!ht]
+	\begin {figure}[!htb]
 		\begin{center}
 			\scalebox{0.75}{\input{img/fig_momentum.pgf}}
 		\end{center}
@@ -337,7 +337,7 @@ Either way, the gradient of $E_p$ has to be calculated. The Perceptron criterion
 
 \noindent Using this update rule leads to the training algorithm shown in \textbf{\ref{alg:perceptron_algorithm}}, which is applied to an example dataset in Figure \textbf{\ref{fig:perceptron}}.
 
-\begin {figure}[!ht]
+\begin {figure}[!htb]
 	\begin{center}
 		\includegraphics[scale=0.6]{img/fig_perceptron}
 	\end{center}
@@ -403,7 +403,7 @@ Afterwards, the sum $a^{(l)}_j$ is passed into an activation function $h$ to pro
 \end {align}
 
 \afterpage{
-	\begin {figure}[!ht]
+	\begin {figure}[!htb]
 		\begin{center}
 			\def\svgwidth{0.8\columnwidth}
 			\input{img/mlp.pdf_tex}
@@ -476,7 +476,7 @@ Luckily, there exists an iterative algorithm called \textit{Backpropagation} \ci
 
 \noindent The main advantage of the algorithm is that it scales linearly with the number of weights, i.e. the algorithm is in $\mathcal{O}(\#w)$. Furthermore, the fact that all $\delta^{(l)}$-values of a layer have to be calculated to calculate all $\delta^{(l-1)}$-values in the layer that precedes it naturally leads to vectorizing the algorithm layerwise in efficient implementations. \cite{nielsen_book, ng_lecture}\cite[pp. 241-245]{bishop_pattern}\\
 
-\begin {algorithm}[!ht]
+\begin {algorithm}[!htb]
 	\begin {algorithmic}[1]
 		\While {loss $\geq \epsilon$}
 			\State Input a data sample to the network and forward it through the entire network to calculate the current loss.
@@ -491,7 +491,7 @@ Luckily, there exists an iterative algorithm called \textit{Backpropagation} \ci
 
 
 \afterpage{
-	\begin {figure}[!ht]
+	\begin {figure}[!htb]
 		\begin{center}
 			\def\svgwidth{0.8\columnwidth}
 			\input{img/backprop.pdf_tex}
@@ -505,13 +505,13 @@ Luckily, there exists an iterative algorithm called \textit{Backpropagation} \ci
 
 \noindent Depending on how deep the networks are, i.e. how many hidden layers there are and how many neurons there are in these hidden layers, neural networks can learn very complex classification boundaries. The role of the non-linear activation functions in neural networks is to combine the linear classificators that all neurons implement in a non-linear way, giving the network its advantage over simpler, linear models like the Perceptron (see Figure \textbf{\ref{fig:mlp_trick}}).\\
 
-\begin {figure}[!ht]
+\begin {figure}[!htb]
 	\begin {subfigure}[b]{0.3\linewidth}
-		\scalebox{1.0}{\input{img/fig_mlp_trick.pgf}}
+		\scalebox{0.8}{\input{img/fig_mlp_trick.pgf}}
 	\end {subfigure}
 
 	\begin {subfigure}[b]{0.3\linewidth}
-		\scalebox{1.0}{\input{img/fig_mlp_trick2.pgf}}
+		\scalebox{0.9}{\input{img/fig_mlp_trick2.pgf}}
 	\end {subfigure}
 		\caption[Non-linear separation with an MLP.]{The problem from Figure \textbf{\ref{fig:perceptron}} revisited. A 2-layer MLP with 2 input neurons, 5 hidden neurons and 2 output neurons was trained on a non-linearly separable dataset for 10,000 iterations using Backpropagation and Gradient Descent. \textbf{Top row:} Activation outputs of all 5 hidden neurons for all input points. The larger and more saturated a point is, the higher the activation response, while activations with activations below zero are shown with a fixed base saturation so that the classes remain unambiguous. The segregation into high and low responses corresponds to a linear classification performed by each hidden neuron. \textbf{Bottom, from left to right:} The left figure shows the activations of the first output neuron. The right figure shows the predictions of the network applied to the original dataset, which is thus classified perfectly. The classification boundary, a combination of all hidden neuron outputs, appears as non-linear in the original dataset space.}
 		\label{fig:mlp_trick}

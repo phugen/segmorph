@@ -66,7 +66,7 @@ def fmeasure(labels, gt, numclasses):
 
 
 
-def find_snapshot(device_id, batchsize, modelfile, validation_path, snapshot_path, log_path, use_fmeasure):
+def find_snapshot(device_id, batchsize, modelfile, validation_path, snapshot_path, log_path, use_fmeasure, interval):
 
     # predict using GPU
     caffe.set_device(device_id)
@@ -165,7 +165,7 @@ def find_snapshot(device_id, batchsize, modelfile, validation_path, snapshot_pat
 
     with open(log_path + os.path.basename(modelfile)[:-9] + suffix, "w") as f:
         for idx,sc in enumerate(scores):
-            f.write(str((idx+1) * 1000) + "," + str(sc) + "\n")
+            f.write(str((idx+1) * interval) + "," + str(sc) + "\n")
 
     # find best snapshot and write its name into logfile
     bestnum = None
@@ -179,8 +179,8 @@ def find_snapshot(device_id, batchsize, modelfile, validation_path, snapshot_pat
     with open(log_path + "bestsnaps.txt", "a") as f:
         f.write(os.path.basename(modelfile) + ": " + snapshotnames[bestnum] + " with loss=" + str(scores[bestnum]) + "\n")
 
-    print "Wrote Cross-Entropy losses of snapshots of " + os.path.basename(modelfile) + " to a logfile into current folder."
-    print "Wrote the name of the best snapshot of " + os.path.basename(modelfile) + " a logfile into current folder."
+    print "Wrote loss values of snapshots of " + os.path.basename(modelfile) + " to a logfile in " + log_path + "."
+    print "Wrote the name of the best snapshot of " + os.path.basename(modelfile) + " to a logfile in " + log_path + "."
     print
 
 

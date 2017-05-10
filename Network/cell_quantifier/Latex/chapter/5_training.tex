@@ -8,7 +8,7 @@ The dataset used in the following experiments is made up of 90 microscopy images
 
 Another ``3-class'' version of the dataset was created in which the classes for Lamellopodia and Filopodia are fused into one, marked as RGB[255, 0, 0] (red). This was done because even for a human, separating Filopodia pixels from Lamellopodia pixels was hard to do because of the varying contrast in the images, and it was deemed valuable to see how a network performs if the ground truth data is more straight-forward to interpret.\\
 
-\begin {figure}[!ht]
+\begin {figure}[!htb]
 	
 	\begin {subfigure}[{position=b}]{0.6\linewidth}
 		\begin {center}
@@ -35,7 +35,7 @@ Usually, neural networks do not work well with input of an arbitrary form, which
 \label{subsec:normalization}
 Neural networks perform consistently better when the input data is normalized, that is, when it is transformed into a representation which has zero mean and unit variance (see Section \textbf{\ref{sec:weight_init}}). This is achieved by subtracting the mean value of the input image per channel from each channel of that image\footnote{Another approach often used is to compute a mean image from all images in the dataset and substract that from each image. However, in the following experiments, individual means were used.} and then dividing by the image's standard deviation (see Figure \textbf{\ref{fig:norma}}).
 
-\begin {figure}[!ht]
+\begin {figure}[!htb]
 	\begin{center}
 		\scalebox{1.0}{\input{img/fig_norma.pgf}}
 	\end{center}
@@ -50,14 +50,14 @@ CNNs usually need fixed input sizes because the combination of convolutions and 
 
 However, as the original Drosophila data is of a larger size, each input image is first padded by a mirror border and then tiled into sub-images of the appropriate size to be fed to the network. This has the added benefit of not having to use mirrored data at those tile edges which are not at the edges of the large input image - instead, real data is used. The tiling starts at the top-left corner and continues from left to right and from top to bottom. Yet, tiling naively would result in ``broken'' tiles at the right and bottom borders when the size of the mirror-padded  image is not evenly divisable by the network's input size, which was the case for the given input data. Consequently, these broken tiles were repaired by starting at the edges of the image and going ``backward'' in both dimensions until a tile of size $428 \times 428$ is created, which uses both the broken tile data as well as data that is also part of the previous tile. While this reuses the overlapping parts of the tiles, this way, the data of the broken tiles can also be used for training (see Figure \textbf{\ref{fig:tile_mirror_rotate}}).
 
-\noindent Moreover, a major problem with training deep Neural Networks is the immense amount of data required. Common image datasets such as MNIST\footnote{\url{http://yann.lecun.com/exdb/mnist/}}, CIFAR-100\footnote{\url{https://www.cs.toronto.edu/~kriz/cifar.html}} and ImageNet \cite{ILSVRC} contain 10,000 to 14.1 million images. Such numbers are absolutely out of reach for most biomedical applications as the data required is usually not publicly available. Manually labelling the data for this thesis took 30 - 45 minutes per image, making it impossible to create a large training set in a reasonable amount of time.
+\noindent Moreover, a major requirement for training deep Neural Networks is an immense amount of data. Common image datasets such as MNIST\footnote{\url{http://yann.lecun.com/exdb/mnist/}}, CIFAR-100\footnote{\url{https://www.cs.toronto.edu/~kriz/cifar.html}} and ImageNet \cite{ILSVRC} contain 10,000 to 14.1 million images. Such numbers are absolutely out of reach for most biomedical applications as the data required is usually not publicly available. Manually labelling the data for this thesis took 30 - 45 minutes per image, making it impossible to create a large training set in a reasonable amount of time.
 
 To nonetheless train a network to segment such images, \textit{data augmentation} is used to increase the number of samples. Data augmentation refers to some way of altering the available data in order to artificially create new data, which, for example, can be used to train a network to be invariant to certain transformations, although translational transformations can be disregarded as CNNs are naturally robust in the face of translated patterns (see Section \textbf{\ref{sec:CNN}}).
 
 An easy way to multiply the number of samples eightfold is to flip all images only vertically, followed by rotations of both the original images and their flipped counterparts by $90^{\circ}$, $180^{\circ}$ and $270^{\circ}$, as this yields all possible combinations that are possible by flipping and rotating in $90^{\circ}$ steps.\\
 
 
-\begin {figure}[!ht]
+\begin {figure}[!htb]
 	\begin {subfigure}[t]{0.5\linewidth}
 		\scalebox{0.5}{\input{img/fig_tile_mirror.pdf_tex}}
 
@@ -79,10 +79,10 @@ An easy way to multiply the number of samples eightfold is to flip all images on
 		\subsection{Elastic Deformation}
 Another data augmentation technique is \textit{Elastic Deformation} \cite{elastic}, which calculates a new image from an existing one by sampling random new positions for each pixel in the original image uniformly and multiplies them with a force parameter $\alpha$. Afterwards, the new coordinates are additionally smoothed by a Gaussian filter with standard deviation $\sigma$. The result is a slightly distorted image, and if $\alpha$ and $\sigma$ are chosen appropriately and the same deformation is applied to both an input image and its ground truth image, the resulting images are plausible enough to count as new samples to train on (see Figure \textbf{\ref{fig:elastic}}). This is especially useful for biological and medical use cases because Elastic Deformation produces naturally occuring transformations, such as cells being squashed slightly during microscopy, which helps the network learn to also classify these correctly. For the work in this thesis, the deformation parameters were set to $\alpha = 200$ and $\sigma = 10$.\\
 
-\noindent After performing data augmentation and removing all tiles that contained only pixels of one class as the result of the tiling (e.g. background pixels only), the dataset then contained 15632 image tiles and their corresponding labels. Then, the remaining tiles were split into a training and a validation set, containing 12497 and 1568 images, respectively.
+\noindent After tiling and removing all those tiles that contained only pixels of one class (e.g. background pixels only), the dataset then split into separate training and validation sets with a ratio of 4:1. The data augmentation was performed only for the training images, meaning that the network was tested on real images only. For both the 3- and 4-class datasets, the training set contained 12497 image tiles and their corresponding labels after applying augmentations, while the validation set contained 199 tiles cut from strictly unaltered images.
 
 
-\begin {figure}[!ht]
+\begin {figure}[!htb]
 	\begin{center}
 		\includegraphics[scale=0.80]{img/fig_elastic.png}
 	\end{center}
@@ -100,7 +100,7 @@ Choosing the number of hidden layers and the number of hidden neurons within the
 
 \textbf{TODO: Regularization term for SGD: https://stats.stackexchange.com/questions/29130/difference-between-neural-net-weight-decay-and-learning-rate}\\
 
-	\begin {figure}[!ht]
+	\begin {figure}[!htb]
 		\begin{center}
 			%\textbf{TODO: uncomment in code}
 			\scalebox{0.75}{\input{img/fig_overfit.pgf}}
@@ -139,7 +139,7 @@ However, this might prematurely stop the training in phases where the validation
 \noindent meaning that training is stopped when the generalization loss is too high and the training error has become stable, making it unlikely for the validation loss to recover (see Figure \textbf{\ref{fig:early_stopping}}). However, determining correct parameters and mathematically analyzing the benefits of Early Stopping is not easy, making this approach largely heuristical. Additionally, Caffe currently does not implement an easy way to apply these algorithms directly to the training, making it necessary to manually monitor training trends in practice while saving the state of the trained weights frequently so that the training can be interrupted when results stop improving.
 
 
-\begin {figure}[!ht]
+\begin {figure}[!htb]
 	\begin{center}
 		\scalebox{0.7}{\input{img/fig_early_stopping.pgf}}
 	\end{center}
@@ -215,7 +215,7 @@ The way BN reduces this shift is by re-normalizing activations $x_i$ within the 
 
 \noindent with $\alpha_f = 3$, $T_1 = 100$ and $T_2 = 600$. This factor $\alpha$ prevents the unlabeled loss to dominate the weight updates in a stage of training where the network still makes very incorrect predictions. Intuitively, the network confirms its own predictions and updates the weights more decisively by increasing confidence for the update by selecting the dominant class in each pseudo-label.\\
 
-\begin {figure}[!ht]
+\begin {figure}[!htb]
 	\begin{center}
 		\scalebox{0.45}{\input{img/fig_pseudo_label.pdf_tex}}
 	\end{center}

@@ -34,7 +34,7 @@ All variants of the U-Net were trained on a NVIDIA TITAN X GPU (12 GB GDDR5X RAM
 
 The progress of the training is shown in Figure \textbf{\ref{fig:weighted_f1_training}}. The F-Measure scores provide the insight that the proper cells (green) can be discerned from the background much more easily than the Lamellopodia (red) and Filopodia (blue), which mirrors the problems when manually labelling the images. Reducing the dataset to three classes by merging the red and blue classes improves the results for both networks.\\
 
-\begin {figure}[!ht]
+\begin {figure}[!htb]
 	\begin {subfigure}[b]{0.4\linewidth}
 		\scalebox{0.65}{\input{img/fig_train_unet_weighted_3.pgf}}
 		\caption{\textbf{Unet\_W\_3}}
@@ -61,7 +61,7 @@ The progress of the training is shown in Figure \textbf{\ref{fig:weighted_f1_tra
 
 \begin {table}
 	\begin{flushleft}
-		\begin {tabular}[!ht]{|l|l|l|l|l|}
+		\begin {tabular}[!htb]{|l|l|l|l|l|}
 			\hline\multicolumn{5}{|l|}{\textbf{3-class Micro F-Measure Scores}} \\ \hline
 			\textbf{Network}& \textbf{Class 1}& \textbf{Class 2}& \textbf{Class 3}& \textbf{Overall} \\ \hline
 			Unet\_W\_3& \cellcolor{green!25}0.938013& \cellcolor{green!25}0.980397& \cellcolor{green!25}0.854026& \cellcolor{green!25}0.96198 \\ \hline
@@ -72,7 +72,7 @@ The progress of the training is shown in Figure \textbf{\ref{fig:weighted_f1_tra
 			Unet\_F1\_3& 0.834&  0.970874& 0.774561& 0.863294 \\ \hline
 		\end {tabular}
 		\vspace{0.5cm}\\
-		\begin {tabular}[!ht]{|l|l|l|l|l|l|}
+		\begin {tabular}[!htb]{|l|l|l|l|l|l|}
 			\hline\multicolumn{6}{|l|}{\textbf{4-class Micro F-Measure Scores}} \\ \hline
 			\textbf{Network}& \textbf{Class 1}& \textbf{Class 2}& \textbf{Class 3}& \textbf{Class 4}& \textbf{Overall} \\ \hline
 			Unet\_W\_4& \cellcolor{green!25}0.63248& 0.978377& \cellcolor{green!25}0.660174& 0.927164& 0.934388 \\ \hline
@@ -95,7 +95,7 @@ Again, the network was trained on the 3- and 4-class datasets, this time, consid
 The training progress is shown in Figure \textbf{\ref{fig:weighted_weighted_batchnorm_training}}. As expected, the networks converge much faster when using Batch Normalization, taking only about 5 epochs of training until convergence, which is a five-fold reduction of the needed training time.\\
 
 
-\begin {figure}[!ht]
+\begin {figure}[!htb]
 	\begin {subfigure}[b]{0.4\linewidth}
 		\scalebox{0.65}{\input{img/fig_train_unet_weighted_3.pgf}}
 		\caption{\textbf{Unet\_W\_3}}
@@ -122,7 +122,7 @@ The training progress is shown in Figure \textbf{\ref{fig:weighted_weighted_batc
 
 \begin {table}
 	\begin{flushleft}
-		\begin {tabular}[!ht]{|l|l|l|l|l|}
+		\begin {tabular}[!htb]{|l|l|l|l|l|}
 			\hline\multicolumn{5}{|l|}{\textbf{3-class Micro F-Measure Scores}} \\ \hline
 			\textbf{Network}& \textbf{Class 1}& \textbf{Class 2}& \textbf{Class 3}& \textbf{Overall} \\ \hline
 			Unet\_W\_3& \cellcolor{green!25}0.938013& \cellcolor{green!25}0.980397& \cellcolor{green!25}0.854026& \cellcolor{green!25}0.96198 \\ \hline
@@ -133,7 +133,7 @@ The training progress is shown in Figure \textbf{\ref{fig:weighted_weighted_batc
 			Unet\_W\_BN\_3& 0.834678& 0.977221& 0.797476& 0.87166\\ \hline
 		\end {tabular}
 		\vspace{0.5cm}\\
-		\begin {tabular}[!ht]{|l|l|l|l|l|l|}
+		\begin {tabular}[!htb]{|l|l|l|l|l|l|}
 			\hline\multicolumn{6}{|l|}{\textbf{4-class Micro F-Measure Scores}} \\ \hline
 			\textbf{Network}& \textbf{Class 1}& \textbf{Class 2}& \textbf{Class 3}& \textbf{Class 4}& \textbf{Overall} \\ \hline
 			Unet\_W\_4& 0.63248& 0.978377& 0.660174& 0.927164& 0.934388 \\ \hline
@@ -152,7 +152,7 @@ The training progress is shown in Figure \textbf{\ref{fig:weighted_weighted_batc
 
 In the next round of tests, the effect of shuffling on the training of weighted Cross-Entropy Loss networks with Batch Normalization was evaluated, using the same training parameters as before - especially the same number of epochs because shuffling was expected to either reduce the number of epochs necessary for convergence via speeding up the learning process, so that after the shuffling tests, or alternatively make the network take longer to converge, but gaining additional validation accuracy in return. Depending on the results, the epoch number can then be reduced to whichever number is necessary, which should provide a large training speedup in comparison to the prior number of epochs in either case. The networks with enabled shuffling have an additional \textbf{\_S} as part of their name. The training progress is shown in Figure \textbf{\ref{fig:weighted_batchnorm_shuffle_training}}.
 
-\begin {figure}[!ht]
+\begin {figure}[!htb]
 	\begin {subfigure}[b]{0.4\linewidth}
 		\scalebox{0.65}{\input{img/fig_train_unet_weighted_batchnorm_3.pgf}}
 		\caption{\textbf{Unet\_W\_BN\_3}}
@@ -181,7 +181,7 @@ In the next round of tests, the effect of shuffling on the training of weighted 
 
 \begin {table}
 	\begin{flushleft}
-		\begin {tabular}[!ht]{|l|l|l|l|l|}
+		\begin {tabular}[!htb]{|l|l|l|l|l|}
 			\hline\multicolumn{5}{|l|}{\textbf{3-class Micro F-Measure Scores}} \\ \hline
 			\textbf{Network}& \textbf{Class 1}& \textbf{Class 2}& \textbf{Class 3}& \textbf{Overall} \\ \hline
 			Unet\_W\_BN\_3& 0.930361&  0.979158& 0.842506& 0.959217\\ \hline
@@ -192,7 +192,7 @@ In the next round of tests, the effect of shuffling on the training of weighted 
 			Unet\_W\_BN\_S\_3& & & & \\ \hline
 		\end {tabular}
 		\vspace{0.5cm}\\
-		\begin {tabular}[!ht]{|l|l|l|l|l|l|}
+		\begin {tabular}[!htb]{|l|l|l|l|l|l|}
 			\hline\multicolumn{6}{|l|}{\textbf{4-class Micro F-Measure Scores}} \\ \hline
 			\textbf{Network}& \textbf{Class 1}& \textbf{Class 2}& \textbf{Class 3}& \textbf{Class 4}& \textbf{Overall} \\ \hline
 			Unet\_W\_BN\_4& 0.656197& 0.980057& 0.730906& 0.930746& 0.9441\\ \hline
@@ -211,7 +211,7 @@ In the next round of tests, the effect of shuffling on the training of weighted 
 
 \noindent As the next evaluation step, the effect of the weight initialization on \textbf{Unet\_W\_BN\_S} was compared, using the Xavier and the MSRA initializations. It was believed that MSRA should work better for all networks using ReLU activations or its variations. The networks up to this point used the Xavier initialization, so the networks with MSRA initialization received an additional \textbf{\_MS} tag. The number of epochs was reduced to \textbf{TODO}. The training progress is shown in Figure \textbf{\ref{fig:weighted_batchnorm_shuffle_msra_training}}.\\
 
-\begin {figure}[!ht]
+\begin {figure}[!htb]
 	\begin {subfigure}[b]{0.4\linewidth}
 		%\scalebox{0.65}{\input{img/fig_train_unet_weighted_batchnorm_shuffle_msra_3.pgf}}
 		\caption{\textbf{Unet\_W\_BN\_S\_MS\_3}}
@@ -231,7 +231,7 @@ In the next round of tests, the effect of shuffling on the training of weighted 
 
 \begin {table}
 	\begin{flushleft}
-		\begin {tabular}[!ht]{|l|l|l|l|l|}
+		\begin {tabular}[!htb]{|l|l|l|l|l|}
 			\hline\multicolumn{5}{|l|}{\textbf{3-class Micro F-Measure Scores}} \\ \hline
 			\textbf{Network}& \textbf{Class 1}& \textbf{Class 2}& \textbf{Class 3}& \textbf{Overall} \\ \hline
 			Unet\_W\_BN\_S\_3& &  & & \\ \hline
@@ -242,7 +242,7 @@ In the next round of tests, the effect of shuffling on the training of weighted 
 			Unet\_W\_BN\_S\_MS\_3& & & & \\ \hline
 		\end {tabular}
 		\vspace{0.5cm}\\
-		\begin {tabular}[!ht]{|l|l|l|l|l|l|}
+		\begin {tabular}[!htb]{|l|l|l|l|l|l|}
 			\hline\multicolumn{6}{|l|}{\textbf{4-class Micro F-Measure Scores}} \\ \hline
 			\textbf{Network}& \textbf{Class 1}& \textbf{Class 2}& \textbf{Class 3}& \textbf{Class 4}& \textbf{Overall} \\ \hline
 			Unet\_W\_BN\_S\_4& & & & & \\ \hline
@@ -259,7 +259,7 @@ In the next round of tests, the effect of shuffling on the training of weighted 
 
 Finally, the choice of the activation function used throughout the network was evaluated. The previous networks used ReLU activations, which were then replaced with LReLU (\textbf{\_LR}), PReLU (\textbf{\_PR}) and ELU (\textbf{\_EL}) activations. The training progress is shown in Figure \textbf{\ref{fig:weighted_batchnorm_shuffle_msra_acts_training}}.\\
 
-\begin {figure}[!ht]
+\begin {figure}[!htb]
 	\begin {subfigure}[b]{0.4\linewidth}
 		%\scalebox{0.65}{\input{img/fig_train_unet_weighted_batchnorm_shuffle_msra_3.pgf}}
 		\caption{\textbf{Unet\_W\_BN\_S\_3}}
@@ -304,7 +304,7 @@ Finally, the choice of the activation function used throughout the network was e
 
 \begin {table}
 	\begin{flushleft}
-		\begin {tabular}[!ht]{|l|l|l|l|l|}
+		\begin {tabular}[!htb]{|l|l|l|l|l|}
 			\hline\multicolumn{5}{|l|}{\textbf{3-class Micro F-Measure Scores}} \\ \hline
 			\textbf{Network}& \textbf{Class 1}& \textbf{Class 2}& \textbf{Class 3}& \textbf{Overall} \\ \hline
 			Unet\_W\_BN\_S\_MS\_3& &  & & \\ \hline
@@ -319,7 +319,7 @@ Finally, the choice of the activation function used throughout the network was e
 			Unet\_W\_BN\_S\_MS\_EL\_3& &  & & \\ \hline
 		\end {tabular}
 		\vspace{0.5cm}\\
-		\begin {tabular}[!ht]{|l|l|l|l|l|l|}
+		\begin {tabular}[!htb]{|l|l|l|l|l|l|}
 			\hline\multicolumn{6}{|l|}{\textbf{4-class Micro F-Measure Scores}} \\ \hline
 			\textbf{Network}& \textbf{Class 1}& \textbf{Class 2}& \textbf{Class 3}& \textbf{Class 4}& \textbf{Overall} \\ \hline
 			Unet\_W\_BN\_S\_MS\_4& & & & & \\ \hline
@@ -344,7 +344,7 @@ Finally, the choice of the activation function used throughout the network was e
 
 \begin {table}
 	\begin{flushleft}
-		\begin {tabular}[!ht]{|l|l|l|l|l|}
+		\begin {tabular}[!htb]{|l|l|l|l|l|}
 			\hline\multicolumn{5}{|l|}{\textbf{3-class Micro F-Measure Scores}} \\ \hline
 			\textbf{Network}& \textbf{Class 1}& \textbf{Class 2}& \textbf{Class 3}& \textbf{Overall} \\ \hline
 			\textbf{TODOnetwork}\_3& & & &  \\ \hline
@@ -359,7 +359,7 @@ Finally, the choice of the activation function used throughout the network was e
 			GMM\_3& 0.658694& 0.921221& 0.475517& 0.686258 \\ \hline
 		\end {tabular}
 		\vspace{0.5cm}\\
-		\begin {tabular}[!ht]{|l|l|l|l|l|l|}
+		\begin {tabular}[!htb]{|l|l|l|l|l|l|}
 			\hline\multicolumn{6}{|l|}{\textbf{4-class Micro F-Measure Scores}} \\ \hline
 			\textbf{Network}& \textbf{Class 1}& \textbf{Class 2}& \textbf{Class 3}& \textbf{Class 4}& \textbf{Overall} \\ \hline
 			\textbf{TODOnetwork}\_4& & & & &  \\ \hline

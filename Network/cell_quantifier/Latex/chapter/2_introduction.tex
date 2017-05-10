@@ -5,7 +5,7 @@ Medical and biological image analysis usually is a time-consuming task that can 
 
 These microscopy images contain four regions of interest: The background, containing no cell material, the cell proper, the \textit{Lamellipodium} and the \textit{Filopodia}. The latter two terms describe part of the cytoplasm of a cell, which can be exuded from the cell proper in the form of a broad, translucent area, the Lamellipodium, and long, thin spikes traversing the Lamellipodium and the space beyond it, the Filopodia. These cell parts play roles in cell movement during wound healing and cell infection. Even for human experts, correctly identifying these areas is not always possible. Unfortunately, the stained samples are sensitive to light: if the samples are illuminated for too long, they deteriorate and become unusuable. Also, samples are often stacked while performing microscopy to create 3D models. When viewed as individual 2D images, these circumstances lead to images that are often non-uniformly lit, sometimes noisy and which often contain ``ghost'' cells that are actually parts of cells in the sample stack layer below the layer the actual image was taken from. In addition, since the cells are alive and moving about, movement blur also occurs occasionally (see Figure \textbf{\ref{fig:cell_example}}). All of this combined makes automated image segmentation and cell analysis a difficult task.\\
 
-\begin {figure}[!ht]	
+\begin {figure}[!htb]	
 	\centering
 	\begin {subfigure}[t]{0.50\linewidth}
 		%\textbf{TODO: Uncomment this}

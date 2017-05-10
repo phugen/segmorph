@@ -26,18 +26,19 @@ a values of the kernel matrix are used as the outputs of $f$ and can then be int
 
 \[ F(x, y) = \sum \limits_i \sum \limits_j I(x + i, y + j) \, f(i, j) \,, \]
 
-which is a more intuitive description of what a convolution amounts to, especially in the context of Figure \textbf{\ref{fig:convolution}}, which shows how a convolution is applied to an image. \cite[pp. 32-33]{machine_vision}\\
+which is a more intuitive description of what a convolution amounts to, especially in the context of Figure \textbf{\ref{fig:convolution}}, which shows how a convolution is applied to an image. 
+
+Kernels with even dimensions can also be used. Because there exists no ``real'' center value in the neighborhood, an arbitrary value is chosen instead. For an example of a $2 \times 2$ kernel, one could choose the value to be calculated at each convolution step to be the value corresponding to the top left of the kernel. \cite[pp. 32-33]{machine_vision}\\
 
 However, there also exist definitions of the convolution operation that compute outputs for values in $I$ that are on the border of the matrix, this means that some neighborhood values in $I$ are not defined because the neighborhood would extend over the boundaries of the matrix. In such out-of-bounds cases (OOB), several methods exist to nonetheless perform a convolution. Commonly, OOB values are set to zero and the convolution is performed as usual. An alternative is to treat the matrix like a torus and wrap around once the border is reached.
 
 A normal convolution as defined above thus shrinks the input matrix each time it is applied because it only assigns new values to elements that have a valid neighborhood. For example, if a $3 \times 3$ kernel is used, a 1-value border of the data is lost. This definition of convolution is used in the following sections.\\
 
-\begin {figure}[!ht]
+\begin {figure}[!htb]
 	\begin{center}
-		%\textbf{TODO: Uncomment this}
-		\includegraphics[scale=0.55]{img/fig_convolution}
+		\includegraphics[scale=0.45]{img/fig_convolution}
 	\end{center}
-	\caption[Matrix convolution.]{A single step of a matrix convolution on an input matrix $I$, using a $3 \times 3$ kernel $f$, producing an output $x'$. The inspected neighborhood of the image value $x$, marked in orange, is overlayed by the kernel shown in green. Note that the output is smaller because values without valid neighborhoods are not calculated.}
+	\caption[Matrix convolution.]{A single step of a matrix convolution on an input matrix $I$, using a $3 \times 3$ kernel $f$, producing an output $x'$ in an output matrix $F$. The inspected neighborhood (red, dashed square in $I$ and $f$) of the image value $x$, marked in orange, is given by alignment of $x$ with the kernel center. Note that the output matrix is smaller than the input matrix because values without valid neighborhoods are not calculated.}
 	\label{fig:convolution}
 \end {figure}
 
@@ -57,9 +58,9 @@ Finally, the resulting downsampled activation maps are fed into a fully-connecte
 
 For an example of a simple CNN architecture, see Figure \textbf{\ref{fig:convnet}}.
 
-\begin {figure}[!ht]
+\begin {figure}[!htb]
 	\begin{flushleft}
-		\includegraphics[scale=0.60]{img/fig_convnet}
+		\includegraphics[scale=0.65]{img/fig_convnet}
 	\end{flushleft}
 	\caption[A small Convolutional Neural Network.]{A small Convolutional Neural Network. For simplicity, most neuron connections are not shown explicitly. \textbf{a):} Input layer. The input size is $6 \times 6 \times 3$, while the filter size is $3 \times 3 \times 3$. Neurons with valid convolution neighborhoods shown in gray. \textbf{b):} Five feature maps with size $4 \times 4 \times 3$ that are the result of applying five different convolution filters to the input, which are then passed into the activation function $h$ to create activation maps. \textbf{c):} Results of a Maximum Pooling operation with sizes $2 \times 2$ and stride $2$ applied to the activation maps. The colors indicate the downsampled position of the maximum activation in a pooling region. \textbf{d):} Fully-connected output layer that calculates the network outputs via applying the output function $\sigma$. The max-pooled values have been rearranged into a column for clarity.}
 	\label{fig:convnet}
@@ -157,7 +158,7 @@ and its derivative
 \noindent where $\alpha$ is a learnable parameter.
 
 
-\begin {figure}[!ht]
+\begin {figure}[!htb]
 	\begin{center}
 	\begin {subfigure}[b]{0.32\linewidth}
 		\scalebox{0.65}{\input{img/fig_sigmoid.pgf}}
@@ -300,7 +301,7 @@ One way to construct such a weight map is given in \cite{unet}, using the weight
 
 For this thesis, the weight map was generated using average weighting for the class weights $w_c$ and omitting the modifier term (see Figure \textbf{\ref{fig:weight_map}}). The reason for this is that the modifier term was originally introduced in \cite{unet} to give a large weight to narrow strips of background pixels that were artificially inserted to act as a border between two overlapping cells. Detecting these borders was not a priority, and since calculating the distance to the next non-background pixel for each pixel takes some time even when employing spatial search data structures such as a PR-Tree,  a simple weight map rather than a complex one was adopted during early network tests where the data set was still subject to change and had to be recalculated occasionally.\\
 
-\begin {figure}[!ht]
+\begin {figure}[!htb]
 	\begin{center}
 	\begin {subfigure}[b]{0.3\linewidth}
 		\includegraphics{img/fig_weights_normal.png}
@@ -315,7 +316,7 @@ For this thesis, the weight map was generated using average weighting for the cl
 
 \end {figure}
 
-\noindent The calculation of the $\delta$ value for Backpropagation is defined as follows:\footnote{The usual index $j$ for $\delta$ was omitted here and in the derivative of the Softmax because there is only one neuron in the loss layer anyway. Here, $j$ instead refers to the $j$th element of the vector $a$.} \\
+\noindent The calculation of the $\delta$ value for Backpropagation is defined as follows:\footnote{The usual index $j$ for $\delta$ was omitted here and in the derivative of the Softmax because there is only one neuron in the loss layer anyway. Here, $j$ instead refers to the $j$th element of the vector $a$.}
 
 
 \begin {align}
@@ -376,13 +377,23 @@ During the backward pass, the gradients are also calculated per class in a simil
 \label{sec:unet}
 The U-Net \cite{unet} is a CNN architecture which aims to produce segmentation maps for images of cells. It was implemented using Caffe \cite{caffe}, a CNN library that allows CNN layers - such as the ones described in the previous section - to be put together to form a network.\\
 
-The U-Net first performs a series of standard computations, alternating $3 \times 3$ convolutions followed by ReLU activations and $2 \times 2$ Maximum Pooling downsampling operations with stride $2$ while steadily increasing the number of filters after each pooling operation from 64 up to 1024. It differs from normal CNNs in that it then begins alternating stride $2 \times 2$ upsampling operations with $3 \times 3$ convolutions and thus enlarges the feature maps again while reducing the number of filters in a way that parallels the downsampling by Maximum Pooling. This results in a nearly symmetric architecture which gives the network its name. The upsampling operations are often called \textit{deconvolution layers} and the way they work can be thought of as padding the image with a zero-border with a width of two (in the case of $3 \times 3$ filters) first and then convoluting it normally, which \textbf{adds} a 1-value border to the image, enlarging it again. For the case in which a stride of $2 \times 2$ is used, the \textbf{TODO} \footnote{While zero-padding works well to explain the idea behind the operation, the concept of \textit{transposed convolutions}, as described in \cite[p. 18]{transposed_conv} and \cite{up_conv} is used in frameworks like Caffe because it is more computationally efficient.} \cite[p. 14]{transposed_conv}\cite{up_conv}
+The U-Net first performs a series of standard computations, alternating $3 \times 3$ convolutions followed by ReLU activations and $2 \times 2$ Maximum Pooling downsampling operations with stride $2$ while steadily increasing the number of filters after each pooling operation from 64 up to 1024. It differs from normal CNNs in that it then begins alternating stride $2 \times 2$ upsampling operations with $3 \times 3$ convolutions and thus enlarges the feature maps again while reducing the number of filters in a way that parallels the downsampling by Maximum Pooling. This results in a nearly symmetric architecture which gives the network its name. The upsampling operations are often called \textit{deconvolution layers} and appeared first as part of a visualization strategy for CNNs outlined in \cite{zeiler_visual}. The way they work for upsampling by a factor of two in both dimensions can be thought of as padding the image with a zero-border with a width of one, while also inserting additional zero values inbetween the original values and then convoluting the resulting image normally with a stride of 1, using a $2 \times 2$ kernel. This approximately reverses the Maximum Pooling operation (see Figure \textbf{\ref{fig:upconvolution}}). \cite[p. 14]{transposed_conv}\cite{up_conv}
 
-The network is also a fully-convolutional network, so it does not have a final fully-connected layer to perform pixel classification. Instead, a $1 \times 1$ convolution with a number of filters that corresponds to the number of classes in the final segmentation map is used for classification.
+\begin {figure}[!hbt]
+	\begin{center}
+		\includegraphics[scale=0.50]{img/fig_upconvolution}
+	\end{center}
+	\caption[Matrix upconvolution.]{The deconvolution or upsampling operation. This example shows upsampling by a factor of two of an input $I$, which is first padded with zero values to create $I'$, and then is convoluted with the $2 \times 2$ filter $f$. In this example, the ``center'' of the convolution is assumed to be the top left value. The dashed, red squares show the neighborhood of the first convolution step on $I'$ and the corresponding output in $F$. The additional zero values in $F$ can then be discarded, resulting in a approximate inversion of the Maximum Pooling operation. \footnotemark}
+	\label{fig:upconvolution}
+\end {figure}
+
+ \footnotetext{While zero-padding works well to explain the idea behind the operation, the concept of \textit{transposed convolutions}, as described in \cite[p. 18]{transposed_conv} and \cite{up_conv} is used in frameworks like Caffe because it is more computationally efficient.}
+
+The network is also a fully-convolutional network, so it does not have a final fully-connected layer. Instead, in order to classify each pixel, a $1 \times 1$ convolution with a number of filters that corresponds to the number of classes in the final segmentation map is used.
 
 Additionally, the network allows feature concatenation by using shortcut connections (called ``skip-layer connections'' in \cite{bishop_pattern}), taking the non-padded part of the feature maps from the corresponding sampling level after each upsampling operation and concatenating them with the upsampled maps. This is done to boost the precision of the segmentation output - downsampling reduces locality information, which is nonetheless needed when creating a high-definition segmentation map, so this is a way to reduce the complexity of the network while still achieving precise results (see Figure \textbf{\ref{fig:unet_arch}} for a graphical representation of the U-Net architecture).\\
 
-\begin {figure}[!ht]
+\begin {figure}[!htb]
 	\scalebox{0.75}{\input{img/unet_arch.pdf_tex}}
 	\caption[The U-Net architecture.]{The U-Net architecture. The white numbers indicate the number of filters per convolution, while the orange numbers show the number of feature maps that are taken from earlier layers for concatenation \textbf{before} downsampling is performed. In this example, the input is a grayscale image and therefore has one channel only. $C$ is the number of output classes to segment the image into, i.e. 3 or 4 depending on which dataset is used.}
 	\label{fig:unet_arch}

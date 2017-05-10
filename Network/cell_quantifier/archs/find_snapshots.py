@@ -3,7 +3,7 @@
 # find_best_snapshot.py .
 #
 # The configuration file is expected to have a format of
-# device_id,path/to/deploy.prototxt,path/to/validation_hdf5/,path/to/snapshots/,use_fmeasure\n
+# device_id,path/to/deploy.prototxt,path/to/validation_hdf5/,path/to/snapshots/,use_fmeasure,test_interval\n
 #
 # The last parameter can be either "yes" or "no" and overrides the normal Cross-Entropy loss calculation.
 
@@ -38,9 +38,10 @@ with open(sys.argv[3], "r") as f:
         validation_path = split[2]
         snapshot_path = split[3]
         use_fmeasure = bool(split[4])
+        interval = int(split[5])
 
         # get best snapshot and save in log_path
-        ret = find_snapshot(device_id, batchsize, modelfile, validation_path, snapshot_path, log_path, use_fmeasure)
+        ret = find_snapshot(device_id, batchsize, modelfile, validation_path, snapshot_path, log_path, use_fmeasure, interval)
         if ret == -1:
             exit(-1)
 
