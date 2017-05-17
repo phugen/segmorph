@@ -4,7 +4,20 @@ import numpy as np
 import time
 
 
-def GMMfunc(input_img):
+def GMMfunc3(input_img):
+    ''' fit GMM and return predicted labels. '''
+
+    dims = input_img.shape[0:2]
+    rowimg = input_img.reshape((input_img.size), 1)
+    gmm = mixture.GaussianMixture(3, covariance_type='full')
+    gmm.fit(rowimg)
+    labels = gmm.predict(rowimg)
+    labels = labels.reshape(dims)
+
+    return labels
+
+
+def GMMfunc4(input_img):
     ''' fit GMM and return predicted labels. '''
 
     dims = input_img.shape[0:2]
@@ -20,4 +33,4 @@ def GMMfunc(input_img):
 classes = 3
 inpath = "../training_4final/unaltered_3class_avgweight_validation/"
 
-validate(GMMfunc, classes, inpath, "GMM_validation/gmm3/")
+validate(GMMfunc3, classes, inpath, "GMM_validation/gmm3/")

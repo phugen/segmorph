@@ -25,7 +25,7 @@ def kmeans4func(input_img):
     return labels
 
 
-classes = 4
-inpath = "../training_4final/unaltered_4class_avgweight_validation/"
+classes = 3
+inpath = "../training_4final/unaltered_3class_avgweight_validation/"
 
-validate(kmeans4func, classes, inpath, "kmeans_validation/kmeans4/")
+validate(kmeans3func, classes, inpath, "kmeans_validation/kmeans3/")

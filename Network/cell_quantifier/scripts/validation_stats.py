@@ -22,6 +22,7 @@ def RGB_image_to_labels(image, numclasses):
     # get bool masks for each color component
     if numclasses == 4:
         bluemask = image[..., 2] == 255
+
     greenmask = image[..., 1] == 255
     redmask = image[..., 0] == 255
 
@@ -29,6 +30,7 @@ def RGB_image_to_labels(image, numclasses):
     # now simply use masks to place appropriate integer labels for each value
     if numclasses == 4:
         label_array_int[bluemask == True] = 3
+
     label_array_int[greenmask == True] = 2
     label_array_int[redmask == True] = 1
 

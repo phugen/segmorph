@@ -32,7 +32,7 @@ def reduc(colors, thresh):
 def reduce_to_rgbk(image, thresh=20):
     """ Does primitive thresholding by setting max channel to
     255, others to 0, unless the maximum channel is below a threshold.
-    If that is the case, the pixel is set black = (0, 0, 0). """
+    If that is the case, the pixel is set to black = (0, 0, 0). """
 
     h, w, c = image.shape
     temp = image.reshape(h*w, c)
@@ -44,8 +44,8 @@ def reduce_to_rgbk(image, thresh=20):
 
 
 def elastic_transform(image, alpha, sigma, random_state=None):
-    """Elastic deformation of images as described in [Simard2003]_.
-    .. [Simard2003] Simard, Steinkraus and Platt, "Best Practices for
+    """Elastic deformation of images as described in
+       [Simard2003] Simard, Steinkraus and Platt, "Best Practices for
        Convolutional Neural Networks applied to Visual Document Analysis", in
        Proc. of the International Conference on Document Analysis and
        Recognition, 2003.
@@ -57,16 +57,17 @@ def elastic_transform(image, alpha, sigma, random_state=None):
 
     shape = image.shape
 
-    # create random shifting vectors for each pixel
-    dx = gaussian_filter((random_state.rand(*shape[0:2]) * 2 - 1), sigma, mode="constant", cval=0) * alpha
-    dy = gaussian_filter((random_state.rand(*shape[0:2]) * 2 - 1), sigma, mode="constant", cval=0) * alpha
 
-    # shift pixels using linear interpolation
-    # (interpolate each channel in the same way)
+    # create random displacement vectors for each pixel
+    # from a Gaussian distribution and amplify them by alpha
+    dx = gaussian_filter((random_state.rand(*shape[0:2]) * 2 - 1), sigma, mode="reflect") * alpha
+    dy = gaussian_filter((random_state.rand(*shape[0:2]) * 2 - 1), sigma, mode="reflect") * alpha
+
+    # apply displacement vectors to coordinate mesh to get new pixel positions
     x, y = np.meshgrid(np.arange(shape[0]), np.arange(shape[1]), indexing='ij')
     indices = np.reshape(x+dx, (-1, 1)), np.reshape(y+dy, (-1, 1))
 
-    # use nearest neighbor interpolation to preserve labels
+    # calculate distortion in each channel using bicubic interpolation
     r = map_coordinates(image[..., 0], indices, order=3).reshape(shape[0:2])
     g = map_coordinates(image[..., 1], indices, order=3).reshape(shape[0:2])
     b = map_coordinates(image[..., 2], indices, order=3).reshape(shape[0:2])
@@ -90,7 +91,7 @@ if len(sys.argv) < 2:
 inpath = sys.argv[1]
 outpath = sys.argv[2]
 
-# transform all images in on the inpath
+# transform all images on the inpath
 imagepaths = glob.glob(inpath + "\*.png")
 IMG_NO = len(imagepaths)
 
@@ -99,11 +100,10 @@ if(IMG_NO == 0):
     exit(-1)
 
 
-# values for random deformation generation
 bar = progressbar.ProgressBar()
 for imgno in bar(range(len(imagepaths))):
 
-    # generate new deformation params every second image
+    # generate new distortion params every second image
     if imgno % 2 == 0:
         elastic_params = np.random.RandomState(None)
         start_state = elastic_params.get_state()
@@ -115,8 +115,8 @@ for imgno in bar(range(len(imagepaths))):
     image = scipy.ndimage.imread(imagepaths[imgno], mode="RGB")
     pathto, fname = os.path.split(imagepaths[imgno])
 
-    # image is a label, deform with previous params to match associated image
-    # and quantize colors because of linear interpolation
+    # image is a label, distort with previous params to match associated image
+    # and quantize colors because of interpolation
     if imagepaths[imgno].endswith("_label.png"):
         outfile = outpath + fname[:-10] + "_AUGMENTED_label.png"
         trans = elastic_transform(image, 200, 10, random_state=elastic_params)
@@ -127,8 +127,8 @@ for imgno in bar(range(len(imagepaths))):
         trans = elastic_transform(image, 200, 10, random_state=elastic_params)
         outfile = outpath + fname[:-4] + "_AUGMENTED.png"
 
-    # save deformed image
-    scipy.misc.toimage(trans, cmin=0, cmax=255).save(outfile)
+    # save distorted image
+    scipy.misc.toimage(trans).save(outfile)
 
 
 print "Augmented " + str(IMG_NO/2) + " images and their labels!\n"
