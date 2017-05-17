@@ -37,7 +37,7 @@ with open(sys.argv[3], "r") as f:
         modelfile = split[1]
         validation_path = split[2]
         snapshot_path = split[3]
-        use_fmeasure = bool(split[4])
+        use_fmeasure = split[4]
         interval = int(split[5])
 
         # get best snapshot and save in log_path
