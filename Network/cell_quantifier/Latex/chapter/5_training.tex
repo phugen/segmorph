@@ -4,7 +4,7 @@
 The following chapter presents the properties of the dataset that is later used to train a CNN as well as the necessary preprocessing to feed the data into the network. Additionally, the concept of data augmentation is introduced, which is used for creating a larger dataset to train on. Finally, various regularization techniques are considered that are employed to improve the results of the classification by combating overfitting.
 
 	\section{Dataset}
-The dataset used in the following experiments is made up of 90 microscopy images and their label images from three experiments on slightly different types of live \textit{Drosophila} cells. The dimension of all images is $960 \times 608$ pixels ($w \times h$) and the images are given in grayscale. The labelled images are of dimension $3 \times 960 \times 608 \times$ ($d \times w \times h$), where the background class is represented by RGB[0, 0, 0] (black), the cell body proper is marked as RGB[0, 255, 0] (green), the Lamellopodia are RGB[255, 0, 0] (red) and the Filopodia are RGB[0, 0, 255] (blue).
+The dataset used in the following experiments is made up of 90 microscopy images and their label images from three experiments on slightly different types of live \textit{Drosophila} cells. The dimension of all images is $960 \times 608$ pixels ($w \times h$) and the images are given in grayscale. The labelled images are of dimension $3 \times 960 \times 608 \times$ ($d \times w \times h$), where the background class is represented by RGB[0, 0, 0] (black), the cell body is marked as RGB[0, 255, 0] (green), the Lamellopodia are RGB[255, 0, 0] (red) and the Filopodia are RGB[0, 0, 255] (blue).
 
 Another ``3-class'' version of the dataset was created in which the classes for Lamellopodia and Filopodia are fused into one, marked as RGB[255, 0, 0] (red). This was done because even for a human, separating Filopodia pixels from Lamellopodia pixels was hard to do because of the varying contrast in the images, and it was deemed valuable to see how a network performs if the ground truth data is more straight-forward to interpret.\\
 
@@ -77,7 +77,7 @@ An easy way to multiply the number of samples eightfold is to flip all images on
 
 
 		\subsection{Elastic Deformation}
-Another data augmentation technique is \textit{Elastic Deformation} \cite{elastic}, which calculates a new image from an existing one by sampling random new positions for each pixel in the original image uniformly and multiplies them with a force parameter $\alpha$. Afterwards, the new coordinates are additionally smoothed by a Gaussian filter with standard deviation $\sigma$. The result is a slightly distorted image, and if $\alpha$ and $\sigma$ are chosen appropriately and the same deformation is applied to both an input image and its ground truth image, the resulting images are plausible enough to count as new samples to train on (see Figure \textbf{\ref{fig:elastic}}). This is especially useful for biological and medical use cases because Elastic Deformation produces naturally occuring transformations, such as cells being squashed slightly during microscopy, which helps the network learn to also classify these correctly. For the work in this thesis, the deformation parameters were set to $\alpha = 200$ and $\sigma = 10$.\\
+Another data augmentation technique is \textit{Elastic Deformation} \cite{elastic}, which calculates a new image from an existing one by sampling random new positions for each pixel in the original image by adding displacement vectors drawn from a Gaussian distribution with standard deviation $\sigma$ to each pixel position. These vectors are additionally multiplied by a force parameter $\alpha$. The result is a slightly distorted image, and if $\alpha$ and $\sigma$ are chosen appropriately and the same deformation is applied to both an input image and its ground truth image, the resulting images are plausible enough to count as new samples to train on (see Figure \textbf{\ref{fig:elastic}}). This is especially useful for biological and medical use cases because Elastic Deformation produces transformations that can naturally occur, such as cells being squashed slightly during microscopy, which helps the network learn to also classify these correctly. For the work in this thesis, the deformation parameters were set to $\alpha = 200$ and $\sigma = 10$.\\
 
 \noindent After tiling and removing all those tiles that contained only pixels of one class (e.g. background pixels only), the dataset then split into separate training and validation sets with a ratio of 4:1. The data augmentation was performed only for the training images, meaning that the network was tested on real images only. For both the 3- and 4-class datasets, the training set contained 12497 image tiles and their corresponding labels after applying augmentations, while the validation set contained 199 tiles cut from strictly unaltered images.
 
@@ -186,42 +186,4 @@ The way BN reduces this shift is by re-normalizing activations $x_i$ within the 
 
 \noindent This way, inference produces deterministic results that only depend on the input.\\
 
-\noindent BN is also claimed to regularize the network in addition to speeding up training. This is assumed to be the case because the variance and mean values that are calculated for a sample in a mini-batch are always an average of all samples in the batch, while the batch is chosen randomly from all samples. This means that variance and mean that are used for the BN transformation of a sample are always going to be different, depending on what other samples are included in the mini-batch alongside the sample in question, forcing the network to become robust against this form of ``noise''.
-
-
-	\subsection {Pseudo-labeling}
-\label{subsec:pseudo_label}
-
-\textit{Pseudo-labeling} \cite{pseudo_label} is a regularization technique that makes use of data for which no ground truth data exists. The network processes $n$ normal and unlabeled samples in each training step, assuming the mini-batch size is $n$.\footnote{\cite{pseudo_label} defines two different mini-batch sizes so that the number of normal and unlabeled samples per training step can be different. For notational simplicity, it is assumed that both sizes are the same.} The loss $L$ for the labeled image is calculated as usual. For unlabeled images, a pseudo-label is generated by passing the unlabeled data into the network using dummy labels, ignoring the resulting loss and replacing the output prediction scores by a one-hot encoding where the class with the maximum output probability is 1.0. For example, if the network outputs the probabilities 
-
-\[ [0.1,\, 0.1,\, \textbf{0.8},\, 0.1] \]
-
-\noindent for some pixel, the pseudo-probabilties for this pixel would become
-
-\[ [0.0,\, 0.0,\, \textbf{1.0},\, 0.0] \]
-
-\noindent in one-hot encoding. The unlabeled image is then fed to the network again, using the pseudo-label to calculate a pseudo-loss $L_\text{p}$. Then, a weighted combined loss $L_\text{c}$ is calculated to update the network weights, defined by
-
-\[ L_\text{c} = \frac{1}{n} \sum \limits_{i=1}^{n} L(x_i) + \alpha \frac{1}{n} \sum \limits_{i=1}^{n} L_\text{p}(u_i)  \]
-
-\noindent where $x$ are labeled samples, $u$ are unlabeled samples, $L$ is the normal loss for the labeled image and $\alpha$ is a weighting parameter that depends on the number of iterations $t$ that the training has been running. It is defined as
-
-\begin {align}
-\alpha(t) = \begin{cases} 0 &\text{ if } t < T_1 \\
-				\frac{t - T_1}{T_2 - T_1} \alpha_f &\text{ if } T_1 \leq t < T_2 \\
-				\alpha_f &\text { if } T_2 \leq t \\
-	        \end{cases}
-\end {align}
-
-\noindent with $\alpha_f = 3$, $T_1 = 100$ and $T_2 = 600$. This factor $\alpha$ prevents the unlabeled loss to dominate the weight updates in a stage of training where the network still makes very incorrect predictions. Intuitively, the network confirms its own predictions and updates the weights more decisively by increasing confidence for the update by selecting the dominant class in each pseudo-label.\\
-
-\begin {figure}[!htb]
-	\begin{center}
-		\scalebox{0.45}{\input{img/fig_pseudo_label.pdf_tex}}
-	\end{center}
-
-		\caption[Pseudo-Labeling.]{The Pseudo-labeling approach. The orange arrows show the path of the labeled images, while the blue arrows show the path of the unlabeled images that receive pseudo-labels. For the sake of simplicity, batch sizes are not taken into consideration in this image.}
-		\label{fig:pseudo_label}
-\end {figure}
-
-The reason that pseudo-labeling boosts generalization performance is believed to be that it pushes the decision boundaries of the network towards areas of the data space where the density of data points is low. The ``Cluster Assumption'', the belief that samples that are close to each other are more likely to belong to the same class, holds for many datasets and therefore it is more favorable to have decision boundaries that do not cross these clusters. \textbf{TODO: entropy regularization? more explanation + citations}
+\noindent BN is also claimed to regularize the network in addition to speeding up training. This is assumed to be the case because the variance and mean values that are calculated for a sample in a mini-batch are always an average of all samples in the batch, while the batch is chosen randomly from all samples. This means that variance and mean that are used for the BN transformation of a sample are always going to be different, depending on what other samples are included in the mini-batch alongside the sample in question, forcing the network to become robust against this form of noise.

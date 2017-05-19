@@ -26,71 +26,71 @@ All variants of the U-Net were trained on a NVIDIA TITAN X GPU (12 GB GDDR5X RAM
 
 \[ \text{PR}_\text{M} = \frac{1}{n} \sum_{i=1}^{n} \frac{\text{TP}_i}{\text{TP}_i + \text{FP}_i} \text { and } \text{RC}_\text{M} = \frac{1}{n} \sum_{i=1}^{n} \frac{\text{TP}_i}{\text{TP}_i + \text{FN}_i} \] 
 
-\noindent \cite[pp. 317-318]{information_retrieval} highlights that the Micro F-Measure is dominated by ``large'' classes, meaning classes that occur often in the ground truth data. This shifts the focus of the segmentation effectiveness evaluation towards whether the large classes are segmented correctly. As most pixels in the validation images are background pixels and the correct segmentation of the non-background class pixels is of more interest, the Macro F-Measure is therefore chosen for assessing which method performs best because it is biased towards smaller classes rather than large ones, but for completeness, both quantities are listed.\\
+\noindent \cite[pp. 317-318]{information_retrieval} highlights that the Micro F-Measure is dominated by ``large'' classes, meaning classes that occur often in the ground truth data. This would shift the focus of the evaluation of the segmentation effectiveness towards whether the primarily large classes are segmented correctly. As most pixels in the validation images are background pixels and the correct segmentation of the non-background class pixels is of more interest, the Macro F-Measure is therefore chosen for assessing which method performs best because it is biased towards smaller classes rather than large ones, but for completeness, both scores are listed.\\
 
-\noindent The first test run pitted two nearly identical U-Net networks against each other, using ReLU activations and Dropout with $p = 0.5$. The only difference was the choice of the loss function. The \textbf{Unet\_W} networks used the weighted Cross-Entropy Loss, while the \textbf{Unet\_F1} networks employed the multi-class F-Measure. Both networks were trained for 80,000 iterations (or $\approx$ 30 epochs) on both the 3-class and the 4-class training set (indicated by a $\_3$ or $\_4$ suffix in the network name), while testing the network on the respective validation set every 1,000 iterations.
+\noindent The first test run pitted two nearly identical U-Net networks against each other, using ReLU activations and Dropout with $p = 0.5$. The only difference was the choice of the loss function. The \textbf{W} networks used the weighted Cross-Entropy Loss, while the \textbf{F1} networks employed the multi-class F-Measure. Both networks were trained for 80,000 iterations (or $\approx$ 32 epochs) on both the 3-class and the 4-class training set (indicated by an additional $\_3$ or $\_4$ suffix in the network name), while testing the network on the respective validation set every 1,000 iterations.
 
-\textbf{Unet\_W} used an initial learning rate of 0.001, a step learning rate decay of a factor $\zeta = 0.1$ every 20,000 iterations and a momentum modifier $\gamma = 0.99$, while \textbf{Unet\_F1} used an initial learning rate of 0.0001, $\zeta = 0.3$ every 20,000 iterations and $\gamma = 0.99$. Both networks used $\text{L}^2$ gradient regularization and a mini-batch size of 5.
+The \textbf{W} network used an initial learning rate of 0.001, a step learning rate decay of a factor $\zeta = 0.1$ every 20,000 iterations and a momentum modifier $\gamma = 0.99$, while the \textbf{F1} network used an initial learning rate of 0.0001, $\zeta = 0.3$ every 20,000 iterations and $\gamma = 0.99$. Both networks used $\text{L}^2$ gradient regularization and a mini-batch size of 5.
 
-The progress of the training is shown in Figure \textbf{\ref{fig:weighted_f1_training}}. The F-Measure scores provide the insight that the proper cells (green) can be discerned from the background much more easily than the Lamellopodia (red) and Filopodia (blue), which mirrors the problems when manually labelling the images. Reducing the dataset to three classes by merging the red and blue classes improves the results for both networks.\\
+The progress of the training is shown in Figure \textbf{\ref{fig:weighted_f1_training}}.\\
 
 \begin {figure}[!htb]
 	\begin {subfigure}[b]{0.4\linewidth}
 		\scalebox{0.65}{\input{img/fig_train_unet_weighted_3.pgf}}
-		\caption{\textbf{Unet\_W\_3}}
+		\caption{\textbf{W\_3}}
 	\end {subfigure}\hspace{1.75cm}
 	\begin {subfigure}[b]{0.4\linewidth}
 		\scalebox{0.65}{\input{img/fig_train_unet_weighted_4.pgf}}
-		\caption{\textbf{Unet\_W\_4}}
+		\caption{\textbf{W\_4}}
 	\end {subfigure}
 
 	\begin {subfigure}[b]{0.4\linewidth}
 		\scalebox{0.65}{\input{img/fig_train_unet_f1_3.pgf}}
-		\caption{\textbf{Unet\_F1\_3}}
+		\caption{\textbf{F1\_3}}
 	\end {subfigure}\hspace{1.75cm}
 	\begin {subfigure}[b]{0.4\linewidth}
 		\scalebox{0.65}{\input{img/fig_train_unet_f1_4.pgf}}
-		\caption{\textbf{Unet\_F1\_4}}
+		\caption{\textbf{F1\_4}}
 	\end {subfigure}
 
-		\caption[Training progress of the first collection of networks.]{Training progress of the first collection of networks. The training loss is shown in muted colors, while the validation loss is denoted by bright colors. For Unet\_F1, the multi-class F-Measure score of each class is shown in the respective color.}
+		\caption[Training progress of the first collection of networks.]{Training progress of the first collection of networks. The training loss is shown in muted colors, while the validation loss is denoted by bright colors.}
 		\label{fig:weighted_f1_training}
 \end {figure}
 
-\noindent The results of testing the networks on the validation set are shown in Table \textbf{\ref{tab:results1}}. They indicate that both networks perform similarly well, converging at about 25 epochs, although using a Cross-Entropy loss function beats the F-Measure slightly. The Cross-Entropy networks achieved overall Macro F-Measure scores of $\approx$0.877 for 3 classes and $\approx$0.746 for 4 classes. Based on these results, for the following tests, Cross-Entropy was used as the loss function.\\ 
+\noindent The results of testing the networks on the validation set are shown in Table \textbf{\ref{tab:results1}}. They indicate that both networks perform similarly well, converging at about 25 epochs, although using a Cross-Entropy loss function beats the F-Measure by a slight margin. Reducing the dataset to three classes by merging the red and blue classes improves the results for both networks regardless of the loss function. The Cross-Entropy networks achieved overall Macro F-Measure scores of $\approx$0.877 for 3 classes and $\approx$0.746 for 4 classes. Based on these results, for the following tests, Cross-Entropy was used as the loss function as it yielded better results.\\ 
 
 \begin {table}
 	\begin{flushleft}
 		\begin {tabular}[!htb]{|l|l|l|l|l|}
 			\hline\multicolumn{5}{|l|}{\textbf{3-class Micro F-Measure Scores}} \\ \hline
-			\textbf{Network}& \textbf{Class 1}& \textbf{Class 2}& \textbf{Class 3}& \textbf{Overall} \\ \hline
-			Unet\_W\_3& \cellcolor{green!25}0.938013& \cellcolor{green!25}0.980397& \cellcolor{green!25}0.854026& \cellcolor{green!25}0.96198 \\ \hline
-			Unet\_F1\_3& 0.936029& 0.973609& 0.810895&  0.950532\\ \hline
+			\textbf{Network}& \textbf{BG}& \textbf{Body}& \textbf{Protrusions}& \textbf{Overall} \\ \hline
+			W\_3& \cellcolor{green!25}0.938013& \cellcolor{green!25}0.980397& \cellcolor{green!25}0.854026& \cellcolor{green!25}0.96198 \\ \hline
+			F1\_3& 0.936029& 0.973609& 0.810895&  0.950532\\ \hline
 			\multicolumn{5}{|l|}{\textbf{3-class Macro F-Measure Scores}} \\ \hline
-			\textbf{Network}& \textbf{Class 1}& \textbf{Class 2}& \textbf{Class 3}& \textbf{Overall} \\ \hline
-			Unet\_W\_3& \cellcolor{green!25}0.836608& \cellcolor{green!25}0.978505& \cellcolor{green!25}0.808118& \cellcolor{green!25}0.87707 \\ \hline
-			Unet\_F1\_3& 0.834&  0.970874& 0.774561& 0.863294 \\ \hline
+			\textbf{Network}& \textbf{BG}& \textbf{Body}& \textbf{Protrusions}& \textbf{Overall} \\ \hline
+			W\_3& \cellcolor{green!25}0.836608& \cellcolor{green!25}0.978505& \cellcolor{green!25}0.808118& \cellcolor{green!25}0.87707 \\ \hline
+			F1\_3& 0.834&  0.970874& 0.774561& 0.863294 \\ \hline
 		\end {tabular}
 		\vspace{0.5cm}\\
 		\begin {tabular}[!htb]{|l|l|l|l|l|l|}
 			\hline\multicolumn{6}{|l|}{\textbf{4-class Micro F-Measure Scores}} \\ \hline
-			\textbf{Network}& \textbf{Class 1}& \textbf{Class 2}& \textbf{Class 3}& \textbf{Class 4}& \textbf{Overall} \\ \hline
-			Unet\_W\_4& \cellcolor{green!25}0.63248& 0.978377& \cellcolor{green!25}0.660174& 0.927164& 0.934388 \\ \hline
-			Unet\_F1\_4& 0.632356& \cellcolor{green!25}0.978707& 0.641875& \cellcolor{green!25}0.928546& \cellcolor{green!25}0.935324 \\ \hline
+			\textbf{Network}& \textbf{BG}& \textbf{Body}& \textbf{Filopod.}& \textbf{Lamell.}& \textbf{Overall} \\ \hline
+			W\_4& \cellcolor{green!25}0.63248& 0.978377& \cellcolor{green!25}0.660174& 0.927164& 0.934388 \\ \hline
+			F1\_4& 0.632356& \cellcolor{green!25}0.978707& 0.641875& \cellcolor{green!25}0.928546& \cellcolor{green!25}0.935324 \\ \hline
 			\multicolumn{6}{|l|}{\textbf{4-class Macro F-Measure Scores}} \\ \hline
-			\textbf{Network}& \textbf{Class 1}& \textbf{Class 2}& \textbf{Class 3}& \textbf{Class 4}& \textbf{Overall} \\ \hline
-			Unet\_W\_4& \cellcolor{green!25}0.59455& 0.975988& 0.565911& \cellcolor{green!25}0.827576& \cellcolor{green!25}0.746051 \\ \hline
-			Unet\_F1\_4& 0.592614& \cellcolor{green!25}0.976762& \cellcolor{green!25}0.57009& 0.823417& 0.742489 \\ \hline
+			\textbf{Network}& \textbf{BG}& \textbf{Body}& \textbf{Filopod.}& \textbf{Lamell.}& \textbf{Overall} \\ \hline
+			W\_4& \cellcolor{green!25}0.59455& 0.975988& 0.565911& \cellcolor{green!25}0.827576& \cellcolor{green!25}0.746051 \\ \hline
+			F1\_4& 0.592614& \cellcolor{green!25}0.976762& \cellcolor{green!25}0.57009& 0.823417& 0.742489 \\ \hline
 		\end {tabular}
 	\end {flushleft}
 
-\caption[Micro and Macro F-Measure scores for \textbf{Unet\_W} and \textbf{Unet\_F1}.]{Micro and Macro F-Measure scores achieved by \textbf{Unet\_W} and \textbf{Unet\_F1} when segmenting the validation set images into 3 and 4 classes. In the 4-class dataset, \textbf{class 1} is the background, \textbf{class 2} is the cell proper, \textbf{class 3} are the Filopodia and \textbf{class 4} are the Lamellopodia, while in the 3-class dataset, \textbf{class 3} represents both Filopodia and Lamellopodia. The best scores in each category, per class, as well as the overall winner, are marked in green.}
+\caption[Micro and Macro F-Measure scores for networks with weighted Cross-Entropy and F-Measure loss functions.]{Micro and Macro F-Measure scores achieved by the \textbf{W} and \textbf{F1} networks when segmenting the validation set images into 3 or 4 classes. In the 4-class dataset, there are classes for background, the cell body, Filopodia and Lamellopodia, while in the 3-class dataset, the Filopodia and Lamellopodia classes are combined into the ``Protrusions'' class. The best scores in each category, per class, as well as the overall winner, are marked in green.}
 \label{tab:results1}
 \end {table}
 
-\noindent The second training case tested whether using Batch Normalization provides benefits, either in convergence speed or validation score. Therefore, the \textbf{Unet\_W} networks were modified to perform Batch Normalization before each ReLU activation, implemented in Caffe as a ``Batch Normalization'' layer that normalizes its input according to the mini-batch statistics, followed by a ``Scale'' layer that applies the affine transformation. Also, all Dropout layers were removed, as advised in \cite{batchnorm}. These networks receive an additional \textbf{\_BN} as part of their name.
+\noindent The second training case tested whether using Batch Normalization provides benefits, either in convergence speed or validation score. Therefore, the \textbf{W} networks were modified to perform Batch Normalization before each ReLU activation, implemented in Caffe as a ``Batch Normalization'' layer that normalizes its input according to the mini-batch statistics, followed by a ``Scale'' layer that applies the affine transformation. Also, all Dropout layers were removed, as advised in \cite{batchnorm}. These networks receive an additional \textbf{\_BN} as part of their name.
 
-Again, the network was trained on the 3- and 4-class datasets, this time, considering the notes on accelerating a network with Batch Normalization in \cite{batchnorm}, with a higher initial learning rate of 0.005, and a faster step learning rate decay that reduces the learning rate by $\zeta = 0.1$ every 7,500 iterations. Momentum was kept at $\gamma = 0.99$. However, the network parameters didn't fit into memory with a mini-batch size of 5 because of the added Batch Normalization layers, and therefore the mini-batch size had to be lowered to 2. To be able to still compare the training to previous results, the number of iterations was raised to 200,000 so that the network was trained for $\approx$30 epochs as before.
+Again, the network was trained on the 3- and 4-class datasets, this time, considering the notes on accelerating a network with Batch Normalization in \cite{batchnorm}, with a higher initial learning rate of 0.005, and a faster step learning rate decay that reduces the learning rate by $\zeta = 0.1$ every 7,500 iterations. Momentum was kept at $\gamma = 0.99$. However, the network parameters didn't fit into memory with a mini-batch size of 5 because of the added Batch Normalization layers, and therefore the mini-batch size had to be lowered to 2. To be able to still compare the training to previous results, the number of iterations was raised to 200,000 so that the network was trained for $\approx$32 epochs as before.
 
 The training progress is shown in Figure \textbf{\ref{fig:weighted_weighted_batchnorm_training}}. As expected, the networks converge much faster when using Batch Normalization, taking only about 5 epochs of training until convergence, which is a five-fold reduction of the needed training time.\\
 
@@ -98,20 +98,20 @@ The training progress is shown in Figure \textbf{\ref{fig:weighted_weighted_batc
 \begin {figure}[!htb]
 	\begin {subfigure}[b]{0.4\linewidth}
 		\scalebox{0.65}{\input{img/fig_train_unet_weighted_3.pgf}}
-		\caption{\textbf{Unet\_W\_3}}
+		\caption{\textbf{W\_3}}
 	\end {subfigure}\hspace{1.75cm}
 	\begin {subfigure}[b]{0.4\linewidth}
 		\scalebox{0.65}{\input{img/fig_train_unet_weighted_4.pgf}}
-		\caption{\textbf{Unet\_W\_4}}
+		\caption{\textbf{W\_4}}
 	\end {subfigure}
 
 	\begin {subfigure}[b]{0.4\linewidth}
 		\scalebox{0.65}{\input{img/fig_train_unet_weighted_batchnorm_3.pgf}}
-		\caption{\textbf{Unet\_W\_BN\_3}}
+		\caption{\textbf{W\_BN\_3}}
 	\end {subfigure}\hspace{1.75cm}
 	\begin {subfigure}[b]{0.4\linewidth}
 		\scalebox{0.65}{\input{img/fig_train_unet_weighted_batchnorm_4.pgf}}
-		\caption{\textbf{Unet\_W\_BN\_4}}
+		\caption{\textbf{W\_BN\_4}}
 	\end {subfigure}
 
 		\caption[Training progress of the second collection of networks.]{Training progress of the second collection of networks. The networks with added Batch Normalization converge approximately five times faster while achieving the same or even better results than their counterparts without it on unseen data.}
@@ -124,28 +124,28 @@ The training progress is shown in Figure \textbf{\ref{fig:weighted_weighted_batc
 	\begin{flushleft}
 		\begin {tabular}[!htb]{|l|l|l|l|l|}
 			\hline\multicolumn{5}{|l|}{\textbf{3-class Micro F-Measure Scores}} \\ \hline
-			\textbf{Network}& \textbf{Class 1}& \textbf{Class 2}& \textbf{Class 3}& \textbf{Overall} \\ \hline
-			Unet\_W\_3& \cellcolor{green!25}0.938013& \cellcolor{green!25}0.980397& \cellcolor{green!25}0.854026& \cellcolor{green!25}0.96198 \\ \hline
-			Unet\_W\_BN\_3& 0.930361&  0.979158& 0.842506& 0.959217\\ \hline
+			\textbf{Network}& \textbf{BG}& \textbf{Body}& \textbf{Protrusions}& \textbf{Overall} \\ \hline
+			W\_3& \cellcolor{green!25}0.938013& \cellcolor{green!25}0.980397& \cellcolor{green!25}0.854026& \cellcolor{green!25}0.96198 \\ \hline
+			W\_BN\_3& 0.930361&  0.979158& 0.842506& 0.959217\\ \hline
 			\multicolumn{5}{|l|}{\textbf{3-class Macro F-Measure Scores}} \\ \hline
-			\textbf{Network}& \textbf{Class 1}& \textbf{Class 2}& \textbf{Class 3}& \textbf{Overall} \\ \hline
-			Unet\_W\_3& \cellcolor{green!25}0.836608& \cellcolor{green!25}0.978505& \cellcolor{green!25}0.808118& \cellcolor{green!25}0.87707 \\ \hline
-			Unet\_W\_BN\_3& 0.834678& 0.977221& 0.797476& 0.87166\\ \hline
+			\textbf{Network}& \textbf{BG}& \textbf{Body}& \textbf{Protrusions}& \textbf{Overall} \\ \hline
+			W\_3& \cellcolor{green!25}0.836608& \cellcolor{green!25}0.978505& \cellcolor{green!25}0.808118& \cellcolor{green!25}0.87707 \\ \hline
+			W\_BN\_3& 0.834678& 0.977221& 0.797476& 0.87166\\ \hline
 		\end {tabular}
 		\vspace{0.5cm}\\
 		\begin {tabular}[!htb]{|l|l|l|l|l|l|}
 			\hline\multicolumn{6}{|l|}{\textbf{4-class Micro F-Measure Scores}} \\ \hline
-			\textbf{Network}& \textbf{Class 1}& \textbf{Class 2}& \textbf{Class 3}& \textbf{Class 4}& \textbf{Overall} \\ \hline
-			Unet\_W\_4& 0.63248& 0.978377& 0.660174& 0.927164& 0.934388 \\ \hline
-			Unet\_W\_BN\_4& \cellcolor{green!25}0.656197& \cellcolor{green!25}0.980057& \cellcolor{green!25}0.730906& \cellcolor{green!25}0.930746& \cellcolor{green!25}0.9441\\ \hline
+			\textbf{Network}& \textbf{BG}& \textbf{Body}& \textbf{Filopod.}& \textbf{Lamell.}& \textbf{Overall} \\ \hline
+			W\_4& 0.63248& 0.978377& 0.660174& 0.927164& 0.934388 \\ \hline
+			W\_BN\_4& \cellcolor{green!25}0.656197& \cellcolor{green!25}0.980057& \cellcolor{green!25}0.730906& \cellcolor{green!25}0.930746& \cellcolor{green!25}0.9441\\ \hline
 			\multicolumn{6}{|l|}{\textbf{4-class Macro F-Measure Scores}} \\ \hline
-			\textbf{Network}& \textbf{Class 1}& \textbf{Class 2}& \textbf{Class 3}& \textbf{Class 4}& \textbf{Overall} \\ \hline
-			Unet\_W\_4& 0.59455& 0.975988& 0.565911& 0.827576& 0.746051 \\ \hline
-			Unet\_W\_BN\_4& \cellcolor{green!25}0.621705& \cellcolor{green!25}0.978153& \cellcolor{green!25}0.650606& \cellcolor{green!25}0.836347& \cellcolor{green!25}0.77551\\ \hline
+			\textbf{Network}& \textbf{BG}& \textbf{Body}& \textbf{Filopod.}& \textbf{Lamell.}& \textbf{Overall} \\ \hline
+			W\_4& 0.59455& 0.975988& 0.565911& 0.827576& 0.746051 \\ \hline
+			W\_BN\_4& \cellcolor{green!25}0.621705& \cellcolor{green!25}0.978153& \cellcolor{green!25}0.650606& \cellcolor{green!25}0.836347& \cellcolor{green!25}0.77551\\ \hline
 		\end {tabular}
 	\end {flushleft}
 
-\caption[Micro and Macro F-Measure scores for a network with and without Batch Normalization.]{Micro and Macro F-Measure scores of 3 and 4-class segmenations achieved by \textbf{Unet\_W} with and without Batch Normalization.}
+\caption[Micro and Macro F-Measure scores for a network with and without Batch Normalization.]{Micro and Macro F-Measure scores of 3 and 4-class segmenations achieved by the \textbf{W} network with and without Batch Normalization.}
 \label{tab:results2}
 \end {table}
 
@@ -155,20 +155,20 @@ In the next round of tests, the effect of shuffling on the training of weighted 
 \begin {figure}[!htb]
 	\begin {subfigure}[b]{0.4\linewidth}
 		\scalebox{0.65}{\input{img/fig_train_unet_weighted_batchnorm_3.pgf}}
-		\caption{\textbf{Unet\_W\_BN\_3}}
+		\caption{\textbf{W\_BN\_3}}
 	\end {subfigure}\hspace{1.75cm}
 	\begin {subfigure}[b]{0.4\linewidth}
 		\scalebox{0.65}{\input{img/fig_train_unet_weighted_batchnorm_4.pgf}}
-		\caption{\textbf{Unet\_W\_BN\_4}}
+		\caption{\textbf{W\_BN\_4}}
 	\end {subfigure}
 
 	\begin {subfigure}[b]{0.4\linewidth}
 		\scalebox{0.65}{\input{img/fig_train_unet_weighted_batchnorm_shuffle_3.pgf}}
-		\caption{\textbf{Unet\_W\_BN\_S\_3}}
+		\caption{\textbf{W\_BN\_S\_3}}
 	\end {subfigure}\hspace{1.75cm}
 	\begin {subfigure}[b]{0.4\linewidth}
 		\scalebox{0.65}{\input{img/fig_train_unet_weighted_batchnorm_shuffle_4.pgf}}
-		\caption{\textbf{Unet\_W\_BN\_S\_4}}
+		\caption{\textbf{W\_BN\_S\_4}}
 	\end {subfigure}
 
 		\caption[Training progress of the third collection of networks.]{Training progress of the third collection of networks. The networks with enabled shuffling converge even faster than the ones without shuffling, while the minimum loss remains roughly the same.}
@@ -183,42 +183,42 @@ In the next round of tests, the effect of shuffling on the training of weighted 
 	\begin{flushleft}
 		\begin {tabular}[!htb]{|l|l|l|l|l|}
 			\hline\multicolumn{5}{|l|}{\textbf{3-class Micro F-Measure Scores}} \\ \hline
-			\textbf{Network}& \textbf{Class 1}& \textbf{Class 2}& \textbf{Class 3}& \textbf{Overall} \\ \hline
-			Unet\_W\_BN\_3& 0.930361&  0.979158& 0.842506& 0.959217\\ \hline
-			Unet\_W\_BN\_S\_3& &  & & \\ \hline
+			\textbf{Network}& \textbf{BG}& \textbf{Body}& \textbf{Protrusions}& \textbf{Overall} \\ \hline
+			W\_BN\_3& 0.930361&  0.979158& 0.842506& 0.959217\\ \hline
+			W\_BN\_S\_3& &  & & \\ \hline
 			\multicolumn{5}{|l|}{\textbf{3-class Macro F-Measure Scores}} \\ \hline
-			\textbf{Network}& \textbf{Class 1}& \textbf{Class 2}& \textbf{Class 3}& \textbf{Overall} \\ \hline
-			Unet\_W\_BN\_3& 0.834678& 0.977221& 0.797476& 0.87166\\ \hline
-			Unet\_W\_BN\_S\_3& & & & \\ \hline
+			\textbf{Network}& \textbf{BG}& \textbf{Body}& \textbf{Protrusions}& \textbf{Overall} \\ \hline
+			W\_BN\_3& 0.834678& 0.977221& 0.797476& 0.87166\\ \hline
+			W\_BN\_S\_3& & & & \\ \hline
 		\end {tabular}
 		\vspace{0.5cm}\\
 		\begin {tabular}[!htb]{|l|l|l|l|l|l|}
 			\hline\multicolumn{6}{|l|}{\textbf{4-class Micro F-Measure Scores}} \\ \hline
-			\textbf{Network}& \textbf{Class 1}& \textbf{Class 2}& \textbf{Class 3}& \textbf{Class 4}& \textbf{Overall} \\ \hline
-			Unet\_W\_BN\_4& 0.656197& 0.980057& 0.730906& 0.930746& 0.9441\\ \hline
-			Unet\_W\_BN\_S\_4& & & & & \\ \hline
+			\textbf{Network}& \textbf{BG}& \textbf{Body}& \textbf{Filopod.}& \textbf{Lamell.}& \textbf{Overall} \\ \hline
+			W\_BN\_4& 0.656197& 0.980057& 0.730906& 0.930746& 0.9441\\ \hline
+			W\_BN\_S\_4& & & & & \\ \hline
 			\multicolumn{6}{|l|}{\textbf{4-class Macro F-Measure Scores}} \\ \hline
-			\textbf{Network}& \textbf{Class 1}& \textbf{Class 2}& \textbf{Class 3}& \textbf{Class 4}& \textbf{Overall} \\ \hline
-			Unet\_W\_BN\_4& 0.621705& 0.978153& 0.650606& 0.836347& 0.77551\\ \hline
-			Unet\_W\_BN\_S\_4& & & & & \\ \hline
+			\textbf{Network}& \textbf{BG}& \textbf{Body}& \textbf{Filopod.}& \textbf{Lamell.}& \textbf{Overall} \\ \hline
+			W\_BN\_4& 0.621705& 0.978153& 0.650606& 0.836347& 0.77551\\ \hline
+			W\_BN\_S\_4& & & & & \\ \hline
 		\end {tabular}
 	\end {flushleft}
 
-\caption[Micro and Macro F-Measure scores for a network with Batch Normalization and with or without shuffling.]{Micro and Macro F-Measure scores of 3 and 4-class segmenations achieved by \textbf{Unet\_W\_BN} with and without shuffling.}
+\caption[Micro and Macro F-Measure scores for a network with Batch Normalization and with or without shuffling.]{Micro and Macro F-Measure scores of 3 and 4-class segmenations achieved by \textbf{W\_BN} with and without shuffling.}
 \label{tab:results3}
 \end {table}
 
 
-\noindent As the next evaluation step, the effect of the weight initialization on \textbf{Unet\_W\_BN\_S} was compared, using the Xavier and the MSRA initializations. It was believed that MSRA should work better for all networks using ReLU activations or its variations. The networks up to this point used the Xavier initialization, so the networks with MSRA initialization received an additional \textbf{\_MS} tag. The number of epochs was reduced to \textbf{TODO}. The training progress is shown in Figure \textbf{\ref{fig:weighted_batchnorm_shuffle_msra_training}}.\\
+\noindent As the next evaluation step, the effect of the weight initialization on \textbf{W\_BN\_S} was compared, using the Xavier and the MSRA initializations. It was believed that MSRA should work better for all networks using ReLU activations or its variations. The networks up to this point used the Xavier initialization, so the networks with MSRA initialization received an additional \textbf{\_MS} tag. The number of epochs was reduced to $\approx$6. The training progress is shown in Figure \textbf{\ref{fig:weighted_batchnorm_shuffle_msra_training}}.\\
 
 \begin {figure}[!htb]
 	\begin {subfigure}[b]{0.4\linewidth}
 		%\scalebox{0.65}{\input{img/fig_train_unet_weighted_batchnorm_shuffle_msra_3.pgf}}
-		\caption{\textbf{Unet\_W\_BN\_S\_MS\_3}}
+		\caption{\textbf{W\_BN\_S\_MS\_3}}
 	\end {subfigure}\hspace{1.75cm}
 	\begin {subfigure}[b]{0.4\linewidth}
 		%\scalebox{0.65}{\input{img/fig_train_unet_weighted_batchnorm_shuffle_msra_4.pgf}}
-		\caption{\textbf{Unet\_W\_BN\_S\_MS\_4}}
+		\caption{\textbf{W\_BN\_S\_MS\_4}}
 	\end {subfigure}
 
 		\caption[Training progress of the fourth collection of networks.]{Training progress of the fourth collection of networks. The networks with MSRA initialization \textbf{TODO}}
@@ -233,70 +233,52 @@ In the next round of tests, the effect of shuffling on the training of weighted 
 	\begin{flushleft}
 		\begin {tabular}[!htb]{|l|l|l|l|l|}
 			\hline\multicolumn{5}{|l|}{\textbf{3-class Micro F-Measure Scores}} \\ \hline
-			\textbf{Network}& \textbf{Class 1}& \textbf{Class 2}& \textbf{Class 3}& \textbf{Overall} \\ \hline
-			Unet\_W\_BN\_S\_3& &  & & \\ \hline
-			Unet\_W\_BN\_S\_MS\_3& &  & & \\ \hline
+			\textbf{Network}& \textbf{BG}& \textbf{Body}& \textbf{Protrusions}& \textbf{Overall} \\ \hline
+			W\_BN\_S\_3& &  & & \\ \hline
+			W\_BN\_S\_MS\_3& &  & & \\ \hline
 			\multicolumn{5}{|l|}{\textbf{3-class Macro F-Measure Scores}} \\ \hline
-			\textbf{Network}& \textbf{Class 1}& \textbf{Class 2}& \textbf{Class 3}& \textbf{Overall} \\ \hline
-			Unet\_W\_BN\_S\_3& & & & \\ \hline
-			Unet\_W\_BN\_S\_MS\_3& & & & \\ \hline
+			\textbf{Network}& \textbf{BG}& \textbf{Body}& \textbf{Protrusions}& \textbf{Overall} \\ \hline
+			W\_BN\_S\_3& & & & \\ \hline
+			W\_BN\_S\_MS\_3& & & & \\ \hline
 		\end {tabular}
 		\vspace{0.5cm}\\
 		\begin {tabular}[!htb]{|l|l|l|l|l|l|}
 			\hline\multicolumn{6}{|l|}{\textbf{4-class Micro F-Measure Scores}} \\ \hline
-			\textbf{Network}& \textbf{Class 1}& \textbf{Class 2}& \textbf{Class 3}& \textbf{Class 4}& \textbf{Overall} \\ \hline
-			Unet\_W\_BN\_S\_4& & & & & \\ \hline
-			Unet\_W\_BN\_S\_MS\_4& & & & & \\ \hline
+			\textbf{Network}& \textbf{BG}& \textbf{Body}& \textbf{Filopod.}& \textbf{Lamell.}& \textbf{Overall} \\ \hline
+			W\_BN\_S\_4& & & & & \\ \hline
+			W\_BN\_S\_MS\_4& & & & & \\ \hline
 			\multicolumn{6}{|l|}{\textbf{4-class Macro F-Measure Scores}} \\ \hline
-			\textbf{Network}& \textbf{Class 1}& \textbf{Class 2}& \textbf{Class 3}& \textbf{Class 4}& \textbf{Overall} \\ \hline
-			Unet\_W\_BN\_S\_4& & & & & \\ \hline
-			Unet\_W\_BN\_S\_MS\_4& & & & & \\ \hline
+			\textbf{Network}& \textbf{BG}& \textbf{Body}& \textbf{Filopod.}& \textbf{Lamell.}& \textbf{Overall} \\ \hline
+			W\_BN\_S\_4& & & & & \\ \hline
+			W\_BN\_S\_MS\_4& & & & & \\ \hline
 		\end {tabular}
 	\end {flushleft}
-\caption[Multi-class F-Measure scores for networks with Xavier and MSRA weight initialization.]{Multi-class F-Measure scores of 3 and 4-class segmentations for  the \textbf{Unet\_W\_BN\_S} network with either Xavier or MSRA weight initialization.}
+\caption[Multi-class F-Measure scores for networks with Xavier and MSRA weight initialization.]{Multi-class F-Measure scores of 3 and 4-class segmentations for the \textbf{W\_BN\_S} network with either Xavier or MSRA weight initialization.}
 \label{tab:results4}
 \end {table}
 
-Finally, the choice of the activation function used throughout the network was evaluated. The previous networks used ReLU activations, which were then replaced with LReLU (\textbf{\_LR}), PReLU (\textbf{\_PR}) and ELU (\textbf{\_EL}) activations. The training progress is shown in Figure \textbf{\ref{fig:weighted_batchnorm_shuffle_msra_acts_training}}.\\
+Finally, the choice of the activation function used throughout the network was evaluated. The previous networks used ReLU activations, which were subsequently replaced with ELU (\textbf{\_EL}), LReLU (\textbf{\_LR}) and PReLU (\textbf{\_PR}) activations. The training progress is shown in Figure \textbf{\ref{fig:weighted_batchnorm_shuffle_msra_acts_training}}.\\
 
 \begin {figure}[!htb]
 	\begin {subfigure}[b]{0.4\linewidth}
 		%\scalebox{0.65}{\input{img/fig_train_unet_weighted_batchnorm_shuffle_msra_3.pgf}}
-		\caption{\textbf{Unet\_W\_BN\_S\_3}}
+		\caption{\textbf{W\_BN\_S\_3}}
 	\end {subfigure}\hspace{1.75cm}
 	\begin {subfigure}[b]{0.4\linewidth}
 		%\scalebox{0.65}{\input{img/fig_train_unet_weighted_batchnorm_shuffle_msra_4.pgf}}
-		\caption{\textbf{Unet\_W\_BN\_S\_4}}
+		\caption{\textbf{W\_BN\_S\_4}}
 	\end {subfigure}
 
 	\begin {subfigure}[b]{0.4\linewidth}
-		%\scalebox{0.65}{\input{img/fig_train_unet_weighted_batchnorm_shuffle_msra_lrelu_3.pgf}}
-		\caption{\textbf{Unet\_W\_BN\_S\_MS\_LR\_3}}
+		\scalebox{0.65}{\input{img/fig_train_unet_weighted_batchnorm_shuffle_msra_combinedacts_3.pgf}}
+		\caption{\textbf{W\_BN\_S\_MS\_EL/LR/PR\_3}}
 	\end {subfigure}\hspace{1.75cm}
 	\begin {subfigure}[b]{0.4\linewidth}
-		%\scalebox{0.65}{\input{img/fig_train_unet_weighted_batchnorm_shuffle_msra_lrelu_4.pgf}}
-		\caption{\textbf{Unet\_W\_BN\_S\_MS\_LR\_4}}
+		\scalebox{0.65}{\input{img/fig_train_unet_weighted_batchnorm_shuffle_msra_combinedacts_4.pgf}}
+		\caption{\textbf{W\_BN\_S\_MS\_EL/LR/PR\_4}}
 	\end {subfigure}
 
-	\begin {subfigure}[b]{0.4\linewidth}
-		%\scalebox{0.65}{\input{img/fig_train_unet_weighted_batchnorm_shuffle_msra_prelu_3.pgf}}
-		\caption{\textbf{Unet\_W\_BN\_S\_MS\_PR\_3}}
-	\end {subfigure}\hspace{1.75cm}
-	\begin {subfigure}[b]{0.4\linewidth}
-		%\scalebox{0.65}{\input{img/fig_train_unet_weighted_batchnorm_shuffle_msra_prelu_4.pgf}}
-		\caption{\textbf{Unet\_W\_BN\_S\_MS\_PR\_4}}
-	\end {subfigure}
-
-	\begin {subfigure}[b]{0.4\linewidth}
-		%\scalebox{0.65}{\input{img/fig_train_unet_weighted_batchnorm_shuffle_msra_elu_3.pgf}}
-		\caption{\textbf{Unet\_W\_BN\_S\_MS\_EL\_3}}
-	\end {subfigure}\hspace{1.75cm}
-	\begin {subfigure}[b]{0.4\linewidth}
-		%\scalebox{0.65}{\input{img/fig_train_unet_weighted_batchnorm_shuffle_msra_elu_4.pgf}}
-		\caption{\textbf{Unet\_W\_BN\_S\_MS\_EL\_4}}
-	\end {subfigure}
-
-		\caption[Training progress of the fifth collection of networks.]{Training progress of the fifth and final collection of networks. \textbf{TODO}}
+		\caption[Training progress of the fifth collection of networks.]{Training progress of the fifth and final collection of networks, using ELU (red), LReLU (green) and PReLU (blue) activation functions for the \textbf{W\_BN\_S\_MS} network.}
 		\label{fig:weighted_batchnorm_shuffle_msra_acts_training}
 \end {figure}
 
@@ -306,35 +288,35 @@ Finally, the choice of the activation function used throughout the network was e
 	\begin{flushleft}
 		\begin {tabular}[!htb]{|l|l|l|l|l|}
 			\hline\multicolumn{5}{|l|}{\textbf{3-class Micro F-Measure Scores}} \\ \hline
-			\textbf{Network}& \textbf{Class 1}& \textbf{Class 2}& \textbf{Class 3}& \textbf{Overall} \\ \hline
-			Unet\_W\_BN\_S\_MS\_3& &  & & \\ \hline
-			Unet\_W\_BN\_S\_MS\_LR\_3& &  & & \\ \hline
-			Unet\_W\_BN\_S\_MS\_PR\_3& &  & & \\ \hline
-			Unet\_W\_BN\_S\_MS\_EL\_3& &  & & \\ \hline
+			\textbf{Network}& \textbf{BG}& \textbf{Body}& \textbf{Protrusions}& \textbf{Overall} \\ \hline
+			W\_BN\_S\_MS\_3& &  & & \\ \hline
+			W\_BN\_S\_MS\_EL\_3& &  & & \\ \hline
+			W\_BN\_S\_MS\_LR\_3& &  & & \\ \hline
+			W\_BN\_S\_MS\_PR\_3& &  & & \\ \hline
 			\multicolumn{5}{|l|}{\textbf{3-class Macro F-Measure Scores}} \\ \hline
-			\textbf{Network}& \textbf{Class 1}& \textbf{Class 2}& \textbf{Class 3}& \textbf{Overall} \\ \hline
-			Unet\_W\_BN\_S\_MS\_3& &  & & \\ \hline
-			Unet\_W\_BN\_S\_MS\_LR\_3& &  & & \\ \hline
-			Unet\_W\_BN\_S\_MS\_PR\_3& &  & & \\ \hline
-			Unet\_W\_BN\_S\_MS\_EL\_3& &  & & \\ \hline
+			\textbf{Network}& \textbf{BG}& \textbf{Body}& \textbf{Protrusions}& \textbf{Overall} \\ \hline
+			W\_BN\_S\_MS\_3& &  & & \\ \hline
+			W\_BN\_S\_MS\_EL\_3& &  & & \\ \hline
+			W\_BN\_S\_MS\_LR\_3& &  & & \\ \hline
+			W\_BN\_S\_MS\_PR\_3& &  & & \\ \hline
 		\end {tabular}
 		\vspace{0.5cm}\\
 		\begin {tabular}[!htb]{|l|l|l|l|l|l|}
 			\hline\multicolumn{6}{|l|}{\textbf{4-class Micro F-Measure Scores}} \\ \hline
-			\textbf{Network}& \textbf{Class 1}& \textbf{Class 2}& \textbf{Class 3}& \textbf{Class 4}& \textbf{Overall} \\ \hline
-			Unet\_W\_BN\_S\_MS\_4& & & & & \\ \hline
-			Unet\_W\_BN\_S\_MS\_LR\_4& & & & & \\ \hline
-			Unet\_W\_BN\_S\_MS\_PR\_4& & & & & \\ \hline
-			Unet\_W\_BN\_S\_MS\_EL\_4& & & & & \\ \hline
+			\textbf{Network}& \textbf{BG}& \textbf{Body}& \textbf{Filopod.}& \textbf{Lamell.}& \textbf{Overall} \\ \hline
+			W\_BN\_S\_MS\_4& & & & & \\ \hline
+			W\_BN\_S\_MS\_EL\_4& & & & & \\ \hline
+			W\_BN\_S\_MS\_LR\_4& & & & & \\ \hline
+			W\_BN\_S\_MS\_PR\_4& & & & & \\ \hline
 			\multicolumn{6}{|l|}{\textbf{4-class Macro F-Measure Scores}} \\ \hline
-			\textbf{Network}& \textbf{Class 1}& \textbf{Class 2}& \textbf{Class 3}& \textbf{Class 4}& \textbf{Overall} \\ \hline
-			Unet\_W\_BN\_S\_MS\_4& & & & & \\ \hline
-			Unet\_W\_BN\_S\_MS\_LR\_4& & & & & \\ \hline
-			Unet\_W\_BN\_S\_MS\_PR\_4& & & & & \\ \hline
-			Unet\_W\_BN\_S\_MS\_EL\_4& & & & & \\ \hline
+			\textbf{Network}& \textbf{BG}& \textbf{Body}& \textbf{Filopod.}& \textbf{Lamell.}& \textbf{Overall} \\ \hline
+			W\_BN\_S\_MS\_4& & & & & \\ \hline
+			W\_BN\_S\_MS\_EL\_4& & & & & \\ \hline
+			W\_BN\_S\_MS\_LR\_4& & & & & \\ \hline
+			W\_BN\_S\_MS\_PR\_4& & & & & \\ \hline
 		\end {tabular}
 	\end {flushleft}
-\caption[Multi-class F-Measure scores for networks with different activation functions.]{Multi-class F-Measure scores of 3 and 4-class segmentations for  \textbf{Unet\_W\_BN\_S\_MS} network with LReLU, PReLU or ELU activations.}
+\caption[Multi-class F-Measure scores for networks with different activation functions.]{Multi-class F-Measure scores of 3 and 4-class segmentations for the \textbf{W\_BN\_S\_MS} network with ELU, LReLU or PReLU activations.}
 \label{tab:results5}
 \end {table}
 
@@ -346,32 +328,36 @@ Finally, the choice of the activation function used throughout the network was e
 	\begin{flushleft}
 		\begin {tabular}[!htb]{|l|l|l|l|l|}
 			\hline\multicolumn{5}{|l|}{\textbf{3-class Micro F-Measure Scores}} \\ \hline
-			\textbf{Network}& \textbf{Class 1}& \textbf{Class 2}& \textbf{Class 3}& \textbf{Overall} \\ \hline
+			\textbf{Network}& \textbf{BG}& \textbf{Body}& \textbf{Protrusions}& \textbf{Overall} \\ \hline
 			\textbf{TODOnetwork}\_3& & & &  \\ \hline
-			Kmeans\_3& 0.565397& 0.911659& 0.181797& 0.825470 \\ \hline
-			Otsu\_3& 0.826101& 0.947856& 0.289651& 0.892829 \\ \hline
-			GMM\_3& 0.592882& 0.916301& 0.452048& 0.835872 \\ \hline
+			Kmeans\_3& 0.558539& 0.911727& 0.203548& 0.827114 \\ \hline
+			Otsu\_3& 0.825507& 0.948289& 0.293253& 0.893721\\ \hline
+			GMM\_3& 0.592041& 0.918865& 0.454169& 0.839736\\ \hline
+			RandomW\_3& & & & \\ \hline
 			\multicolumn{5}{|l|}{\textbf{3-class Macro F-Measure Scores}} \\ \hline
-			\textbf{Network}& \textbf{Class 1}& \textbf{Class 2}& \textbf{Class 3}& \textbf{Overall} \\ \hline
+			\textbf{Network}& \textbf{BG}& \textbf{Body}& \textbf{Protrusions}& \textbf{Overall} \\ \hline
 			\textbf{TODOnetwork}\_3& & & &  \\ \hline
-			Kmeans\_3& 0.658413& 0.915943& 0.269968& 0.621344 \\ \hline
-			Otsu\_3& 0.728980& 0.945487& 0.286169& 0.692639 \\ \hline
-			GMM\_3& 0.658694& 0.921221& 0.475517& 0.686258 \\ \hline
+			Kmeans\_3& 0.651961& 0.913368& 0.285729& 0.621961 \\ \hline
+			Otsu\_3& 0.724415& 0.945845& 0.288723& 0.690693 \\ \hline
+			GMM\_3& 0.662100& 0.923315& 0.469288& 0.686225\\ \hline
+			RandomW\_3& & & & \\ \hline
 		\end {tabular}
 		\vspace{0.5cm}\\
 		\begin {tabular}[!htb]{|l|l|l|l|l|l|}
 			\hline\multicolumn{6}{|l|}{\textbf{4-class Micro F-Measure Scores}} \\ \hline
-			\textbf{Network}& \textbf{Class 1}& \textbf{Class 2}& \textbf{Class 3}& \textbf{Class 4}& \textbf{Overall} \\ \hline
+			\textbf{Network}& \textbf{BG}& \textbf{Body}& \textbf{Filopod.}& \textbf{Lamell.}& \textbf{Overall} \\ \hline
 			\textbf{TODOnetwork}\_4& & & & &  \\ \hline
-			Kmeans\_4& 0.267928& 0.905374& 0.141975& 0.517766& 0.801337 \\ \hline
-			Otsu\_4& 0.289285& 0.951719& 0.215767& 0.826893& 0.887743 \\ \hline
-			GMM\_4& 0.266052& 0.901548& 0.340378& 0.578745& 0.793159 \\ \hline
+			Kmeans\_4& 0.264708& 0.903179& 0.143972& 0.506803& 0.798993 \\ \hline
+			Otsu\_4& 0.290935& 0.952084& 0.211475& 0.826076& 0.888612\\ \hline
+			GMM\_4& 0.267892& 0.907277& 0.353604& 0.572532& 0.801932\\ \hline
+			RandomW\_4& & & & & \\ \hline
 			\multicolumn{6}{|l|}{\textbf{4-class Macro F-Measure Scores}} \\ \hline
-			\textbf{Network}& \textbf{Class 1}& \textbf{Class 2}& \textbf{Class 3}& \textbf{Class 4}& \textbf{Overall} \\ \hline
+			\textbf{Network}& \textbf{BG}& \textbf{Body}& \textbf{Filopod.}& \textbf{Lamell.}& \textbf{Overall} \\ \hline
 			\textbf{TODOnetwork}\_4& & & & &  \\ \hline
-			Kmeans\_4& 0.339741& 0.912653& 0.158299& 0.611075& 0.516103 \\ \hline
-			Otsu\_4& 0.272577& 0.949255& 0.216902& 0.7244& 0.556941 \\ \hline
-			GMM\_4& 0.29571& 0.907527& 0.316250& 0.646682& 0.555062 \\ \hline
+			Kmeans\_4& 0.332654& 0.910968& 0.165100& 0.608527& 0.515816 \\ \hline
+			Otsu\_4& 0.272930& 0.949528& 0.216677& 0.717499& 0.553722\\ \hline
+			GMM\_4& 0.299744& 0.912145& 0.309169& 0.638074& 0.552376\\ \hline
+			RandomW\_4& & & & & \\ \hline
 		\end {tabular}
 	\end {flushleft}
 \caption[Multi-class F-Measure scores for final network and other image segmentation metods.]{Multi-class F-Measure scores of 3 and 4-class segmentations for the \textbf{TODO} network and the K-Means, Otsu and GMM methods.}

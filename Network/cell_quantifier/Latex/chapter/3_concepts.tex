@@ -162,7 +162,7 @@ The algorithm is initialized with $k$ either random or differently selected clus
 	\label{fig:kmeans}
 \end {figure}
 
-\noindent Obviously, this algorithm can also be used to segment images into $k$ different classes, but since K-Means assigns classes to data by using the distance from the mean, the algorithm output favors segmentations in which the classes have roughly the same size, which isn't necessarily the correct way to classify pixels in arbitrary image data. \textbf{TODO: Citation}
+\noindent Obviously, this algorithm can also be used to segment images into different classes by setting $k$, the number of clusters, to the number of classes that should be found in the image.
 
 
 
@@ -200,7 +200,7 @@ The algorithm is initialized with $k$ either random or differently selected clus
 
 
 	\section{Multi-layer Perceptrons}
-\textit{Multi-layer Perceptrons} (MLPs), also called \textit{Feedforward Artificial Neuronal Networks} (ANNs) are mathematical functions that try to emulate the way neurons in the brain process information, typically to classify data or perform regression on it. ANNs have recently achieved impressing results on various tasks, such as image classification, sound analysis and regression, typically achieved by very deep networks that used lots of artificial neurons and were fed large datasets exceeding one million samples. ``Deep Learning'' is a blanket term regularly used to describe these processes.
+\textit{Multi-layer Perceptrons} (MLPs), also called \textit{Feedforward Artificial Neuronal Networks} (ANNs) are mathematical functions that try to emulate the way neurons in the brain process information, typically to classify data or perform regression on it. ANNs have recently achieved impressing results on various tasks, such as image classification \cite{krizhevsky2012} or sound analysis \cite{CNN_sound}, typically achieved by very deep networks that used a large amount of artificial neurons and were fed large datasets exceeding one million samples. ``Deep Learning'' is a blanket term regularly used to describe these processes.
 
 In this section, the concepts behind the optimization of functions via the Gradient Descent algorithm, Neuronal Networks and training of those networks using the Backpropagation algorithm are explained. 
 
@@ -216,7 +216,7 @@ In this section, the concepts behind the optimization of functions via the Gradi
 
 \[ \nabla_f = \left [ \frac{\partial f}{\partial \Theta_1}, \dots, \frac{\partial f}{\partial \Theta_n} \right ]^T \, ,\]
 
-the vector of all first partial derivatives of $f$, points into the opposite direction of the fastest change, or put graphically, shows the opposite direction of the ``steepest slope''. By taking steps in the \textit{negative} gradient direction, the function value is minimized step by step, while maximization works the same, only that the function is negated and then minimized, which results in parameters that maximize the original function. The parameter $\eta$ depicts the step size and is typically a value in the range $(0.0, 1.0]$. \cite[pp. 40--42]{optimization_book}\\
+the vector of all first partial derivatives of $f$, points into the opposite direction of the fastest change, or put graphically, shows the opposite direction of the ``steepest slope''. By taking steps in the \textit{negative} gradient direction, the function value is minimized step by step, while maximization works the same, only that the function is negated and then minimized, which results in parameters that maximize the original function. The parameter $\eta$ depicts the non-negative step size.\footnote{Empirically, values in the range $(0, 1]$ have been shown to work well. For example, \cite{krizhevsky2012} used a step size of 0.01 for its implementation of Gradient Desent.} \cite[pp. 40--42]{optimization_book}\\
 
 Gradient Descent starts with a guess for the parameters in $\Theta$, iteratively evaluates the gradient and updates the parameters accordingly until convergence within arbitrary precision is reached (see Algorithm \textbf{\ref{alg:grad_desc}}).
 
@@ -241,7 +241,7 @@ Gradient Descent starts with a guess for the parameters in $\Theta$, iteratively
 	\label{fig:grad_desc}
 \end {figure}
 
-\noindent However, a more interesting application of the Gradient Descent algorithm than optimizing functions for which all parameters can be freely changed exists in the context of machine learning, where the function to optimize often has fixed parameters in addition to $\Theta$, such as data from a dataset that is related to the function in some way. In such cases, one can consider one of the subtypes of Gradient Descent. Either one can evaluate the average gradient using all available data samples at once, called \textit{Batch Gradient Descent}, or one can use single data points only - as an approximation of the entire dataset - to perform the updates. This is called \textit{Stochastic Gradient Descent} (SGD) and is preferable if working with datasets that are too large to fit into memory. Alternatively, one can use the average gradient of a subset of data points - this method is often referred to as \textit{Mini-Batch} Stochastic Gradient Descent. For example, consider the function
+\noindent However, a more interesting application of the Gradient Descent algorithm than optimizing functions for which $\Theta$ can be freely manipulated exists in the context of machine learning. If the function to optimize has fixed parameters in addition to $\Theta$, such as data from a dataset that is related to the function in some way, one can consider one of the subtypes of Gradient Descent: Either one can evaluate the average gradient using all available data samples at once, called \textit{Batch Gradient Descent}, or one can use single data points only - as an approximation of the entire dataset - to perform the updates. This is called \textit{Stochastic Gradient Descent} (SGD) and is preferable if working with datasets that are too large to fit into memory. Alternatively, one can use the average gradient of a subset of data points - this method is often referred to as \textit{Mini-Batch} Stochastic Gradient Descent. For example, consider the function
 
 \[ f(\Theta) =  \theta_1 (x_1 + x_2) + \theta_2 (2x_1 + 3x_2)\]
 
@@ -257,14 +257,14 @@ Gradient Descent starts with a guess for the parameters in $\Theta$, iteratively
 
 
 	\subsubsection {Momentum}
-\textit{Momentum} is an optimization for the Gradient Descent algorithm that adds an additional term to the update step, which is dependent on the steepness of the traversed function in previous updates. Using the analogy of a marble rolling down a slope, momentum refers to the inertia of the marble that allows it to jump over saddle points or small holes (local minima) on the bowl's surface rather than stopping abruptly once such a location is reached (see Figure \textbf{\ref{fig:momentum}}). This changes the SGD update formula to
+\textit{Momentum} \cite{backprop} is an optimization for the Gradient Descent algorithm that adds an additional term to the update step, which is dependent on the steepness of the traversed function in previous updates. Using the analogy of a marble rolling down a slope, momentum refers to the inertia of the marble that allows it to jump over saddle points or small holes (local minima) on the bowl's surface rather than stopping abruptly once such a location is reached (see Figure \textbf{\ref{fig:momentum}}). This changes the SGD update formula to
 
 \begin {align}
 	& v_i = \gamma v_ {i-1} + \eta \nabla_f\\ 
 	& \Theta_i = \Theta_{i-1} - v_i \,,
 \end {align} 
 
-\noindent where $v$ is the momentum vector with one entry per gradient element and $\gamma$ is a modifier that changes the influence of the momentum on the update. \textbf{TODO: cite nesterov momentum, heavy ball etc.}
+\noindent where $v$ is the momentum vector with one entry per gradient element and $\gamma$ is a modifier that changes the influence of the momentum on the update.
 
 	\begin {figure}[!htb]
 		\begin{center}

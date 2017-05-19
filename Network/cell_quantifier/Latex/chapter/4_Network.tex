@@ -123,7 +123,7 @@ ReLUs do not saturate\footnote{This depends on the definition of saturation, for
 
 An attempt at fixing this issue is relaxing the strict below-zero activation so it outputs a downscaled version of the input instead. This principle is called \textit{Leaky ReLU} \cite{lrelu} and formally changes the ReLU definition to 
 
-\[  LReLU(x) = \begin{cases}
+\[  \text{LReLU}(x) = \begin{cases}
 			\alpha x \text{ if } x \leq 0\\
 			x \text{ else}
 		 \end{cases}
@@ -281,7 +281,7 @@ The \textit{Cross-Entropy Loss} function compares a true probability distributio
 
 		\subsection{Weighted Cross-Entropy Loss}
 
-Using a Cross-Entropy loss function for pixel classification assumes that all pixels in each input image have the same weight in the Backpropagation process, and therefore, it assumes that the distribution of classes within the samples is balanced. As long as this assumption is true, the Cross-Entropy loss works well, but many datasets do not exhibit this property. Obviously, the assumption is also not true for microscopy images of a few cells moving on dark background, as most of the image is taken up by the background class, and thus, the performance of training using a normal Cross-Entropy Loss was expected to be poor.
+Using a Cross-Entropy loss function for pixel classification means that all pixels in each input image have the same weight in the Backpropagation process. As long as the distribution of classes within the samples is balanced, the Cross-Entropy loss works well, but many datasets do not exhibit this property. Obviously, that is also not true for microscopy images of a few cells moving on dark background, as most of the image is taken up by the background class, and thus, the performance of training using a normal Cross-Entropy Loss was expected to be poor.
 
 To combat this problem, one can introduce a pixelwise weight map for each training sample whose values depend on the ground truth class and the position of each pixel. Therefore, the Cross-Entropy loss formula changes to
 
@@ -377,7 +377,7 @@ During the backward pass, the gradients are also calculated per class in a simil
 \label{sec:unet}
 The U-Net \cite{unet} is a CNN architecture which aims to produce segmentation maps for images of cells. It was implemented using Caffe \cite{caffe}, a CNN library that allows CNN layers - such as the ones described in the previous section - to be put together to form a network.\\
 
-The U-Net first performs a series of standard computations, alternating $3 \times 3$ convolutions followed by ReLU activations and $2 \times 2$ Maximum Pooling downsampling operations with stride $2$ while steadily increasing the number of filters after each pooling operation from 64 up to 1024. It differs from normal CNNs in that it then begins alternating stride $2 \times 2$ upsampling operations with $3 \times 3$ convolutions and thus enlarges the feature maps again while reducing the number of filters in a way that parallels the downsampling by Maximum Pooling. This results in a nearly symmetric architecture which gives the network its name. The upsampling operations are often called \textit{deconvolution layers} and appeared first as part of a visualization strategy for CNNs outlined in \cite{zeiler_visual}. The way they work for upsampling by a factor of two in both dimensions can be thought of as padding the image with a zero-border with a width of one, while also inserting additional zero values inbetween the original values and then convoluting the resulting image normally with a stride of 1, using a $2 \times 2$ kernel. This approximately reverses the Maximum Pooling operation (see Figure \textbf{\ref{fig:upconvolution}}). \cite[p. 14]{transposed_conv}\cite{up_conv}
+The U-Net first performs a series of standard computations, alternating $3 \times 3$ convolutions followed by ReLU activations and $2 \times 2$ Maximum Pooling downsampling operations with stride $2$ while steadily increasing the number of filters after each pooling operation from 64 up to 1024. It differs from normal CNNs in that it then begins alternating stride $2 \times 2$ upsampling operations with $3 \times 3$ convolutions and thus enlarges the feature maps again while reducing the number of filters in a way that parallels the downsampling by Maximum Pooling. This results in a nearly symmetric architecture which gives the network its name. The upsampling operations are often called \textit{deconvolution layers}, and the way they work for upsampling by a factor of two in both dimensions can be thought of as padding the image with a zero-border with a width of one, while also inserting additional zero values inbetween the original values and then convoluting the resulting image normally with a stride of 1, using a $2 \times 2$ kernel. This approximately reverses the Maximum Pooling operation (see Figure \textbf{\ref{fig:upconvolution}}). \cite[p. 14]{transposed_conv}\cite{up_conv}
 
 \begin {figure}[!hbt]
 	\begin{center}
