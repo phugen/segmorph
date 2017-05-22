@@ -80,7 +80,6 @@ PAD_WIDTH = largeimg_padded.shape[3]
 tiles = np.array(preputils.tileMirrorImage (1, input_size, magic_number, largeimg_padded, \
                            [cheight, cwidth], [PAD_HEIGHT, PAD_WIDTH]))
 
-
 # setup network
 # predict using GPU
 caffe.set_device(device_id)
@@ -121,7 +120,6 @@ for batchno in bar(range(0, int(math.ceil(tiles.shape[0] / float(batchsize))))):
             for x in range(prediction.shape[3]):
                 maxchannel = prediction[b, :, y, x].argmax()
                 output[b, maxchannel, y, x] = 1.0
-
 
         # save predicted tile for stitching later
         predictions.append(output[b, 1:4, :, :])
@@ -169,7 +167,7 @@ stitched[:, cheight - brokenheight:cheight, cwidth - brokenwidth:cwidth] \
 
 
 
-scipy.misc.toimage(stitched, cmin=0.0, cmax=1.0).save(output_path + "stitched.png")
+scipy.misc.toimage(stitched).save(output_path + "stitched.png")
 
 
 print "Predicted the input image using " + str(len(tiles)) + " tiles."

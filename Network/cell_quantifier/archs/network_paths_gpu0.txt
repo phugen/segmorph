@@ -1,12 +1,12 @@
 # comments also work!
 #./unet_3/unet_3_solver.prototxt
 #./unet_batchnorm_3/unet_batchnorm_3_solver.prototxt
-#./unet_weighted_3/unet_weighted_3_solver.prototxt
+./unet_weighted_3/unet_weighted_3_solver.prototxt
 #./unet_weighted_batchnorm_3/unet_weighted_batchnorm_3_solver.prototxt
 #./unet_weighted_batchnorm_shuffle_3/unet_weighted_batchnorm_shuffle_3_solver.prototxt
-./unet_weighted_batchnorm_shuffle_msra_3/unet_weighted_batchnorm_shuffle_msra_3_solver.prototxt
+#./unet_weighted_batchnorm_shuffle_msra_3/unet_weighted_batchnorm_shuffle_msra_3_solver.prototxt
 #./unet_weighted_batchnorm_shuffle_msra_lrelu_3/unet_weighted_batchnorm_shuffle_msra_lrelu_3_solver.prototxt
 #./unet_weighted_batchnorm_shuffle_msra_prelu_3/unet_weighted_batchnorm_shuffle_msra_prelu_3_solver.prototxt
 #./unet_weighted_batchnorm_shuffle_msra_elu_3/unet_weighted_batchnorm_shuffle_msra_elu_3_solver.prototxt
-#./unet_f1_3/unet_f1_3_solver.prototxt
+./unet_f1_3/unet_f1_3_solver.prototxt
 #./unet_f1_3/unet_f1_batchnorm_3_solver.prototxt

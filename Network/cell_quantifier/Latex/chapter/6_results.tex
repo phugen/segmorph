@@ -59,28 +59,30 @@ The progress of the training is shown in Figure \textbf{\ref{fig:weighted_f1_tra
 
 \noindent The results of testing the networks on the validation set are shown in Table \textbf{\ref{tab:results1}}. They indicate that both networks perform similarly well, converging at about 25 epochs, although using a Cross-Entropy loss function beats the F-Measure by a slight margin. Reducing the dataset to three classes by merging the red and blue classes improves the results for both networks regardless of the loss function. The Cross-Entropy networks achieved overall Macro F-Measure scores of $\approx$0.877 for 3 classes and $\approx$0.746 for 4 classes. Based on these results, for the following tests, Cross-Entropy was used as the loss function as it yielded better results.\\ 
 
+%\cellcolor{green!25}
+
 \begin {table}
 	\begin{flushleft}
 		\begin {tabular}[!htb]{|l|l|l|l|l|}
 			\hline\multicolumn{5}{|l|}{\textbf{3-class Micro F-Measure Scores}} \\ \hline
-			\textbf{Network}& \textbf{BG}& \textbf{Body}& \textbf{Protrusions}& \textbf{Overall} \\ \hline
-			W\_3& \cellcolor{green!25}0.938013& \cellcolor{green!25}0.980397& \cellcolor{green!25}0.854026& \cellcolor{green!25}0.96198 \\ \hline
-			F1\_3& 0.936029& 0.973609& 0.810895&  0.950532\\ \hline
+			\textbf{Network}& \textbf{BG}& \textbf{Protrusions}& \textbf{Body}& \textbf{Overall} \\ \hline
+			W\_3& \cellcolor{green!25}0.980159& \cellcolor{green!25}0.852122& 0.934006& \cellcolor{green!25}0.961419 \\ \hline
+			F1\_3& 0.973661& 0.809751& \cellcolor{green!25}0.934676& 0.950451\\ \hline
 			\multicolumn{5}{|l|}{\textbf{3-class Macro F-Measure Scores}} \\ \hline
-			\textbf{Network}& \textbf{BG}& \textbf{Body}& \textbf{Protrusions}& \textbf{Overall} \\ \hline
-			W\_3& \cellcolor{green!25}0.836608& \cellcolor{green!25}0.978505& \cellcolor{green!25}0.808118& \cellcolor{green!25}0.87707 \\ \hline
-			F1\_3& 0.834&  0.970874& 0.774561& 0.863294 \\ \hline
+			\textbf{Network}& \textbf{BG}& \textbf{Protrusions}& \textbf{Body}& \textbf{Overall} \\ \hline
+			W\_3& \cellcolor{green!25}0.978033& \cellcolor{green!25}0.808224& \cellcolor{green!25}0.828686& \cellcolor{green!25}0.874772 \\ \hline
+			F1\_3& 0.970553& 0.771874& 0.827895& 0.860840\\ \hline
 		\end {tabular}
 		\vspace{0.5cm}\\
 		\begin {tabular}[!htb]{|l|l|l|l|l|l|}
 			\hline\multicolumn{6}{|l|}{\textbf{4-class Micro F-Measure Scores}} \\ \hline
-			\textbf{Network}& \textbf{BG}& \textbf{Body}& \textbf{Filopod.}& \textbf{Lamell.}& \textbf{Overall} \\ \hline
-			W\_4& \cellcolor{green!25}0.63248& 0.978377& \cellcolor{green!25}0.660174& 0.927164& 0.934388 \\ \hline
-			F1\_4& 0.632356& \cellcolor{green!25}0.978707& 0.641875& \cellcolor{green!25}0.928546& \cellcolor{green!25}0.935324 \\ \hline
+			\textbf{Network}& \textbf{BG}& \textbf{Lamell.}& \textbf{Body}& \textbf{Filopod.}& \textbf{Overall} \\ \hline
+			W\_4& 0.978283& \cellcolor{green!25}0.663734& 0.922784& 0.63427& 0.934613 \\ \hline
+			F1\_4& \cellcolor{green!25}0.978905& 0.648421& \cellcolor{green!25}0.929386& \cellcolor{green!25}0.641471& \cellcolor{green!25}0.936407 \\ \hline
 			\multicolumn{6}{|l|}{\textbf{4-class Macro F-Measure Scores}} \\ \hline
-			\textbf{Network}& \textbf{BG}& \textbf{Body}& \textbf{Filopod.}& \textbf{Lamell.}& \textbf{Overall} \\ \hline
-			W\_4& \cellcolor{green!25}0.59455& 0.975988& 0.565911& \cellcolor{green!25}0.827576& \cellcolor{green!25}0.746051 \\ \hline
-			F1\_4& 0.592614& \cellcolor{green!25}0.976762& \cellcolor{green!25}0.57009& 0.823417& 0.742489 \\ \hline
+			\textbf{Network}& \textbf{BG}& \textbf{Lamell.}& \textbf{Body}& \textbf{Filopod.}& \textbf{Overall} \\ \hline
+			W\_4& 0.975677& 0.564365& 0.817776& 0.606856& 0.746027 \\ \hline
+			F1\_4& \cellcolor{green!25}0.976674& \cellcolor{green!25}0.568730& \cellcolor{green!25}0.821611& \cellcolor{green!25}0.621359& \cellcolor{green!25}0.748524 \\ \hline
 		\end {tabular}
 	\end {flushleft}
 
@@ -124,24 +126,24 @@ The training progress is shown in Figure \textbf{\ref{fig:weighted_weighted_batc
 	\begin{flushleft}
 		\begin {tabular}[!htb]{|l|l|l|l|l|}
 			\hline\multicolumn{5}{|l|}{\textbf{3-class Micro F-Measure Scores}} \\ \hline
-			\textbf{Network}& \textbf{BG}& \textbf{Body}& \textbf{Protrusions}& \textbf{Overall} \\ \hline
-			W\_3& \cellcolor{green!25}0.938013& \cellcolor{green!25}0.980397& \cellcolor{green!25}0.854026& \cellcolor{green!25}0.96198 \\ \hline
-			W\_BN\_3& 0.930361&  0.979158& 0.842506& 0.959217\\ \hline
+			\textbf{Network}& \textbf{BG}& \textbf{Protrusions}& \textbf{Body}& \textbf{Overall} \\ \hline
+			W\_3& \cellcolor{green!25}0.980159& \cellcolor{green!25}0.852122& \cellcolor{green!25}0.934006& \cellcolor{green!25}0.961419 \\ \hline
+			W\_BN\_3& 0.97894& 0.840205& 0.929242& 0.958793 \\ \hline
 			\multicolumn{5}{|l|}{\textbf{3-class Macro F-Measure Scores}} \\ \hline
-			\textbf{Network}& \textbf{BG}& \textbf{Body}& \textbf{Protrusions}& \textbf{Overall} \\ \hline
-			W\_3& \cellcolor{green!25}0.836608& \cellcolor{green!25}0.978505& \cellcolor{green!25}0.808118& \cellcolor{green!25}0.87707 \\ \hline
-			W\_BN\_3& 0.834678& 0.977221& 0.797476& 0.87166\\ \hline
+			\textbf{Network}& \textbf{BG}& \textbf{Protrusions}& \textbf{Body}& \textbf{Overall} \\ \hline
+			W\_3& \cellcolor{green!25}0.978033& \cellcolor{green!25}0.808224& \cellcolor{green!25}0.828686& \cellcolor{green!25}0.874772 \\ \hline
+			W\_BN\_3& 0.976777& 0.797868& 0.823922& 0.868310 \\ \hline
 		\end {tabular}
 		\vspace{0.5cm}\\
 		\begin {tabular}[!htb]{|l|l|l|l|l|l|}
 			\hline\multicolumn{6}{|l|}{\textbf{4-class Micro F-Measure Scores}} \\ \hline
-			\textbf{Network}& \textbf{BG}& \textbf{Body}& \textbf{Filopod.}& \textbf{Lamell.}& \textbf{Overall} \\ \hline
-			W\_4& 0.63248& 0.978377& 0.660174& 0.927164& 0.934388 \\ \hline
-			W\_BN\_4& \cellcolor{green!25}0.656197& \cellcolor{green!25}0.980057& \cellcolor{green!25}0.730906& \cellcolor{green!25}0.930746& \cellcolor{green!25}0.9441\\ \hline
+			\textbf{Network}& \textbf{BG}& \textbf{Lamell.}& \textbf{Body}& \textbf{Filopod.}& \textbf{Overall} \\ \hline
+			W\_4& 0.978283& 0.663734& 0.922784& 0.63427& 0.934613 \\ \hline
+			W\_BN\_4& \cellcolor{green!25}0.980579& \cellcolor{green!25}0.733308& \cellcolor{green!25}0.928468& \cellcolor{green!25}0.657326& \cellcolor{green!25}0.945016 \\ \hline
 			\multicolumn{6}{|l|}{\textbf{4-class Macro F-Measure Scores}} \\ \hline
-			\textbf{Network}& \textbf{BG}& \textbf{Body}& \textbf{Filopod.}& \textbf{Lamell.}& \textbf{Overall} \\ \hline
-			W\_4& 0.59455& 0.975988& 0.565911& 0.827576& 0.746051 \\ \hline
-			W\_BN\_4& \cellcolor{green!25}0.621705& \cellcolor{green!25}0.978153& \cellcolor{green!25}0.650606& \cellcolor{green!25}0.836347& \cellcolor{green!25}0.77551\\ \hline
+			\textbf{Network}& \textbf{BG}& \textbf{Lamell.}& \textbf{Body}& \textbf{Filopod.}& \textbf{Overall} \\ \hline
+			W\_4& 0.975677& 0.564365& 0.817776& 0.606856& 0.746027 \\ \hline
+			W\_BN\_4& \cellcolor{green!25}0.978607& \cellcolor{green!25}0.642202& \cellcolor{green!25}0.828532& \cellcolor{green!25}0.644209& \cellcolor{green!25}0.776984 \\ \hline
 		\end {tabular}
 	\end {flushleft}
 
@@ -154,11 +156,11 @@ In the next round of tests, the effect of shuffling on the training of weighted 
 
 \begin {figure}[!htb]
 	\begin {subfigure}[b]{0.4\linewidth}
-		\scalebox{0.65}{\input{img/fig_train_unet_weighted_batchnorm_3.pgf}}
+		\scalebox{0.65}{\input{img/fig_train_unet_weighted_batchnorm_3_SCALED.pgf}}
 		\caption{\textbf{W\_BN\_3}}
 	\end {subfigure}\hspace{1.75cm}
 	\begin {subfigure}[b]{0.4\linewidth}
-		\scalebox{0.65}{\input{img/fig_train_unet_weighted_batchnorm_4.pgf}}
+		\scalebox{0.65}{\input{img/fig_train_unet_weighted_batchnorm_4_SCALED.pgf}}
 		\caption{\textbf{W\_BN\_4}}
 	\end {subfigure}
 
@@ -171,7 +173,7 @@ In the next round of tests, the effect of shuffling on the training of weighted 
 		\caption{\textbf{W\_BN\_S\_4}}
 	\end {subfigure}
 
-		\caption[Training progress of the third collection of networks.]{Training progress of the third collection of networks. The networks with enabled shuffling converge even faster than the ones without shuffling, while the minimum loss remains roughly the same.}
+		\caption[Training progress of the third collection of networks.]{Training progress of the third collection of networks. The networks with enabled shuffling converge even faster than the ones without shuffling, while the minimum loss remains roughly the same. Note that the scale of the Y-axis has been altered slightly in comparison to the previous figure to better illustrate the training progress.}
 		\label{fig:weighted_batchnorm_shuffle_training}
 \end {figure}
 
@@ -183,24 +185,24 @@ In the next round of tests, the effect of shuffling on the training of weighted 
 	\begin{flushleft}
 		\begin {tabular}[!htb]{|l|l|l|l|l|}
 			\hline\multicolumn{5}{|l|}{\textbf{3-class Micro F-Measure Scores}} \\ \hline
-			\textbf{Network}& \textbf{BG}& \textbf{Body}& \textbf{Protrusions}& \textbf{Overall} \\ \hline
-			W\_BN\_3& 0.930361&  0.979158& 0.842506& 0.959217\\ \hline
-			W\_BN\_S\_3& &  & & \\ \hline
+			\textbf{Network}& \textbf{BG}& \textbf{Protrusions}& \textbf{Body}& \textbf{Overall} \\ \hline
+			W\_BN\_3& \cellcolor{green!25}0.97894& \cellcolor{green!25}0.840205& \cellcolor{green!25}0.929242& \cellcolor{green!25}0.958793 \\ \hline
+			W\_BN\_S\_3& 0.971224& 0.801529& 0.924549& 0.946244 \\ \hline
 			\multicolumn{5}{|l|}{\textbf{3-class Macro F-Measure Scores}} \\ \hline
-			\textbf{Network}& \textbf{BG}& \textbf{Body}& \textbf{Protrusions}& \textbf{Overall} \\ \hline
-			W\_BN\_3& 0.834678& 0.977221& 0.797476& 0.87166\\ \hline
-			W\_BN\_S\_3& & & & \\ \hline
+			\textbf{Network}& \textbf{BG}& \textbf{Protrusions}& \textbf{Body}& \textbf{Overall} \\ \hline
+			W\_BN\_3& \cellcolor{green!25}0.976777& \cellcolor{green!25}0.797868& 0.823922& \cellcolor{green!25}0.868310 \\ \hline
+			W\_BN\_S\_3& 0.96827& 0.7514& \cellcolor{green!25}0.824780& 0.853336 \\ \hline
 		\end {tabular}
 		\vspace{0.5cm}\\
 		\begin {tabular}[!htb]{|l|l|l|l|l|l|}
 			\hline\multicolumn{6}{|l|}{\textbf{4-class Micro F-Measure Scores}} \\ \hline
-			\textbf{Network}& \textbf{BG}& \textbf{Body}& \textbf{Filopod.}& \textbf{Lamell.}& \textbf{Overall} \\ \hline
-			W\_BN\_4& 0.656197& 0.980057& 0.730906& 0.930746& 0.9441\\ \hline
-			W\_BN\_S\_4& & & & & \\ \hline
+			\textbf{Network}& \textbf{BG}& \textbf{Lamell.}& \textbf{Body}& \textbf{Filopod.}& \textbf{Overall} \\ \hline
+			W\_BN\_4& \cellcolor{green!25}0.980579& \cellcolor{green!25}0.733308& \cellcolor{green!25}0.928468& \cellcolor{green!25}0.657326& \cellcolor{green!25}0.945016 \\ \hline
+			W\_BN\_S\_4& 0.974023& 0.682878& 0.923356& 0.645053& 0.932581 \\ \hline
 			\multicolumn{6}{|l|}{\textbf{4-class Macro F-Measure Scores}} \\ \hline
-			\textbf{Network}& \textbf{BG}& \textbf{Body}& \textbf{Filopod.}& \textbf{Lamell.}& \textbf{Overall} \\ \hline
-			W\_BN\_4& 0.621705& 0.978153& 0.650606& 0.836347& 0.77551\\ \hline
-			W\_BN\_S\_4& & & & & \\ \hline
+			\textbf{Network}& \textbf{BG}& \textbf{Lamell.}& \textbf{Body}& \textbf{Filopod.}& \textbf{Overall} \\ \hline
+			W\_BN\_4& \cellcolor{green!25}0.978607& \cellcolor{green!25}0.642202& \cellcolor{green!25}0.828532& \cellcolor{green!25}0.644209& \cellcolor{green!25}0.776984 \\ \hline
+			W\_BN\_S\_4& 0.971439& 0.599044& 0.822736& 0.630631& 0.761619 \\ \hline
 		\end {tabular}
 	\end {flushleft}
 
@@ -213,11 +215,11 @@ In the next round of tests, the effect of shuffling on the training of weighted 
 
 \begin {figure}[!htb]
 	\begin {subfigure}[b]{0.4\linewidth}
-		%\scalebox{0.65}{\input{img/fig_train_unet_weighted_batchnorm_shuffle_msra_3.pgf}}
+		\scalebox{0.65}{\input{img/fig_train_unet_weighted_batchnorm_shuffle_msra_3.pgf}}
 		\caption{\textbf{W\_BN\_S\_MS\_3}}
 	\end {subfigure}\hspace{1.75cm}
 	\begin {subfigure}[b]{0.4\linewidth}
-		%\scalebox{0.65}{\input{img/fig_train_unet_weighted_batchnorm_shuffle_msra_4.pgf}}
+		\scalebox{0.65}{\input{img/fig_train_unet_weighted_batchnorm_shuffle_msra_4.pgf}}
 		\caption{\textbf{W\_BN\_S\_MS\_4}}
 	\end {subfigure}
 
@@ -233,24 +235,24 @@ In the next round of tests, the effect of shuffling on the training of weighted 
 	\begin{flushleft}
 		\begin {tabular}[!htb]{|l|l|l|l|l|}
 			\hline\multicolumn{5}{|l|}{\textbf{3-class Micro F-Measure Scores}} \\ \hline
-			\textbf{Network}& \textbf{BG}& \textbf{Body}& \textbf{Protrusions}& \textbf{Overall} \\ \hline
-			W\_BN\_S\_3& &  & & \\ \hline
-			W\_BN\_S\_MS\_3& &  & & \\ \hline
+			\textbf{Network}& \textbf{BG}& \textbf{Protrusions}& \textbf{Body}& \textbf{Overall} \\ \hline
+			W\_BN\_S\_3& 0.971224& 0.801529& 0.924549& 0.946244 \\ \hline
+			W\_BN\_S\_MS\_3& \cellcolor{green!25}0.972544& \cellcolor{green!25}0.806668& \cellcolor{green!25}0.924910& \cellcolor{green!25}0.948196 \\ \hline
 			\multicolumn{5}{|l|}{\textbf{3-class Macro F-Measure Scores}} \\ \hline
-			\textbf{Network}& \textbf{BG}& \textbf{Body}& \textbf{Protrusions}& \textbf{Overall} \\ \hline
-			W\_BN\_S\_3& & & & \\ \hline
-			W\_BN\_S\_MS\_3& & & & \\ \hline
+			\textbf{Network}& \textbf{BG}& \textbf{Protrusions}& \textbf{Body}& \textbf{Overall} \\ \hline
+			W\_BN\_S\_3& 0.96827& 0.7514& \cellcolor{green!25}0.824780& 0.853336 \\ \hline
+			W\_BN\_S\_MS\_3& \cellcolor{green!25}0.969960& \cellcolor{green!25}0.756508& 0.823536& \cellcolor{green!25}0.85484 \\ \hline
 		\end {tabular}
 		\vspace{0.5cm}\\
 		\begin {tabular}[!htb]{|l|l|l|l|l|l|}
 			\hline\multicolumn{6}{|l|}{\textbf{4-class Micro F-Measure Scores}} \\ \hline
-			\textbf{Network}& \textbf{BG}& \textbf{Body}& \textbf{Filopod.}& \textbf{Lamell.}& \textbf{Overall} \\ \hline
-			W\_BN\_S\_4& & & & & \\ \hline
-			W\_BN\_S\_MS\_4& & & & & \\ \hline
+			\textbf{Network}& \textbf{BG}& \textbf{Lamell.}& \textbf{Body}& \textbf{Filopod.}& \textbf{Overall} \\ \hline
+			W\_BN\_S\_4& \cellcolor{green!25}0.974023& \cellcolor{green!25}0.682878& 0.923356& 0.645053& \cellcolor{green!25}0.932581 \\ \hline
+			W\_BN\_S\_MS\_4& 0.972521& 0.676638& \cellcolor{green!25}0.924545& \cellcolor{green!25}0.647229& 0.930357 \\ \hline
 			\multicolumn{6}{|l|}{\textbf{4-class Macro F-Measure Scores}} \\ \hline
-			\textbf{Network}& \textbf{BG}& \textbf{Body}& \textbf{Filopod.}& \textbf{Lamell.}& \textbf{Overall} \\ \hline
-			W\_BN\_S\_4& & & & & \\ \hline
-			W\_BN\_S\_MS\_4& & & & & \\ \hline
+			\textbf{Network}& \textbf{BG}& \textbf{Lamell.}& \textbf{Body}& \textbf{Filopod.}& \textbf{Overall} \\ \hline
+			W\_BN\_S\_4& \cellcolor{green!25}0.971439& \cellcolor{green!25}0.599044& 0.822736& \cellcolor{green!25}0.630631& 0.761619 \\ \hline
+			W\_BN\_S\_MS\_4& 0.969880& 0.596355& \cellcolor{green!25}0.825985& 0.626172& \cellcolor{green!25}0.761833 \\ \hline
 		\end {tabular}
 	\end {flushleft}
 \caption[Multi-class F-Measure scores for networks with Xavier and MSRA weight initialization.]{Multi-class F-Measure scores of 3 and 4-class segmentations for the \textbf{W\_BN\_S} network with either Xavier or MSRA weight initialization.}
@@ -261,11 +263,11 @@ Finally, the choice of the activation function used throughout the network was e
 
 \begin {figure}[!htb]
 	\begin {subfigure}[b]{0.4\linewidth}
-		%\scalebox{0.65}{\input{img/fig_train_unet_weighted_batchnorm_shuffle_msra_3.pgf}}
+		\scalebox{0.65}{\input{img/fig_train_unet_weighted_batchnorm_shuffle_msra_3.pgf}}
 		\caption{\textbf{W\_BN\_S\_3}}
 	\end {subfigure}\hspace{1.75cm}
 	\begin {subfigure}[b]{0.4\linewidth}
-		%\scalebox{0.65}{\input{img/fig_train_unet_weighted_batchnorm_shuffle_msra_4.pgf}}
+		\scalebox{0.65}{\input{img/fig_train_unet_weighted_batchnorm_shuffle_msra_4.pgf}}
 		\caption{\textbf{W\_BN\_S\_4}}
 	\end {subfigure}
 
@@ -288,32 +290,32 @@ Finally, the choice of the activation function used throughout the network was e
 	\begin{flushleft}
 		\begin {tabular}[!htb]{|l|l|l|l|l|}
 			\hline\multicolumn{5}{|l|}{\textbf{3-class Micro F-Measure Scores}} \\ \hline
-			\textbf{Network}& \textbf{BG}& \textbf{Body}& \textbf{Protrusions}& \textbf{Overall} \\ \hline
-			W\_BN\_S\_MS\_3& &  & & \\ \hline
-			W\_BN\_S\_MS\_EL\_3& &  & & \\ \hline
-			W\_BN\_S\_MS\_LR\_3& &  & & \\ \hline
-			W\_BN\_S\_MS\_PR\_3& &  & & \\ \hline
+			\textbf{Network}& \textbf{BG}& \textbf{Protrusions}& \textbf{Body}& \textbf{Overall} \\ \hline
+			W\_BN\_S\_MS\_3& 0.972544& 0.806668& 0.924910& 0.948196 \\ \hline
+			W\_BN\_S\_MS\_EL\_3& 0.970800& 0.794595& 0.926807& 0.945134 \\ \hline
+			W\_BN\_S\_MS\_LR\_3& \cellcolor{green!25}0.974278& \cellcolor{green!25}0.81579& 0.927586& \cellcolor{green!25}0.951177 \\ \hline
+			W\_BN\_S\_MS\_PR\_3& 0.971991& 0.804978& \cellcolor{green!25}0.927779& 0.947568 \\ \hline
 			\multicolumn{5}{|l|}{\textbf{3-class Macro F-Measure Scores}} \\ \hline
-			\textbf{Network}& \textbf{BG}& \textbf{Body}& \textbf{Protrusions}& \textbf{Overall} \\ \hline
-			W\_BN\_S\_MS\_3& &  & & \\ \hline
-			W\_BN\_S\_MS\_EL\_3& &  & & \\ \hline
-			W\_BN\_S\_MS\_LR\_3& &  & & \\ \hline
-			W\_BN\_S\_MS\_PR\_3& &  & & \\ \hline
+			\textbf{Network}& \textbf{BG}& \textbf{Protrusions}& \textbf{Body}& \textbf{Overall} \\ \hline
+			W\_BN\_S\_MS\_3& 0.969960& 0.756508& 0.823536& 0.85484 \\ \hline
+			W\_BN\_S\_MS\_EL\_3& 0.967883& 0.737727& 0.822989& 0.848497 \\ \hline
+			W\_BN\_S\_MS\_LR\_3& \cellcolor{green!25}0.971674& \cellcolor{green!25}0.767961& \cellcolor{green!25}0.826753& \cellcolor{green!25}0.859652 \\ \hline
+			W\_BN\_S\_MS\_PR\_3& 0.96934& 0.753306& 0.826270& 0.855507 \\ \hline
 		\end {tabular}
 		\vspace{0.5cm}\\
 		\begin {tabular}[!htb]{|l|l|l|l|l|l|}
 			\hline\multicolumn{6}{|l|}{\textbf{4-class Micro F-Measure Scores}} \\ \hline
-			\textbf{Network}& \textbf{BG}& \textbf{Body}& \textbf{Filopod.}& \textbf{Lamell.}& \textbf{Overall} \\ \hline
-			W\_BN\_S\_MS\_4& & & & & \\ \hline
-			W\_BN\_S\_MS\_EL\_4& & & & & \\ \hline
-			W\_BN\_S\_MS\_LR\_4& & & & & \\ \hline
-			W\_BN\_S\_MS\_PR\_4& & & & & \\ \hline
+			\textbf{Network}& \textbf{BG}& \textbf{Lamell.}& \textbf{Body}& \textbf{Filopod.}& \textbf{Overall} \\ \hline
+			W\_BN\_S\_MS\_4& 0.972521& 0.676638& 0.924545& 0.647229& 0.930357 \\ \hline
+			W\_BN\_S\_MS\_EL\_4& \cellcolor{green!25}0.974655& \cellcolor{green!25}0.688037& \cellcolor{green!25}0.928248& \cellcolor{green!25}0.657683& \cellcolor{green!25}0.93436 \\ \hline
+			W\_BN\_S\_MS\_LR\_4& 0.970666& 0.662726& 0.919516& 0.626966& 0.926315 \\ \hline
+			W\_BN\_S\_MS\_PR\_4& 0.972195& 0.672126& 0.922898& 0.635264& 0.929459 \\ \hline
 			\multicolumn{6}{|l|}{\textbf{4-class Macro F-Measure Scores}} \\ \hline
-			\textbf{Network}& \textbf{BG}& \textbf{Body}& \textbf{Filopod.}& \textbf{Lamell.}& \textbf{Overall} \\ \hline
-			W\_BN\_S\_MS\_4& & & & & \\ \hline
-			W\_BN\_S\_MS\_EL\_4& & & & & \\ \hline
-			W\_BN\_S\_MS\_LR\_4& & & & & \\ \hline
-			W\_BN\_S\_MS\_PR\_4& & & & & \\ \hline
+			\textbf{Network}& \textbf{BG}& \textbf{Lamell.}& \textbf{Body}& \textbf{Filopod.}& \textbf{Overall} \\ \hline
+			W\_BN\_S\_MS\_4& 0.969880& 0.596355& \cellcolor{green!25}0.825985& 0.626172& 0.761833 \\ \hline
+			W\_BN\_S\_MS\_EL\_4& \cellcolor{green!25}0.972144& \cellcolor{green!25}0.597324& 0.825157& \cellcolor{green!25}0.642953& \cellcolor{green!25}0.764857 \\ \hline
+			W\_BN\_S\_MS\_LR\_4& 0.967521& 0.581588& 0.817467& 0.596097& 0.748987 \\ \hline
+			W\_BN\_S\_MS\_PR\_4& 0.969504& 0.590348& 0.819656& 0.606304& 0.753922 \\ \hline
 		\end {tabular}
 	\end {flushleft}
 \caption[Multi-class F-Measure scores for networks with different activation functions.]{Multi-class F-Measure scores of 3 and 4-class segmentations for the \textbf{W\_BN\_S\_MS} network with ELU, LReLU or PReLU activations.}
@@ -328,35 +330,35 @@ Finally, the choice of the activation function used throughout the network was e
 	\begin{flushleft}
 		\begin {tabular}[!htb]{|l|l|l|l|l|}
 			\hline\multicolumn{5}{|l|}{\textbf{3-class Micro F-Measure Scores}} \\ \hline
-			\textbf{Network}& \textbf{BG}& \textbf{Body}& \textbf{Protrusions}& \textbf{Overall} \\ \hline
+			\textbf{Network}& \textbf{BG}& \textbf{Protrusions}& \textbf{Body}& \textbf{Overall} \\ \hline
 			\textbf{TODOnetwork}\_3& & & &  \\ \hline
-			Kmeans\_3& 0.558539& 0.911727& 0.203548& 0.827114 \\ \hline
-			Otsu\_3& 0.825507& 0.948289& 0.293253& 0.893721\\ \hline
-			GMM\_3& 0.592041& 0.918865& 0.454169& 0.839736\\ \hline
+			Kmeans\_3& 0.911726& 0.203548& 0.55854& 0.827114 \\ \hline
+			Otsu\_3& 0.948289& 0.293253& 0.825507& 0.893721 \\ \hline
+			GMM\_3& 0.918865& 0.454169& 0.592041& 0.839736 \\ \hline
 			RandomW\_3& & & & \\ \hline
 			\multicolumn{5}{|l|}{\textbf{3-class Macro F-Measure Scores}} \\ \hline
-			\textbf{Network}& \textbf{BG}& \textbf{Body}& \textbf{Protrusions}& \textbf{Overall} \\ \hline
+			\textbf{Network}& \textbf{BG}& \textbf{Protrusions}& \textbf{Body}& \textbf{Overall} \\ \hline
 			\textbf{TODOnetwork}\_3& & & &  \\ \hline
-			Kmeans\_3& 0.651961& 0.913368& 0.285729& 0.621961 \\ \hline
-			Otsu\_3& 0.724415& 0.945845& 0.288723& 0.690693 \\ \hline
-			GMM\_3& 0.662100& 0.923315& 0.469288& 0.686225\\ \hline
+			Kmeans\_3& 0.913368& 0.285729& 0.651961& 0.621961 \\ \hline
+			Otsu\_3& 0.945845& 0.288723& 0.724415& 0.690693 \\ \hline
+			GMM\_3& 0.923315& 0.469288& 0.662101& 0.686225 \\ \hline
 			RandomW\_3& & & & \\ \hline
 		\end {tabular}
 		\vspace{0.5cm}\\
 		\begin {tabular}[!htb]{|l|l|l|l|l|l|}
 			\hline\multicolumn{6}{|l|}{\textbf{4-class Micro F-Measure Scores}} \\ \hline
-			\textbf{Network}& \textbf{BG}& \textbf{Body}& \textbf{Filopod.}& \textbf{Lamell.}& \textbf{Overall} \\ \hline
+			\textbf{Network}& \textbf{BG}& \textbf{Lamell.}& \textbf{Body}& \textbf{Filopod.}& \textbf{Overall} \\ \hline
 			\textbf{TODOnetwork}\_4& & & & &  \\ \hline
-			Kmeans\_4& 0.264708& 0.903179& 0.143972& 0.506803& 0.798993 \\ \hline
-			Otsu\_4& 0.290935& 0.952084& 0.211475& 0.826076& 0.888612\\ \hline
-			GMM\_4& 0.267892& 0.907277& 0.353604& 0.572532& 0.801932\\ \hline
+			Kmeans\_4& 0.903179& 0.143972& 0.506803& 0.264708& 0.798993 \\ \hline
+			Otsu\_4& 0.952084& 0.211475& 0.826076& 0.290935& 0.888612 \\ \hline
+			GMM\_4& 0.907277& 0.353604& 0.572532& 0.267892& 0.801932 \\ \hline
 			RandomW\_4& & & & & \\ \hline
 			\multicolumn{6}{|l|}{\textbf{4-class Macro F-Measure Scores}} \\ \hline
-			\textbf{Network}& \textbf{BG}& \textbf{Body}& \textbf{Filopod.}& \textbf{Lamell.}& \textbf{Overall} \\ \hline
+			\textbf{Network}& \textbf{BG}& \textbf{Lamell.}& \textbf{Body}& \textbf{Filopod.}& \textbf{Overall} \\ \hline
 			\textbf{TODOnetwork}\_4& & & & &  \\ \hline
-			Kmeans\_4& 0.332654& 0.910968& 0.165100& 0.608527& 0.515816 \\ \hline
-			Otsu\_4& 0.272930& 0.949528& 0.216677& 0.717499& 0.553722\\ \hline
-			GMM\_4& 0.299744& 0.912145& 0.309169& 0.638074& 0.552376\\ \hline
+			Kmeans\_4& 0.910968& 0.165100& 0.608527& 0.332654& 0.515816 \\ \hline
+			Otsu\_4& 0.949528& 0.216677& 0.717499& 0.272930& 0.553722 \\ \hline
+			GMM\_4& 0.912145& 0.309169& 0.638074& 0.299744& 0.552376 \\ \hline
 			RandomW\_4& & & & & \\ \hline
 		\end {tabular}
 	\end {flushleft}

@@ -81,7 +81,7 @@ epochs = 6
 every = 1 # show every 5th epoch
 
 plt.xticks(np.arange(0, iterations, iterations / (epochs / every))) # uniform xtics
-plt.yticks(np.arange(0, 1.1, 0.1)) # uniform ytics
+plt.yticks(np.arange(0, 1.1, 0.2)) # uniform ytics
 
 plt.gca().set_xticklabels(range(0, epochs+1, every)) # iters -> epochs
 ax.set_ylabel("Cross-Entropy loss")

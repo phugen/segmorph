@@ -105,11 +105,11 @@ ax.plot(val[::ns, 0], val[::ns, 1], color="blue")
 
 ax.set_xlabel("Epochs")
 #ax.set_ylim([0, 1.3])
-iterations = 80000
-epochs = 32
-every = 5 # show every 5th epoch
+iterations = 40000
+epochs = 6
+every = 1 # show every 5th epoch
 plt.xticks(np.arange(0, iterations, iterations / (epochs / every))) # uniform xtics
-plt.yticks(np.arange(0, 1.7, 0.2)) # uniform ytics
+plt.yticks(np.arange(0, 1.1, 0.2)) # uniform ytics
 plt.gca().set_xticklabels(range(0, epochs+1, every)) # iters -> epochs
 ax.set_ylabel("Cross-Entropy loss")
 fig.set_size_inches(5, 4)

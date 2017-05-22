@@ -202,7 +202,7 @@ A more reasonable approach is to initialize the weights as small random numbers,
 
 \[ \sigma^2 = \frac{2}{\alpha + \omega} \,. \]
 
-\noindent This ensures that the activation output variance is roughly the same as the input variance and does not decrease in deeper layers.\\ %In the special case of CNNs, $\alpha$ for a layer with, for instance, five $3 \times 3 \times 10$ filters is equal to $3 * 3 * 10 = 90$.\\
+\noindent This ensures that the activation output variance is roughly the same as the input variance and does not decrease in deeper layers.
 
 \noindent While non-saturating activation functions like ReLU do not output zero derivatives when using large weights, it is still beneficial to receive normalized inputs to a ReLU as shown in \cite{lecun_norm}. This is because values that are not close to zero do bias the SGD training towards a particular direction, slowing it down. The extreme case happens when all values have the same sign, as this forces the SGD algorithm to take steps that are perpendicular to each other. As an example, suppose that the training starts at a point $(2,\, 4)$ and the minimum is at $(6,\, 2)$. If a learning rate $\mu = 1$ is assumed, this takes two steps as opposed to one if only updates with the same sign are allowed:
 
@@ -215,7 +215,7 @@ A more reasonable approach is to initialize the weights as small random numbers,
 
 \[ \sigma^2 = \frac{2}{\alpha} \]
 
-\noindent instead.
+\noindent instead. In the special case of CNNs, $\alpha$ for a layer with, for instance, ten $3 \times 3$ filters - and therefore ten feature maps -  is equal to $3 * 3 * 10 = 90$. \cite{unet}\\
 
 
 	\section {Output and Loss Functions}

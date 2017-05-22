@@ -13,7 +13,7 @@ input_file = sys.argv[2]
 for c in range(numclasses):
 
     lines = []
-    n = 1
+    n = 0
 
     # rip lines concerning current class from block file
     with open(input_file, "r") as stats:
