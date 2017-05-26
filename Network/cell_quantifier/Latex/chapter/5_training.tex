@@ -136,7 +136,9 @@ However, this might prematurely stop the training in phases where the validation
 
 \[ \frac{\text{GL}(t)}{P_k(t)} > \beta \,, \]
 
-\noindent meaning that training is stopped when the generalization loss is too high and the training error has become stable, making it unlikely for the validation loss to recover (see Figure \textbf{\ref{fig:early_stopping}}). However, determining correct parameters and mathematically analyzing the benefits of Early Stopping is not easy, making this approach largely heuristical. Additionally, Caffe currently does not implement an easy way to apply these algorithms directly to the training, making it necessary to manually monitor training trends in practice while saving the state of the trained weights frequently so that the training can be interrupted when results stop improving.
+\noindent meaning that training is stopped when the generalization loss is too high and the training error has become stable, making it unlikely for the validation loss to recover (see Figure \textbf{\ref{fig:early_stopping}}).
+
+However, determining correct parameters is not easy, being a largely heuristical process. Additionally, Caffe currently does not implement an easy way to apply these algorithms to the training directly, making it necessary in practice to manually monitor training trends while saving the state of the trained weights frequently so that the training can be interrupted before the network starts to overfit.
 
 
 \begin {figure}[!htb]

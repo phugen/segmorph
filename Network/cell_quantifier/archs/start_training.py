@@ -27,11 +27,18 @@ numiters = int(sys.argv[3])
 # Get paths to all networks.
 with open(network_list) as f:
     lines = f.readlines()
-    nets = [x.strip("\r\n") for x in lines]
+    nets = []
+    logpaths = []
+
+    for x in lines:
+        # ignore comments in file
+        if not x.startswith("#"):
+            nets.append(x.strip("\r\n").split(",")[0])
+            logpaths.append(x.strip("\r\n").split(",")[1])
 
 
 # Train all networks.
-for net in nets:
+for netno,net in enumerate(nets):
 
     # ignore comments in file
     if not net.startswith("#"):
@@ -39,7 +46,7 @@ for net in nets:
         print "Starting training for " + net + " on GPU " + str(device) + "!"
 
         # write logs to both stdout and logfile
-        logname = os.path.basename(net)[:-9] + ".log"
+        logname = logpaths[netno] #os.path.basename(net)[:-9] + ".log"
 
         with open("logs/" + logname, "w") as log:
 

@@ -88,6 +88,11 @@ print minpair
 fig, ax = plt.subplots()
 ns = 1 # display every "ns"th sample
 
+# NOTE: DELETE---------------------
+#val = val[0:37, ...]
+#train = train[0:374, ...]
+#----------------------------------
+
 
 # plot all classes for training error
 #ax.plot(train[0,::ns,0], train[0,::ns,1], color="black", linestyle=":") # class 0: background
@@ -104,13 +109,19 @@ ax.plot(val[::ns, 0], val[::ns, 1], color="blue")
 #plt.yscale("log")
 
 ax.set_xlabel("Epochs")
-#ax.set_ylim([0, 1.3])
-iterations = 40000
-epochs = 6
+
+
+iterations = 200000
+epochs = 32
 every = 1 # show every 5th epoch
 plt.xticks(np.arange(0, iterations, iterations / (epochs / every))) # uniform xtics
 plt.yticks(np.arange(0, 1.1, 0.2)) # uniform ytics
 plt.gca().set_xticklabels(range(0, epochs+1, every)) # iters -> epochs
 ax.set_ylabel("Cross-Entropy loss")
 fig.set_size_inches(5, 4)
+
+# NOTE: DELETE---------------------
+#plt.xlim((0, 40000))
+#----------------------------------
+
 plt.show()
