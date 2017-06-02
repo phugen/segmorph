@@ -338,7 +338,7 @@ For this thesis, the weight map was generated using average weighting for the cl
 		\subsection{F-Measure}
 \label{subsec:fmeasure}
 
-An alternative to solving the problem of unbalanced classes in the training data is using the \textit{F-Measure}, also called \textit{DICE similarity}, as a loss function instead. The F-Measure is a statistical similarity function which has been shown to perform well when using SGD-trained CNNs on unbalanced data for binary segmentations. \cite{fmeasure3, fmeasure4, fmeasure5} It is based on the quantities of \textit{Precision} and \textit{Recall} over the training sample in comparison to its ground truth. The precision is defined as
+An alternative to solving the problem of unbalanced classes in the training data is using the \textit{F-Measure}, also called \textit{DICE similarity}, as a loss function instead. The F-Measure is a statistical similarity function which has been shown to perform well when using SGD-trained CNNs on unbalanced data for binary segmentations. \cite{fmeasure3, fmeasure5} It is based on the quantities of \textit{Precision} and \textit{Recall} over the training sample in comparison to its ground truth. The precision is defined as
 
 \[ \text{PR} = \frac{\text{TP}}{\text{TP} + \text{FP}} \]
 
@@ -370,7 +370,7 @@ An alternative to solving the problem of unbalanced classes in the training data
 
 \noindent For multi-class problems, the approach is changed slightly: The $F_1$ score is calculated for each class $C_j$ in a binary fashion, using the $C_j$ as the ``foreground'' and all other classes $C_i, i \neq j$ as ``background''. This way, the definitions for TP, FP and FN can be used for more than two classes. The average of these multiple F-Measures is then used as the loss function.\footnote{It should be noted that the $F_1$ score \textbf{increases} the better the classification becomes.}
 
-During the backward pass, the gradients are also calculated per class in a similiar way. \textbf{TODO}
+During the backward pass, the gradients are also calculated per class in a similiar way.
 
 
 	\section {U-Net}

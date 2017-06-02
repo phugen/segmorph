@@ -1,7 +1,13 @@
 \chapter {Further research}
 \label{chap:futurework}
 
-In the following sections, additional approaches to the segmentation problem are described. An application of these approaches to the problem at hand had to be cut from the experiments conducted in the course of this thesis because of time constraints, but might improve the current best score further.
+In the following sections, additional optimizations for and thoughts on the U-Net segmentation network are described. Testing these had to be cut from the experiments conducted in the course of this thesis because of time constraints, although they might improve the current best score further.
+
+\section {Initialization noise}
+
+While an effort was made to find out how large the influence of the random weight initialization of both Xavier and MSRA-style initializations on the results of the network is, an exhaustive test was not possible because this would have taken too long. Ideally, networks with both initialization schemes should be trained multiple times to produce a series of results from which one can determine the minimum and maximum result, which would help to determine whether the use of different activation functions or shuffling produces a result that is statistically significant and not merely the result of noise. In the same vein, one could fix the initialization of the network and then train networks with the same initializations but different optimizations to remove the noise jitter and directly compare the networks.
+
+Also, $k$-fold cross validation could be performed for all networks, using different parts of the training set as the validation set and training $k$ times. This is to avoid biased results due to parts of the training set that might be extraordinarily easy or hard to classify.
 
 
 	\section {Pseudo-labeling}

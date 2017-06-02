@@ -77,7 +77,9 @@ An easy way to multiply the number of samples eightfold is to flip all images on
 
 
 		\subsection{Elastic Deformation}
-Another data augmentation technique is \textit{Elastic Deformation} \cite{elastic}, which calculates a new image from an existing one by sampling random new positions for each pixel in the original image by adding displacement vectors drawn from a Gaussian distribution with standard deviation $\sigma$ to each pixel position. These vectors are additionally multiplied by a force parameter $\alpha$. The result is a slightly distorted image, and if $\alpha$ and $\sigma$ are chosen appropriately and the same deformation is applied to both an input image and its ground truth image, the resulting images are plausible enough to count as new samples to train on (see Figure \textbf{\ref{fig:elastic}}). This is especially useful for biological and medical use cases because Elastic Deformation produces transformations that can naturally occur, such as cells being squashed slightly during microscopy, which helps the network learn to also classify these correctly. For the work in this thesis, the deformation parameters were set to $\alpha = 200$ and $\sigma = 10$.\\
+Another data augmentation technique is \textit{Elastic Deformation} \cite{elastic}. Elastic Deformation is a way to create new, slightly different images from existing images by introducing a discrete grid of an arbitrary resolution corresponding to the positions of image pixels in the original image and then sampling random new positions for each grid node by adding displacement vectors drawn from a Gaussian distribution with standard deviation $\sigma$ to them. These vectors are additionally multiplied by a force parameter $\alpha$. Using an interpolation method such as bilinear interpolation, the result is a slightly distorted image, and if $\alpha$ and $\sigma$ are chosen appropriately and the same deformation is applied to both an input image and its ground truth image, the resulting images are plausible enough to count as new samples to train on (see Figure \textbf{\ref{fig:elastic}}). This is especially useful for biological and medical use cases because Elastic Deformation produces transformations that can naturally occur, such as cells being squashed slightly during microscopy, which helps the network learn to also classify these correctly. For the work in this thesis, the deformation parameters were set to $\alpha = 200$ and $\sigma = 10$ while using a grid with the same resolution as the image.
+
+Because the image labels were color-coded and simply interpolating would change these colors to meaningless ones, one method to ensure that the labels remain intact is to use nearest-neighbor interpolation for the labels instead of bilinear interpolation.\\
 
 \noindent After tiling and removing all those tiles that contained only pixels of one class (e.g. background pixels only), the dataset then split into separate training and validation sets with a ratio of 4:1. The data augmentation was performed only for the training images, meaning that the network was tested on real images only. For both the 3- and 4-class datasets, the training set contained 12497 image tiles and their corresponding labels after applying augmentations, while the validation set contained 199 tiles cut from strictly unaltered images.
 
@@ -86,7 +88,7 @@ Another data augmentation technique is \textit{Elastic Deformation} \cite{elasti
 	\begin{center}
 		\includegraphics[scale=0.80]{img/fig_elastic.png}
 	\end{center}
-	\caption[Elastic deformation.]{\textbf{Left:} Input image with superimposed grid. \textbf{Right:} Elastic deformation with $\alpha = 100$ and $\sigma = 10$.}
+	\caption[Elastic deformation.]{\textbf{Left:} Input image with superimposed lines to show the effect of the deformation more clearly. \textbf{Right:} Effects of Elastic deformation on the first image with $\alpha = 100$ and $\sigma = 10$ and a grid of the same resolution as the image.}
 	\label{fig:elastic}
 \end {figure}
 
@@ -98,7 +100,7 @@ Choosing the number of hidden layers and the number of hidden neurons within the
 
 \textit{Underfitting} is the term for the inability of a method to model the data correctly. For example, a linear classifier always underfits on a not-linearly separable dataset because it is not powerful enough to solve the problem. \textit{Overfitting} is the exact opposite and occurs when the model is too complex so that it does not model a trend in the data, but instead memorizes the dataset (see Figure \textbf{\ref{fig:overfit}}). This is undesirable because such a model cannot generalize well and will make incorrect classifications once it is asked to classify data it has not been presented with during training. Therefore, a balance has to be found to equip a model with both enough power to classify correctly while also allowing leeway for generalizing when making predictions on new data.\\
 
-\textbf{TODO: Regularization term for SGD: https://stats.stackexchange.com/questions/29130/difference-between-neural-net-weight-decay-and-learning-rate}\\
+%\textbf{TODO: Regularization term for SGD: https://stats.stackexchange.com/questions/29130/difference-between-neural-net-weight-decay-and-learning-rate}\\
 
 	\begin {figure}[!htb]
 		\begin{center}

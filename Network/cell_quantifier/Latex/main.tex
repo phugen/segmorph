@@ -108,6 +108,7 @@
 \lstset{escapeinside={(*@}{@*)}}
 \DeclareUnicodeCharacter{2212}{-} % declare missing unicode minus?
 \usepackage{placeins} % FloatBarrier
+\usepackage{float}
 
 \usepackage{fancyhdr} % for preventing wrong page number position in second TOC page
 \fancypagestyle{plain}{%
@@ -155,16 +156,17 @@
 \tableofcontents
 
 \include{chapter/declaration}
+\include{chapter/acknowledgements}
 \include{chapter/1_abstract}
 
 \mainmatter
-%\include{chapter/2_introduction}
-%\include{chapter/3_concepts}
-%\include{chapter/4_network}
+\include{chapter/2_introduction}
+\include{chapter/3_concepts}
+\include{chapter/4_network}
 \include{chapter/5_training}
 \include{chapter/6_results}
 \include{chapter/7_conclusion}
-%\include{chapter/8_future_work}
+\include{chapter/8_future_work}
 %\include{chapter/9_addendum}
 
 \cleardoublepage
