@@ -6,7 +6,7 @@ This chapter provides the learning parameters, graphical representations of the 
 	\section{Hardware}
 All variants of the U-Net were trained on two Nvidia TITAN X Pascal GPUs (12 GB GDDR5X RAM), using Caffe's CUDA/cuDNN support, training different networks seperately on different GPUs. Further, the workstation used an Intel Xeon E5-2695 CPU with 18 physical cores (36 logical cores with Hyper-threading) running at 2.1 GHz (up to 3.3 GHz) and 128 GB DDR4 RAM.
 
-	\section {Segmentation quality evaluation}
+	\section {Micro and Macro F-Measure as Performance Measures}
 
 \noindent As there are many possible variations of the U-Net architecture, these variations were tested iteratively, choosing the best network of a number of networks and modifying it further. This was done because an exhaustive search for the best combination of weight initialization, activation functions, hyperparameters like the learning rate and techniques such as Dropout and Batch Normalization would have exceeded the time limit of this thesis. Also, at the time of writing, it was not yet known how these different approaches interact precisely. For example, Batch Normalization and specialized weight initialization schemes have the same goal but achieve it in different ways, making it unclear whether one or the other performs better in practice.\\
 
@@ -27,6 +27,9 @@ All variants of the U-Net were trained on two Nvidia TITAN X Pascal GPUs (12 GB 
 \[ \text{PR}_\text{M} = \frac{1}{n} \sum_{i=1}^{n} \frac{\text{TP}_i}{\text{TP}_i + \text{FP}_i} \text { and } \text{RC}_\text{M} = \frac{1}{n} \sum_{i=1}^{n} \frac{\text{TP}_i}{\text{TP}_i + \text{FN}_i} \] 
 
 \noindent \cite[pp. 317-318]{information_retrieval} highlights that the Micro F-Measure is dominated by ``large'' classes, meaning classes that occur often in the ground truth data. This would shift the focus of the evaluation of the segmentation effectiveness towards whether the primarily large classes are segmented correctly. As most pixels in the validation images are background pixels and the correct segmentation of the non-background class pixels is of more interest, the Macro F-Measure is therefore chosen for assessing which method performs best because it is biased towards smaller classes rather than large ones, but for completeness, both scores are listed.\\
+
+
+	\section{Segmentation Performance Evaluation}
 
 \noindent The first test run pitted two nearly identical U-Net networks against each other, using ReLU activations and Dropout with $p = 0.5$. The only difference was the choice of the loss function. The \textbf{W} networks used the weighted Cross-Entropy Loss\footnote{The weighted Cross-Entropy loss is not included in the vanilla Caffe implementation and was manually added to the Caffe codebase using outdated code by Ronneberger et al.  for guidance, available here: \url{https://lmb.informatik.uni-freiburg.de/resources/opensource/unet.en.html} .}, while the \textbf{F1} networks employed the multi-class F-Measure. Both networks were trained for 80,000 iterations (or $\approx$ 32 epochs) on both the 3- and the 4-class training set (indicated by an additional $\_3$ or $\_4$ suffix in the network name), while testing the network on the respective validation set every 1,000 iterations.
 

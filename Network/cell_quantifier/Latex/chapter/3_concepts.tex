@@ -421,7 +421,7 @@ Afterwards, the sum $a^{(l)}_j$ is passed into an activation function $h$ to pro
 
 \noindent For multi-class classifications, an adaption of the Cross-Entropy loss can be used, which is further described in Section \textbf{\ref{subsec:cross_ent}}. \cite[pp. 232-236]{bishop_pattern}\\
 
-	\subsubsection{The Backpropagation algorithm}
+	\subsubsection{The Backpropagation Algorithm}
 Training a network with multiple layers is harder than training a Perceptron because the influence of each of the weights in any layer of the network on the error function has to be computed when using gradient-based optimization methods, while the output of the network no longer is the result of a single function, but instead, a composition of a usually large number of functions (see Equation \textbf{\ref{eq:mlp_out}}). Although it is generally possible to manually formulate a derivative term for the partial derivatives of the entire network, this becomes more and more cumbersome as the network grows in size.\\
 
 Luckily, there exists an iterative algorithm called \textit{Backpropagation} \cite{backprop} that finds the gradient of the loss with respect to each weight so that an optimization method can be applied to change every weight. The algorithm makes use of the fact that each neuron can be viewed largely independently from the rest of the network. Remembering that the analytic way of obtaining the derivative of a composition of functions 
