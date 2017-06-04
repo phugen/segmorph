@@ -1,7 +1,7 @@
 \chapter {Results}
 \label{chap:results}
 
-This chapter provides the learning parameters, graphical representations of the training progresses and results of the test runs performed using the 3- and 4-class datasets with a number of networks based on the original U-Net, each with slight variations. For instance, different loss functions such as the weighted Cross-Entropy loss and the F-Measure are tested, alongside Batch Normalization, shuffling of the training set, different weight initialization schemes and multiple activation functions. Each network's results are compared with the results of the network preceding it in order to find a network that achieves the best possible results on the test data. Finally, the results of the best network are compared with results achieved by the image segmentation methods described in Chapter \textbf{\ref{chap:concepts}} which are not based on neural networks.
+This chapter provides the learning parameters, graphical representations of the training progressions and results of the test runs performed using the 3- and 4-class datasets with a number of networks based on the original U-Net, each with slight variations. For instance, different loss functions such as the weighted Cross-Entropy loss and the F-Measure are tested, alongside Batch Normalization, shuffling of the training set, different weight initialization schemes and multiple activation functions. Each network's results are compared with the results of the network preceding it in order to find a network that achieves the best possible results on the test data. Finally, the results of the best network are compared with results achieved by the image segmentation methods described in Chapter \textbf{\ref{chap:concepts}} which are not based on neural networks.
 
 	\section{Hardware}
 All variants of the U-Net were trained on two Nvidia TITAN X Pascal GPUs (12 GB GDDR5X RAM), using Caffe's CUDA/cuDNN support, training different networks seperately on different GPUs. Further, the workstation used an Intel Xeon E5-2695 CPU with 18 physical cores (36 logical cores with Hyper-threading) running at 2.1 GHz (up to 3.3 GHz) and 128 GB DDR4 RAM.
@@ -20,18 +20,20 @@ All variants of the U-Net were trained on two Nvidia TITAN X Pascal GPUs (12 GB 
 
 \noindent The Macro F-Measure likewise is defined as
 
-\[ F_{\text{1M}} = 2 \left ( \frac{\text{PR}_\text{M} \cdot \text{RC}_\text{M}}{\text{PR}_\text{M} + \text{RC}_\text{M}} \right ) \]
+\[ F_{\text{1M}} = 2 \left ( \frac{\text{PR}_\text{M} \cdot \text{RC}_\text{M}}{\text{PR}_\text{M} + \text{RC}_\text{M}} \right ) \,,\]
 
 \noindent where $\text{PR}_\text{M}$ and $\text{RC}_\text{M}$ are the macro-average Precision and Recall. These are calculated for each sample independently, summed, and averaged over all $n$ samples:
 
-\[ \text{PR}_\text{M} = \frac{1}{n} \sum_{i=1}^{n} \frac{\text{TP}_i}{\text{TP}_i + \text{FP}_i} \text { and } \text{RC}_\text{M} = \frac{1}{n} \sum_{i=1}^{n} \frac{\text{TP}_i}{\text{TP}_i + \text{FN}_i} \] 
+\[ \text{PR}_\text{M} = \frac{1}{n} \sum_{i=1}^{n} \frac{\text{TP}_i}{\text{TP}_i + \text{FP}_i} \text \quad { and } \quad \text{RC}_\text{M} = \frac{1}{n} \sum_{i=1}^{n} \frac{\text{TP}_i}{\text{TP}_i + \text{FN}_i} \] 
 
 \noindent \cite[pp. 317-318]{information_retrieval} highlights that the Micro F-Measure is dominated by ``large'' classes, meaning classes that occur often in the ground truth data. This would shift the focus of the evaluation of the segmentation effectiveness towards whether the primarily large classes are segmented correctly. As most pixels in the validation images are background pixels and the correct segmentation of the non-background class pixels is of more interest, the Macro F-Measure is therefore chosen for assessing which method performs best because it is biased towards smaller classes rather than large ones, but for completeness, both scores are listed.\\
 
 
 	\section{Segmentation Performance Evaluation}
 
-\noindent The first test run pitted two nearly identical U-Net networks against each other, using ReLU activations and Dropout with $p = 0.5$. The only difference was the choice of the loss function. The \textbf{W} networks used the weighted Cross-Entropy Loss\footnote{The weighted Cross-Entropy loss is not included in the vanilla Caffe implementation and was manually added to the Caffe codebase using outdated code by Ronneberger et al.  for guidance, available here: \url{https://lmb.informatik.uni-freiburg.de/resources/opensource/unet.en.html} .}, while the \textbf{F1} networks employed the multi-class F-Measure. Both networks were trained for 80,000 iterations (or $\approx$ 32 epochs) on both the 3- and the 4-class training set (indicated by an additional $\_3$ or $\_4$ suffix in the network name), while testing the network on the respective validation set every 1,000 iterations.
+	\subsubsection{Loss functions}
+
+\noindent The first test run pitted two nearly identical U-Net networks against each other, using ReLU activations and Dropout with $p = 0.5$. The only difference was the choice of the loss function. The \textbf{W} networks used the weighted Cross-Entropy Loss\footnote{The weighted Cross-Entropy loss is not included in the vanilla Caffe implementation and was manually added to the Caffe codebase using outdated code by Ronneberger et al.  for guidance, available here: \url{https://lmb.informatik.uni-freiburg.de/resources/opensource/unet.en.html} .}, while the \textbf{F1} networks employed the multi-class F-Measure. Both networks were trained for 80,000 iterations (or about 32 epochs) on both the 3- and the 4-class training set (indicated by an additional $\_3$ or $\_4$ suffix in the network name), while testing the network on the respective validation set every 1,000 iterations.
 
 The \textbf{W} network used an initial learning rate of 0.001, a step learning rate decay of a factor $\zeta = 0.1$ every 20,000 iterations and a momentum modifier $\gamma = 0.99$, while the \textbf{F1} network used an initial learning rate of 0.0001, $\zeta = 0.3$ every 20,000 iterations and $\gamma = 0.99$. Both networks used $\text{L}^2$ gradient regularization and a mini-batch size of 5.
 
@@ -60,7 +62,7 @@ The progress of the training is shown in Figure \textbf{\ref{fig:weighted_f1_tra
 		\label{fig:weighted_f1_training}
 \end {figure}
 
-\noindent The results of testing the networks on the validation set are shown in Table \textbf{\ref{tab:results1}}. They indicate that both networks perform similarly well: For the 3-class dataset, the \textbf{W\_3} network has a Macro F-Measure score of $\approx$0.875, slightly better than the score achieved by the \textbf{F1\_3} network, which was $\approx$0.861. Reducing the dataset to three classes by merging the red and blue classes improves the results for both networks regardless of the loss function. The \textbf{W\_4} network achieved an overall Macro F-Measure score of $\approx$0.746, slightly worse than the \textbf{F1\_4} network score of $\approx$0.749. Since the \textbf{W} networks were better at segmenting the 3-class dataset and because the difference in performance on the 4-class dataset was very small and could be due to initialization randomness, the weighted Cross-Entropy loss was chosen as the loss function for further experiments.\\
+\noindent The results of testing the networks on the validation set are shown in Table \textbf{\ref{tab:results1}}. They indicate that both networks perform similarly well: For the 3-class dataset, the \textbf{W\_3} network has a Macro F-Measure score of $\approx0.875$, slightly better than the score achieved by the \textbf{F1\_3} network, which was $\approx0.861$. Reducing the dataset to three classes by merging the red and blue classes improves the results for both networks regardless of the loss function. The \textbf{W\_4} network achieved an overall Macro F-Measure score of $\approx0.746$, slightly worse than the \textbf{F1\_4} network score of $\approx0.749$. Since the \textbf{W} networks were better at segmenting the 3-class dataset and because the difference in performance on the 4-class dataset was very small and could be due to initialization randomness, the weighted Cross-Entropy loss was chosen as the loss function for further experiments.\\
 
 
 \begin {table}
@@ -93,12 +95,13 @@ The progress of the training is shown in Figure \textbf{\ref{fig:weighted_f1_tra
 \end {table}
 
 
+	\subsubsection{Batch Normalization}
 
 \noindent The second training case tested whether using Batch Normalization provides benefits, either in convergence speed or validation score. Therefore, the \textbf{W} networks were modified to perform Batch Normalization before each ReLU activation, implemented in Caffe as a ``Batch Normalization'' layer that normalizes its input according to the mini-batch statistics, followed by a ``Scale'' layer that applies the affine transformation. Also, all Dropout layers were removed, as advised in \cite{batchnorm}. These networks receive an additional \textbf{\_BN} as part of their name.
 
-Again, the networks were trained on the 3- and 4-class datasets, this time, considering the notes on accelerating a network with Batch Normalization in \cite{batchnorm}, with a higher initial learning rate of 0.005, and a faster step learning rate decay that reduces the learning rate by $\zeta = 0.1$ every 7,500 iterations. Momentum was kept at $\gamma = 0.99$. However, the network parameters did not fit into memory with a mini-batch size of 5 because of the added Batch Normalization layers, and therefore the mini-batch size had to be lowered to 2. To be able to still compare the training to previous results, the number of iterations was raised to 200,000 so that the network was trained for $\approx$32 epochs as before.
+Again, the networks were trained on the 3- and 4-class datasets, this time, considering the notes on accelerating a network with Batch Normalization in \cite{batchnorm}, with a higher initial learning rate of 0.005, and a faster step learning rate decay that reduces the learning rate by $\zeta = 0.1$ every 7,500 iterations. Momentum was kept at $\gamma = 0.99$. However, the network parameters did not fit into memory with a mini-batch size of 5 because of the added Batch Normalization layers, and therefore the mini-batch size had to be lowered to 2. To be able to still compare the training to previous results, the number of iterations was raised to 200,000 so that the network was trained for about 32 epochs as before.
 
-The training progress is shown in Figure \textbf{\ref{fig:weighted_weighted_batchnorm_training}}. As expected, the networks converge much faster when using Batch Normalization, taking only $\approx$5 epochs of training until convergence, which is a five-fold reduction of the required training epochs. As such, the \textbf{W\_BN} networks took only $\approx$7 hours each to converge, down from 26 hours.\\
+The training progress is shown in Figure \textbf{\ref{fig:weighted_weighted_batchnorm_training}}. As expected, the networks converge much faster when using Batch Normalization, taking only about 5 epochs of training until convergence, which is a five-fold reduction of the required training epochs. As such, the \textbf{W\_BN} networks took only about 7 hours each to converge, down from 26 hours.\\
 
 
 
@@ -125,7 +128,7 @@ The training progress is shown in Figure \textbf{\ref{fig:weighted_weighted_batc
 		\label{fig:weighted_weighted_batchnorm_training}
 \end {figure}
 
-\noindent From the test results, shown in Table \textbf{\ref{tab:results2}}, it is evident that the \textbf{W\_BN} networks were better consistently for the 3-class dataset, achieving an overall Macro F-Measure score of $\approx$0.777, which is an improvement of the previous score of $\approx$0.746. For the easier 3-class dataset however, the overall Macro F-Measure score was $\approx$0.869 which is slightly worse than the result of the network without Batch Normalization, achieving a score of $\approx$0.874. Despite this, it was still deemed advisable to use Batch Normalization from hereafter to massively reduce the training time of the networks.\\
+\noindent From the test results, shown in Table \textbf{\ref{tab:results2}}, it is evident that the \textbf{W\_BN} networks were better consistently for the 3-class dataset, achieving an overall Macro F-Measure score of $\approx0.777$, which is an improvement towards the previous score of $\approx0.746$. For the easier 3-class dataset however, the overall Macro F-Measure score was $\approx0.869$ which is slightly worse than the result of the network without Batch Normalization, achieving a score of $\approx0.874$. Despite this, it was still deemed advisable to use Batch Normalization from hereafter to massively reduce the training time of the networks.\\
 
 \begin {table}
 	\begin{flushleft}
@@ -156,10 +159,11 @@ The training progress is shown in Figure \textbf{\ref{fig:weighted_weighted_batc
 \label{tab:results2}
 \end {table}
 
+	\subsubsection{Training set shuffling}
 
-In the next round of tests, the effect of shuffling on the training of weighted Cross-Entropy Loss networks with Batch Normalization was evaluated, using the same training parameters as before - especially the same number of epochs because shuffling was expected to either reduce the number of epochs necessary for convergence via speeding up the learning process, or alternatively make the network take longer to converge, but perhaps gaining additional validation score improvements in return. Depending on the results, the epoch number can then be reduced to whichever number of epochs is necessary, which should provide a large training time reduction in comparison to the prior number of $\approx$32 epochs in either case. The networks with enabled shuffling have an additional \textbf{\_S} as part of their name.
+In the next round of tests, the effect of shuffling on the training of weighted Cross-Entropy Loss networks with Batch Normalization was evaluated, using the same training parameters as before. Especially the number of epochs was chosen to be identical because shuffling was expected to either reduce the number of epochs necessary for convergence via speeding up the learning process, or alternatively make the network take longer to converge, but perhaps gaining additional validation score improvements in return. Depending on the results, the epoch number can then be reduced to whichever number of epochs is necessary, which should provide a large training time reduction in comparison to the prior number of about 32 epochs in either case. The networks with enabled shuffling have an additional \textbf{\_S} as part of their name.
 
-The training progress is shown in Figure \textbf{\ref{fig:weighted_batchnorm_shuffle_training}}. Indeed, the \textbf{W\_BN\_S} networks now took only 1 - 2 epochs to converge as opposed to previously $\approx$5 epochs, which is equivalent to about 4 1/2 hours of training each, down from 7 hours.
+The training progress is shown in Figure \textbf{\ref{fig:weighted_batchnorm_shuffle_training}}. Indeed, the \textbf{W\_BN\_S} networks now took only 1 - 2 epochs to converge as opposed to previously about 5 epochs, which is equivalent to about 4 1/2 hours of training each, down from 7 hours.
 
 
 \begin {figure}[!htb]
@@ -186,7 +190,7 @@ The training progress is shown in Figure \textbf{\ref{fig:weighted_batchnorm_shu
 \end {figure}
 
 
-The testing results are shown in Table \textbf{\ref{tab:results3}}. Surprisingly though, the \textbf{W\_BN\_S} networks performed worse for both 3 and 4 classes in terms of their Macro F-Measure scores, with scores of $\approx$0.853 (down from $\approx$0.868) and $\approx$0.762 (down from $\approx$0.777). As in each epoch, all training samples are presented to the network for training and shuffling merely changes their order, it was unclear why shuffling would have a negative effect on the generalization capability of the network.
+The testing results are shown in Table \textbf{\ref{tab:results3}}. Surprisingly though, the \textbf{W\_BN\_S} networks performed worse for both 3 and 4 classes in terms of their Macro F-Measure scores, with scores of $\approx0.853$ (down from $\approx0.868$) and $\approx0.762$ (down from $\approx0.777$). As in each epoch, all training samples are presented to the network for training and shuffling merely changes their order, it was unclear why shuffling would have a negative effect on the generalization capability of the network.
 
 
 \begin {table}
@@ -219,9 +223,11 @@ The testing results are shown in Table \textbf{\ref{tab:results3}}. Surprisingly
 \end {table}
 
 
-\noindent As the next evaluation step, the effect of the weight initialization on \textbf{W\_BN\_S} was compared, using the Xavier and the MSRA initializations. It was believed that MSRA should work better for all networks using ReLU activations or its variations. The networks up to this point used the Xavier initialization, so the networks with MSRA initialization received an additional \textbf{\_MS} tag. The number of epochs was reduced to $\approx$6.
+	\subsubsection {MSRA weight initialization and initialization noise}
 
-The training progress is shown in Figure \textbf{\ref{fig:weighted_batchnorm_shuffle_msra_training}}, however, the new initialization does not change the progress of the training noticeably, and the \textbf{W\_BN\_S\_MS} networks still converge after 1 - 2 epochs.\\
+\noindent As the next evaluation step, the effect of the weight initialization on \textbf{W\_BN\_S} was compared, using the Xavier and the MSRA initializations. It was believed that MSRA should work better for all networks using ReLU activations or its variations. The networks up to this point used the Xavier initialization, so the networks with MSRA initialization received an additional \textbf{\_MS} tag. The number of epochs was reduced to about 6.
+
+The training progress is shown in Figure \textbf{\ref{fig:weighted_batchnorm_shuffle_msra_training}}. However, the new initialization does not change the progress of the training noticeably, and the \textbf{W\_BN\_S\_MS} networks still converge after 1 - 2 epochs.\\
 
 
 \begin {figure}[!htb]
@@ -248,9 +254,9 @@ The training progress is shown in Figure \textbf{\ref{fig:weighted_batchnorm_shu
 \end {figure}
 
 
-The test results are shown in Table \textbf{\ref{tab:results4}}. For both the 3- and 4-class networks, using the MSRA initialization led to slight score improvements, namely to values of $\approx$0.855 (up from 0.853) and $\approx$0.7618 (up from 0.7616). However, at this point, it was evident that to properly evaluate the results, the effect of the weight initialization noise on the results had to be considered. To this account, both the \textbf {W\_BN\_S} and \textbf{W\_BN\_S\_MS} networks were trained again for 20,000 iterations, using the 3- and 4-class datasets. This was done to obtain an averaged loss as well as a rough error interval in which the validation loss could potentially lie for a newly trained network. The results are shown in Figure \textbf{\ref{fig:weight_jitter}}.
+The test results are shown in Table \textbf{\ref{tab:results4}}. For both the 3- and 4-class networks, using the MSRA initialization led to slight score improvements, namely to values of $\approx0.855$ (up from $\approx0.853$) and $\approx0.7618$ (up from $\approx0.7616$). However, at this point, it was evident that to properly evaluate the results, the effect of the weight initialization noise on the results had to be considered. To this account, both the \textbf {W\_BN\_S} and \textbf{W\_BN\_S\_MS} networks were trained again for 20,000 iterations, using the 3- and 4-class datasets. This was done to obtain an averaged loss as well as a rough error interval in which the validation loss could potentially lie for a newly trained network. The results are shown in Figure \textbf{\ref{fig:weight_jitter}}.
 
-For the \textbf {W\_BN\_S\_3} network, the difference between the minimum and maximum loss in the later iterations where the network had already converged was $\approx$0.0156, while for the 4-class version of the network, this difference was $\approx$0.0184. For the \textbf{W\_BN\_S\_MS} networks, these values were $\approx$0.0129 and $\approx$0.0125, respectively. While this helps explain the drop in performance when using shuffling as the worse values lay in the error interval given by the initialization randomness, it also seems as though MSRA initialization is a little more stable, jittering less than the Xavier initialization does - although this may require further testing. Concludingly, as the effect on the loss was rather neutral, but might be more stable because of the new initialization, MSRA initialization was therefore used for the last round of experiments.\\
+For the \textbf {W\_BN\_S\_3} network, the difference between the minimum and maximum loss in the later iterations where the network had already converged was $\approx0.0156$, while for the 4-class version of the network this difference was $\approx0.0184$. For the \textbf{W\_BN\_S\_MS} networks, these values were $\approx0.0129$ and $\approx0.0125$, respectively. While this helps explain the drop in performance when using shuffling as the worse values lay in the error interval given by the initialization randomness, it also seems as though MSRA initialization is a little more stable, jittering less than the Xavier initialization does - although this requires further testing. Concludingly, as the effect on the loss was rather neutral, but might be more stable because of the new initialization, MSRA initialization was therefore used for the last round of experiments.\\
 
 \begin {figure}[!htb]
 	\begin {subfigure}[b]{0.4\linewidth}
@@ -304,6 +310,8 @@ For the \textbf {W\_BN\_S\_3} network, the difference between the minimum and ma
 \end {table}
 
 
+	\subsubsection{Activation functions}
+
 In the last experiment, the choice of the activation function used throughout the network was evaluated. The previous networks used ReLU activations, which were subsequently replaced with ELU (\textbf{\_EL}), LReLU (\textbf{\_LR}) and PReLU (\textbf{\_PR}) activations. The ELU used the standard value of $\alpha = 1.0$ as implemented by Caffe, while the LReLU activations used $\alpha = 0.01$.
 
 The training progress is shown in Figure \textbf{\ref{fig:weighted_batchnorm_shuffle_msra_acts_training}}. However, the training progress again does not differ much from the convential ReLU training, although the ELU activation function achieves a lower loss than the two other activation functions after 1 - 2 epochs on the 4-class dataset.\\
@@ -332,7 +340,7 @@ The training progress is shown in Figure \textbf{\ref{fig:weighted_batchnorm_shu
 		\label{fig:weighted_batchnorm_shuffle_msra_acts_training}
 \end {figure}
 
-The test results are shown in Table \textbf{\ref{tab:results5}}. For the 3-class dataset, the LReLU outperforms the ReLU activation and the other two activation functions tested by a small margin of $\approx$0.86 (up from the ReLU score of $\approx$0.855), while for the 4-class dataset, the ELU performs much better than the other two activation functions, but only slightly better than the ReLU activation, achieving a Macro F-Measure score of $\approx$0.765 (up from the ReLU score of $\approx$0.762). As these improvements again lay in the error interval, they may or may not make an improvement in practice, but using the best networks in this batch respectively should work just as well as using the ReLU activation function, which is why they were declared the best overall networks.\\
+The test results are shown in Table \textbf{\ref{tab:results5}}. For the 3-class dataset, the LReLU outperforms the ReLU activation and the other two activation functions tested by a small margin of $\approx0.86$ (up from the ReLU score of $\approx0.855$), while for the 4-class dataset, the ELU performs much better than the other two activation functions, but only slightly better than the ReLU activation, achieving a Macro F-Measure score of $\approx0.765$ (up from the ReLU score of $\approx0.762$). As these improvements again lay in the error interval, they may or may not make an improvement in practice, but using the best networks in this batch respectively should work just as well as using the ReLU activation function, which is why they were declared the best overall networks.\\
 
 \begin {table}
 	\begin{flushleft}
@@ -370,6 +378,8 @@ The test results are shown in Table \textbf{\ref{tab:results5}}. For the 3-class
 \label{tab:results5}
 \end {table}
 
+	
+	\subsubsection{Comparison with traditional methods}
 
 \noindent The final results of the \textbf{W\_BN\_MS\_LR} and \textbf{W\_BN\_MS\_EL} networks were compared to the Macro F-Measure scores of the segmentations performed using the more traditional image segmentation methods described in Chapter \textbf{\ref{chap:concepts}}. Because Otsu thresholding, K-Means and Gaussian Mixture Models are all unsupervised methods, i.e. they do not depend on ground truth images, the labels they output have no direct relation to the ground truth labels used in the CNN training. Therefore, all combinations of matching the output labels with the ground truth labels are evaluated and for each, a multi-class F-Measure score is calculated. The assignment with the highest score is assumed to be the correct one, which is then used for comparing the performance of the unsupervised methods to the CNN performance.\\
 
@@ -410,7 +420,7 @@ The test results are shown in Table \textbf{\ref{tab:results5}}. For the 3-class
 \label{tab:resultsfinal}
 \end {table}
 
-Unsurprisingly, the modified U-Net produces better results than the other segmentation methods by a large margin, with the runner-up being Otsu segmentation, which achieves a Macro F-Measure score of $\approx$0.691 for 3 classes and a score of $\approx$0.554 for 4 classes. This puts the CNN at an advantage of $\approx$16\% and $\approx$21\% for segmenting the 3- and 4-class data, respectively. Processing an entire image (made up of several tiles) took $\approx$0.357 seconds for both the 3- and 4-class networks, not factoring in the time it takes to initialize the network, which took a few seconds on its own.
+Unsurprisingly, the modified U-Net produces better results than the other segmentation methods by a large margin, with the runner-up being Otsu segmentation, which achieves a Macro F-Measure score of $\approx0.691$ for 3 classes and a score of $\approx0.554$ for 4 classes. This puts the CNN at an advantage of $\approx$16\% and $\approx$21\% for segmenting the 3- and 4-class data, respectively. Processing an entire image (made up of several tiles) took $\approx0.357$ seconds for both the 3- and 4-class networks, neglecting the time it takes to initialize the network, which took a few seconds on its own.
 
 Qualitative results in the form of comparisons between segmentation and ground truth data for some image tiles are shown in Figure \textbf{\ref{fig:qualitative}}.
 
@@ -457,6 +467,6 @@ Qualitative results in the form of comparisons between segmentation and ground t
 		\includegraphics[scale=0.45]{img/fig_quali_tile4_pred_c4_GT.png}
 	\end {subfigure}
 
-		\caption[Qualitative prediction results.]{Qualitative results from predicting validation data tiles with the best 3-class network, \textbf{W\_BN\_S\_MS\_LR\_3}, (top two rows) and the best 4-class network, \textbf{W\_BN\_S\_MS\_EL\_4}, (bottom two rows). \textbf{From left to right}: Input image, prediction and image ground truth.}
+		\caption[Qualitative prediction results.]{Qualitative results from predicting validation data tiles with the best 3-class network, \textbf{W\_BN\_S\_MS\_LR\_3}, (top two rows) and the best 4-class network, \textbf{W\_BN\_S\_MS\_EL\_4}, (bottom two rows). \textbf{From left to right}: Input image, prediction and image ground truth. In the 4-class examples, it is evident that the Filopodia (blue) are hard to learn, often appearing ``broken'', with pieces of the Filopodia existing that are detached from the cell body. Lamellopodia and and especially cell bodies are learned much more precisely.}
 		\label{fig:qualitative}
 \end {figure}
