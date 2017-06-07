@@ -1,4 +1,4 @@
-\chapter{Basic Concepts}
+\chapter{Segmentation Concepts}
 \label{chap:concepts}
 
 Image segmentation is one of the main challenges in image processing and has been an active field of study for years, which results in many segmentation methods being available. In the following pages, a selection of methods that can perform multi-class segmentation, i.e. segmentation with more than two classes, is presented. As the number of images to be segmented is usually high, and computation time can be a crucial factor, human interaction should remain at a minimum level. Therefore, only methods that, once the segmentation process has been started, work without human interaction were chosen. All methods described here are later used to segment a set of images and compared to the ground truth to measure the quality of the segmentations (see Chapter \textbf{\ref{chap:results}}).
@@ -6,11 +6,11 @@ Image segmentation is one of the main challenges in image processing and has bee
 	\section{Thresholding}
 \label{sec:thresholding}
 
-\textit{Thresholding} \cite[ff. 82]{machine_vision} is the most basic segmentation algorithm there is: Given an input image with dimensions $x \times y$ and intensity values $z$ (for instance, $[0, 255]$ at 8-bit color depth), defined as a function
+\textit{Thresholding} \cite[pp. 82]{machine_vision} is the most basic segmentation algorithm there is: Given an input image with dimensions $x \times y$ and intensity values $z$ (for instance, $0 \leq z_i \leq 255$ at 8-bit color depth), defined as a function
 
 \[(x, y) \mapsto z = I(x, y), \text{ for } x, y, z \in \mathbb{N}_0,\]
 
-\noindent the thresholding function $T: \mathbb \mathbb{N}_0 \times \mathbb{N}_0 \rightarrow \{0, 1\}$ is defined as follows:
+\noindent the thresholding function $T: \mathbb{N}_0 \times \mathbb{N}_0 \rightarrow \{0, 1\}$ is defined as follows:
 
 \[ T(I(x, y), \theta) =  \begin{cases}
 				1 \text{ if } I(x, y) \, \geq \, \theta \\
@@ -26,11 +26,11 @@ Image segmentation is one of the main challenges in image processing and has bee
 
 \noindent where $w_0$ and $w_1$ are the \textit{weights}. These are defined as
 
-\[ w_0 = \sum \limits_{i=1}^{\theta} p_i \text{ and } w_1 = \sum \limits_{i=\theta+1}^{k} p_i \]
+\[ w_0 = \sum \limits_{i=1}^{\theta} p_i \quad \text{ and } \quad w_1 = \sum \limits_{i=\theta+1}^{k} p_i \]
 
 \noindent for a histogram of the image consisting of $k$ grayscale intensity bins, which each contain the probability for a pixel being in this bin, $p_i$.\footnote{Here, it is assumed that Otsu's algorithm is applied to a grayscale image. For RGB images, each channel can be thresholded separately using the same algorithm, or the image can be converted to grayscale and then be segmented.} The values $\mu_0$ and $\mu_1$ are the statistical mean values, defined as
 
-\[ \mu_0 = \sum \limits_{i=1}^{\theta} \frac{i \cdot p_i}{w_0} \text{ and } \mu_1 = \sum \limits_{i=\theta + 1}^{k} \frac{i \cdot p_i}{w_1} \,. \]
+\[ \mu_0 = \sum \limits_{i=1}^{\theta} \frac{i p_i}{w_0} \quad \text{ and } \quad \mu_1 = \sum \limits_{i=\theta + 1}^{k} \frac{i p_i}{w_1} \,. \]
 
 \noindent The threshold with the maximum between-class variance corresponds to a segmentation in which the pixels of each class have minimum \textbf{within}-class variance: This means that the pixels of each class are very much alike.
 
@@ -60,7 +60,7 @@ Image segmentation is one of the main challenges in image processing and has bee
 			     \end{cases}\,.
 \]
 
-\noindent However, this approach doesn't work as well for images whose histograms do not exhibit distinct histogram peaks - for example, due to noise - and also doesn't perform well for cases in which $n$ is large, neither considering the time needed to perform a segmentation\footnote{While variants of Otsu exist that are optimized for speed \cite{otsu_fast}, only the original Otsu algorithm is evaluated here because it is the most common.} nor considering the segmentation quality, due to the method exploiting only the data the histogram provides.
+\noindent However, this approach doesn't work as well for images whose histograms do not exhibit distinct histogram peaks - for example, due to noise - and also doesn't perform well for cases in which $n$ is large, neither considering the time needed to perform a segmentation\footnote{While variants of Otsu exist that are optimized for speed \cite{otsu_fast}, only the original Otsu algorithm is evaluated here.} nor considering the segmentation quality, due to the method exploiting only the data the histogram provides. \cite{Otsu}
 
 %\noindent The Otsu algorithm belongs to a family of thresholding mechanisms that is called ``global thresholding'' because the same threshold is applied to the entire image. However, there are also local or ``adaptive'' thresholding algorithms which segment different parts of the image with different thresholds. The need for such algorithms often arises when the illumination of the input image is highly irregular, for example when cast shadows overlay part of the image (see \ref{fig:illumination}). One approach is to calculate a threshold for each pixel of the image while examining a neighborhood of size $L \times L$ around the pixel in question, using the mean, the mean of the maximum and minimum values or the median of the resulting local pixel intensity distribution to determine a local threshold.
 
@@ -131,13 +131,13 @@ In the final step, a hysteresis threshold is applied. This process consists of d
 \end {comment}
 
 	\section{K-Means}
-K-Means \cite{kmeans} is a general-purpose data clustering algorithm whose aim is to create $k$ data clusters from all $n$-dimensional data points $d = (f_1, f_2, \dots, f_n)$ so that the squared distance from each data point in the cluster to the cluster mean is minimized overall. Mathematically, this translates to
+K-Means \cite{kmeans} is a general-purpose data clustering algorithm whose aim is to create $k$ data clusters from all $n$-dimensional data points $d = (f_1, f_2, \dots, f_n)$ so that the squared distance from each data point in the cluster to the cluster mean is minimized overall. Mathematically, this is expressed as
 
 \[ \argmin \limits_{C} \sum \limits_{i=1}^{k} \sum \limits_{d \in C_i} || d - \mu_i||^2  \,,\]
 
-\noindent where $C_i$ for $i=1, \dots, k$ are the $k$ clusters and $\mu_i$ for $i=1, \dots, k$ are the means of the respective clusters. Viewed graphically, this is equal to computing a Voronoi diagram for the data, using the $k$ cluster centroids as the Voronoi cell centers.
+\noindent where $C_i$ for $i=1, \dots, k$ are the $k$ clusters and $\mu_i$ for $i=1, \dots, k$ are the means of the respective clusters.
 
-The algorithm is initialized with $k$ either random or differently selected cluster centers. Then, the algorithm executes the two steps described in Algorithm \textbf{\ref{alg:kmeans_pseudo}} alternatingly until either a set number of iterations is reached or the overall difference between the current and the last centroid positions falls below a threshold $\epsilon$  (see Figure \textbf{\ref{fig:kmeans}}).
+The algorithm is initialized with $k$ either random or differently selected cluster centers. Then, the algorithm executes the two steps described in Algorithm \textbf{\ref{alg:kmeans_pseudo}} alternatingly until either a set number of iterations is reached or the overall difference between the current and the last center positions falls below a threshold $\epsilon$  (see Figure \textbf{\ref{fig:kmeans}}).
 
 \begin {algorithm}[!htb]
 	\caption{K-Means ($\epsilon$, iter\_max)}\label{alg:kmeans_pseudo}
@@ -167,7 +167,7 @@ The algorithm is initialized with $k$ either random or differently selected clus
 
 
 	\section{Gaussian Mixture Models}
-\textit{Gaussian Mixture Models} (GMMs) are a subclass of mixture models, that is, probabilistic models which are combined with other models of the same distribution type to form a more complex model that is able to model the distribution of a data set more accurately than a simple model could. In the case of GMMs, the base distributions are often $n$-multivariate Gaussian distributions:
+\textit{Gaussian Mixture Models} (GMMs) are a subclass of mixture models, that is, probabilistic models which are combined with other models of the same distribution type to form a more complex model that is able to model the distribution of a data set more accurately than a simple model could. In the case of GMMs, the base distributions are $n$-multivariate Gaussian distributions:
 
 \[ pdf(x) = \mathcal{N}_n (x\,|\,\mu,\, \Sigma) \,. \]
 
@@ -175,7 +175,7 @@ The algorithm is initialized with $k$ either random or differently selected clus
 
 \[ pdf_m (x) = \sum \limits_{k=1}^{K} \pi_k \, \mathcal{N}_n (x\,|\, \mu_k, \Sigma_k) \,. \]
 
-\noindent This mixture model consists of $K$ models that each have different parameters $\mu$ and $\Sigma$ and have real weights $\pi_k \in \, (0, 1)$, with $\sum_{i=1}^{k} \pi_i = 1$. \cite[pp. 430]{bishop_pattern}
+\noindent This mixture model consists of $K$ models that each have different parameters $\mu$ and $\Sigma$ and real weights $\pi_k \in \, (0, 1)$, with $\sum_{i=1}^{k} \pi_i = 1$.
 
 %\begin {figure}[!htb]
 %	\begin{center}
@@ -192,17 +192,19 @@ The algorithm is initialized with $k$ either random or differently selected clus
 	\label{fig:gmm_vs_gt}
 \end {figure}
 
-\noindent The parameters of such a mixture model can be calculated by applying the Expectation-Maximization algorithm \cite{em_algorithm}, which can additionally be combined with a K-Means initialization, creating better conditions for finding fitting parameters. GMMs can also be used for segmenting images: Images are intepreted as numerical data in which each pixel position corresponds to an intensity value. If the number of components to be found in the image is known beforehand - as it is in the case of image segmentation - the image can be segmented according to the fitted GMM (see Figure \textbf{\ref{fig:gmm_vs_gt}}). To do this, for each pixel in the image, the posterior probabilities of that pixel in respect to each of the Gaussians is calculated and the Gaussian with the highest probability is chosen as the source distribution of the pixel:
+\noindent The parameters of such a mixture model can be calculated by running the Expectation-Maximization algorithm \cite{em_algorithm}, which can additionally be combined with a K-Means initialization, creating better conditions for finding fitting parameters. \cite[pp. 430]{bishop_pattern}
+
+GMMs can also be used for segmenting images: Images are intepreted as numerical data in which each pixel position corresponds to an intensity value. If the number of components to be found in the image is known beforehand - as it is in the case of image segmentation - the image can be segmented according to the fitted GMM (see Figure \textbf{\ref{fig:gmm_vs_gt}}). To do this, for each pixel in the image, the posterior probabilities of that pixel in respect to each of the Gaussians is calculated and the Gaussian with the highest probability is chosen as the source distribution of the pixel:
 
 \[ \text{label}_x = \argmax \limits_{k} \, p(\mu_k, \Sigma_k\, | \, x) \]
 
-\noindent This yields a class with which the pixel is labelled.
+\noindent This yields a class with which the pixel is then labeled.
 
 
 	\section{Multi-layer Perceptrons}
-\textit{Multi-layer Perceptrons} (MLPs), also called \textit{Feedforward Artificial Neuronal Networks} (ANNs) are mathematical functions that try to emulate the way neurons in the brain process information, typically to classify data or perform regression on it. ANNs have recently achieved impressing results on various tasks, such as image classification \cite{krizhevsky2012} or sound analysis \cite{CNN_sound}, typically achieved by very deep networks that used a large amount of artificial neurons and were fed large datasets exceeding one million samples. ``Deep Learning'' is a blanket term regularly used to describe these processes.
+\textit{Multi-layer Perceptrons}, also called \textit{Feedforward Artificial Neuronal Networks} or simply \textit{neural networks} are mathematical functions that try to emulate the way neurons in the brain process information, typically to classify data or perform regression on it. Neural networks have recently achieved impressing results on various tasks, such as image classification \cite{krizhevsky2012} or sound analysis \cite{CNN_sound}, typically achieved by very deep networks that used a large amount of \textit{artificial neurons} and were fed large datasets exceeding one million samples. ``Deep Learning'' is a blanket term regularly used to describe these processes.
 
-In this section, the concepts behind the optimization of functions via the Gradient Descent algorithm, Neuronal Networks and training of those networks using the Backpropagation algorithm are explained. 
+In this section, the concepts behind the optimization of functions via the Gradient Descent algorithm, neural networks and training of those networks using the Backpropagation algorithm are explained. 
 
 
 	\subsection {Gradient Descent}
@@ -216,7 +218,7 @@ In this section, the concepts behind the optimization of functions via the Gradi
 
 \[ \nabla_f = \left [ \frac{\partial f}{\partial \Theta_1}, \dots, \frac{\partial f}{\partial \Theta_n} \right ]^T \, ,\]
 
-the vector of all first partial derivatives of $f$, points into the opposite direction of the fastest change, or put graphically, shows the opposite direction of the ``steepest slope''. By taking steps in the \textit{negative} gradient direction, the function value is minimized step by step, while maximization works the same, only that the function is negated and then minimized, which results in parameters that maximize the original function. The parameter $\eta$ depicts the non-negative step size.\footnote{Empirically, values in the range $(0, 1]$ have been shown to work well. For example, \cite{krizhevsky2012} used a step size of 0.01 for its implementation of Gradient Desent.} \cite[pp. 40--42]{optimization_book}\\
+the vector of all first partial derivatives of $f$, points into the opposite direction of the fastest change, or put graphically, leads in the opposite direction of the ``steepest slope''. By taking steps in the \textit{negative} gradient direction, the function value is minimized step by step, while maximization works the same way, only that the function is negated and then minimized, which results in parameters that maximize the original function. The parameter $\eta$ depicts the non-negative step size.\footnote{Empirically, values in the range $(0, 1]$ have been shown to work well. For example, \cite{krizhevsky2012} used $\mu = 0.01$ for its implementation of Gradient Desent.} \cite[pp. 40--42]{optimization_book}\\
 
 Gradient Descent starts with a guess for the parameters in $\Theta$, iteratively evaluates the gradient and updates the parameters accordingly until convergence within arbitrary precision is reached (see Algorithm \textbf{\ref{alg:grad_desc}}).
 
@@ -231,7 +233,7 @@ Gradient Descent starts with a guess for the parameters in $\Theta$, iteratively
 	\label{alg:grad_desc}
 \end{algorithm}
 
-\noindent For convex functions, Gradient Descent always finds the global minimum. For non-convex functions however, the algorithm may get stuck in a local minimum or at saddle points, also called ``false minima'' (see Figure \textbf{\ref{fig:grad_desc}}). Therefore, running the algorithm multiple times with random starting parameters or even taking informed guesses, given knowledge about the form of the function to be optimized, is advised. The step size $\eta$ has to be chosen depending on the shape of the function to minimize. If $\eta$ is too large, the algorithm will overshoot the minimum repeatedly and will never converge. If $\eta$ is too small, convergence will take a long time.\\
+\noindent For convex functions, Gradient Descent always finds the global minimum. For non-convex functions however, the algorithm may get stuck in a local minimum or at saddle points, also called ``false minima'' (see Figure \textbf{\ref{fig:grad_desc}}). Therefore, running the algorithm multiple times with random starting parameters or even taking informed guesses, given knowledge about the form of the function to be optimized, is advisable. The step size $\eta$ has to be chosen depending on the shape of the function to minimize. If $\eta$ is too large, the algorithm will overshoot the minimum repeatedly and will never converge. If $\eta$ is too small, convergence will take a long time.\\
 
 \begin {figure}[!htb]
 	\begin{center}
@@ -249,7 +251,7 @@ Gradient Descent starts with a guess for the parameters in $\Theta$, iteratively
 
 \[ \Theta_i = \Theta_{i-1} - \eta \nabla_{f_i} \,, \]
 
-\noindent where $f_i$ is the function $f$ evaluated for $x_i$ and $\Theta_{i-1}$. The number of iteration that it takes to consider all datapoints in the dataset is called an \textit{epoch}. Similarily, to use Mini-Batch SGD with a batch size of $n$, an average over the gradients for $n$ datapoints is used:
+\noindent where $f_i$ is the function $f$ evaluated for $x_i$ and $\Theta_{i-1}$. The number of iterations it takes to consider all datapoints in the dataset is called an \textit{epoch}. Similarily, to use Mini-Batch SGD with a batch size of $n$, an average over the gradients for $n$ datapoints is used:
 
 \[ \Theta_i = \Theta_{i-1} - \eta \left ( \frac{1}{n} \sum \limits_{i=1}^{n} \nabla_{f_i} \right ) \,. \]
 
@@ -276,7 +278,7 @@ Gradient Descent starts with a guess for the parameters in $\Theta$, iteratively
 
 
 	\subsubsection {Learning Rate Decay}
-Another optimization that is often used is \textit{Learning Rate decay}, also called \textit{Learning Rate Annealing}. It exchanges the fixed learning rate $\eta$ with a learning rate that is a function of the iteration number so that based on how long the optimization has been running, the step size becomes smaller. This has the benefit of being able to take large steps towards the minimum initially, but to allow the search to be narrowed down when near the minimum and avoid convergence problems caused by a high learning rate. The most popular of these is the \textit{step decay}, which reduces the learning rate by some factor $\zeta$ in every $x$th iteration. Let $i$ be a variable counting the number of iterations. The learning rate in an iteration is then given by
+Another optimization that is often used is \textit{Learning Rate decay}, also called \textit{Learning Rate Annealing}. It exchanges the fixed learning rate $\eta$ with a learning rate that is a function of the iteration number so that based on how long the optimization has been running, the step size becomes smaller. This has the benefit of being able to take large steps towards the minimum initially, but to allow the search to be narrowed down when near the minimum and avoid convergence problems caused by a high learning rate.A popular annealing method is \textit{step decay}, which reduces the learning rate by some factor $\zeta$ in every $x$th iteration. Let $i$ be a variable counting the number of iterations. The learning rate in an iteration is then given by
 
 \[ \eta_i = \eta_{i-1}\, {\zeta}^{\left \lfloor \frac{i}{x} \right \rfloor} \,. \]
 
@@ -305,15 +307,15 @@ The \textit{Perceptron classifier}, the function that decides which class a give
 
 \noindent The task of \textit{training} is defined as finding values for $w_1, \dots, w_{n+1}$ so that each data point is classified correctly by the resulting line, plane or (hyper-)plane. To this account, there needs to be a $m$-dimensional vector $t$ containing the \textit{labels} of each data point to verify the correctness of $w$. These labels are integers that indicate which class each data point belongs to. In the case of the Perceptron algorithm, the labels are either $1$ for the first class $C_1$ or $-1$ for the second class, $C_2$. If all data points are classified correctly by some $w$, then it holds that
 
-\[ w^T x_n \, t_n > 0 \,\,\forall\, x_n \in x \label{eq:perceptron_label} \]
+\[ w^T x_n \, t_n > 0 \,\,\forall\, x_n \in x \, . \label{eq:perceptron_label} \]
 
 \noindent Using this definition of correctness, a correctness measure can be formulated, which is known as the \textit{Perceptron criterion}. Functions of this kind are also called \textit{error functions} or \textit{loss functions}. This particular loss function is given by
 
 \[ E_p(w) = - \sum \limits_{n \in \mathcal{M}} w^T x_n\, t_n, \label{eq:perc_error}\]
 
-\noindent where $\mathcal{M}$ is the set of all data points that were misclassfied, meaning that evaluating equation \textbf{\ref{eq:perceptron_label}} for that data yields a value $< 0$. \cite[pp. 192--194]{bishop_pattern}\\
+\noindent where $\mathcal{M}$ is the set of all data points that were misclassfied, meaning that evaluating equation \textbf{\ref{eq:perceptron_label}} for these particular data points yields a value $< 0$. \cite[pp. 192--194]{bishop_pattern}\\
 
-\noindent The correct Perceptron weights can then be determined by some arbitrary learning algorithm, although here, the Gradient Descent scheme (see Algorithm \textbf{\ref{alg:grad_desc}}) is applied to the error function \textbf{\ref{eq:perc_error}}. Either (Batch) Gradient Descent or Stochastic Gradient Descent can be used.
+\noindent The correct Perceptron weights can then be determined by some arbitrary learning algorithm, although here, the Gradient Descent scheme (see Algorithm \textbf{\ref{alg:grad_desc}}) is applied to the error function \textbf{\ref{eq:perc_error}}. For this task, (Batch) Gradient Descent or Stochastic Gradient Descent can be used.
 
 Either way, the gradient of $E_p$ has to be calculated. The Perceptron criterion only depends on the weights $w$, so the gradient vector has the shape
 
@@ -368,10 +370,10 @@ Either way, the gradient of $E_p$ has to be calculated. The Perceptron criterion
 
 		\subsection{Multiple Neurons and Backpropagation}
 \label{subsec:mlp_backprop}
-While the Perceptron algorithm works fine for linear problems, those are only a small subset of real-world problems (see Figure \textbf{\ref{fig:perceptron}}). The solution to this problem is to add more neurons to the model, which form a network that consists of layers that pass the outputs of neurons from previous layers through \textit{non-linear} activation functions and then use the results as inputs. These layers are referred to as the ``input layer'', the initial layer, the ``output layer'', the last layer, and ``hidden layers'', which are all the layers in-between.
+While the Perceptron algorithm works fine for linear problems, those are only a small subset of real-world problems (see Figure \textbf{\ref{fig:perceptron}}). The solution to this problem is to add more neurons to the model, which form a network that consists of layers that pass the outputs of neurons from previous layers through \textit{non-linear} activation functions and then use the results as inputs. These layers are referred to as the ``input layer'' (the initial layer), the ``output layer'' (the last layer) and ``hidden layers'', which are all the layers in-between.
 
 	\subsubsection{Multi-Layer Perceptrons}
-The resulting networks are called \textit{Multi-Layer Perceptrons} (MLPs), \textit{Feedforward Artificial Neural Networks}(ANNs), or, in the case of a multitude of layers, \textit{Deep Neural Networks}, and are much more powerful than simple Perceptrons, as they can approximate haphazard continuous functions that operate on closed and bounded subsets of $\mathbb{R}^n$ given that the network possesses at least one hidden layer of neurons. This capability makes using MLPs for learning real-life problems feasible. \cite{universal_approx, universal_approx2}\\
+The resulting networks are called \textit{Multi-Layer Perceptrons} (MLPs), \textit{Feedforward Artificial Neural Networks} (ANNs), \textit{neural networks}, or, in the case of a multitude of layers, \textit{deep} neural networks, and are much more powerful than simple Perceptrons, as they can approximate haphazard continuous functions that operate on closed and bounded subsets of $\mathbb{R}^n$ given that the network possesses at least one hidden layer of neurons. This capability makes using neural networks for learning real-life problems feasible. \cite{universal_approx, universal_approx2}\\
 
 \noindent Again, each neuron in the network computes a weighted sum of its $i$ inputs, just like in Equation \textbf{\ref{eq:perc_class}}, although indexing has been added to identify neurons and weights in the entire network:
 
@@ -408,14 +410,14 @@ Afterwards, the sum $a^{(l)}_j$ is passed into an activation function $h$ to pro
 			\def\svgwidth{0.8\columnwidth}
 			\input{img/mlp.pdf_tex}
 		\end{center}
-		\caption[A simple Multi-Layer Perceptron.]{An MLP with one hidden layer, forming an acyclic directed graph, where connections are color-coded per layer by the receiving neuron. The layer count $L$ starts at the layer after the input layer\protect\footnotemark. Therefore, $L = 2$ with three inputs $x_i$ and neuron counts $D^{(1)} = 4$ and $D^{(2)} = 2$. The variables $b^{(1)}$ and $b^{(2)}$ refer to the biases for the neurons in the layers $(1)$ or $(2)$, respectively. Each neuron has its own, changeable bias value, but for the sake of cleanness, the connections from the biases to each neuron of their corresponding layer are not shown.}
+		\caption[A simple Multi-Layer Perceptron.]{A neural network with one hidden layer, forming an acyclic directed graph, where connections are color-coded per layer by the receiving neuron. The layer count $L$ starts at the layer after the input layer\protect\footnotemark. Therefore, $L = 2$ with three inputs $x_i$ and neuron counts $D^{(1)} = 4$ and $D^{(2)} = 2$. The variables $b^{(1)}$ and $b^{(2)}$ refer to the biases for the neurons in the layers $(1)$ or $(2)$, respectively. Each neuron has its own bias value, but for the sake of cleanness, the connections from the biases to each neuron of their corresponding layer are not shown.}
 		\label{fig:mlp}
 	\end {figure}
 
 	\footnotetext{There is no consensus on which method of counting is the most appropriate. Sometimes, only the number of hidden layers or even all layers are counted. \cite[pp. 229]{bishop_pattern}}
 }
 
-\noindent The goal of training an MLP is - as previously for the Perceptron - finding specific weights so that all inputs are classified correctly, or at least, so that the network makes only few mistakes. Therefore, a loss function is added to the end of the network, measuring the correctness of the output. Instead of the Perceptron criterion from Equation \textbf{\ref{eq:perc_error}}, a more general loss function is employed which compares the difference between the output $\sigma(x)$ of the network for a sample $x$ and the preferred output for $x$, i.e. the label or \textit{ground truth} of $x$. Typically, in binary classification problems, Sigmoid outputs are used together with the \textit{Cross-Entropy} loss function, which is defined as follows: \footnote{The error is only given as a function of $w$ because both the input $x$ and its ground-truth $t$ are fixed in the particular case presented here.}
+\noindent The goal of training a neural network is - as previously for the Perceptron - finding specific weights so that all inputs are classified correctly, or at least, so that the network makes only few mistakes. Therefore, a loss function is added to the end of the network, measuring the correctness of the output. Instead of the Perceptron criterion from Equation \textbf{\ref{eq:perc_error}}, a more general loss function is employed which compares the difference between the output $\sigma(x)$ of the network for a sample $x$ and the preferred output for $x$, called the \textit{label} or \textit{ground truth} of $x$, herafter denoted as $t$. Typically, in binary classification problems, Sigmoid outputs are used together with the \textit{Cross-Entropy} loss function, which is defined as follows: \footnote{The error is only given as a function of $w$ because both the input $x$ and its ground-truth $t$ are fixed in the particular case presented here.}
 
 \[ \text{CE}(w) =  -t \, \ln (\text{out}_x) + (1 - t) \ln (1 - \text{out}_x). \]
 
@@ -513,7 +515,7 @@ Luckily, there exists an iterative algorithm called \textit{Backpropagation} \ci
 	\begin {subfigure}[b]{0.3\linewidth}
 		\scalebox{0.9}{\input{img/fig_mlp_trick2.pgf}}
 	\end {subfigure}
-		\caption[Non-linear separation with an MLP.]{The problem from Figure \textbf{\ref{fig:perceptron}} revisited. A 2-layer MLP with 2 input neurons, 5 hidden neurons and 2 output neurons was trained on a non-linearly separable dataset for 10,000 iterations using Backpropagation and Gradient Descent. \textbf{Top row:} Activation outputs of all 5 hidden neurons for all input points. The larger and more saturated a point is, the higher the activation response, while activations with activations below zero are shown with a fixed base saturation so that the classes remain unambiguous. The segregation into high and low responses corresponds to a linear classification performed by each hidden neuron. \textbf{Bottom, from left to right:} The left figure shows the activations of the first output neuron. The right figure shows the predictions of the network applied to the original dataset, which is thus classified perfectly. The classification boundary, a combination of all hidden neuron outputs, appears as non-linear in the original dataset space.}
+		\caption[Non-linear separation with an MLP.]{The problem from Figure \textbf{\ref{fig:perceptron}} revisited. A 2-layer neural network with 2 input neurons, 5 hidden neurons and 2 output neurons was trained on a non-linearly separable dataset for 10,000 iterations using Backpropagation and Gradient Descent. \textbf{Top row:} Activation outputs of all 5 hidden neurons for all input points. The larger and more saturated a point is, the higher the activation response, while activations with activations below zero are shown with a fixed base saturation so that the classes remain unambiguous. The segregation into high and low responses corresponds to a linear classification performed by each hidden neuron. \textbf{Bottom, from left to right:} The left figure shows the activations of the first output neuron. The right figure shows the predictions of the network applied to the original dataset, which is thus classified perfectly. The classification boundary, a combination of all hidden neuron outputs, appears as non-linear in the original dataset space.}
 		\label{fig:mlp_trick}
 	\end {figure}
 

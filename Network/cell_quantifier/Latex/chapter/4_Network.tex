@@ -1,20 +1,20 @@
 \chapter {Network Architecture}
 \label{chap:network}
 
-Since the task of image segmentation is a popular one, a number of architecture propositions have been made that aim to produce segmentations. Among them is the \textit{U-Net}, which is the basis of the network used in this thesis.  In the following sections, the Convolutional Neural Network architecture, the differences between this architecture and normal MLPs and the operations in such networks are detailed.
+Since the task of image segmentation is a popular one, a number of architecture propositions have been made that aim to produce segmentations. Among them is the \textit{U-Net}, which is the basis of the network used in this thesis.  In the following sections, the Convolutional Neural Network architecture, the differences between this architecture and normal neural networks and the operations in such networks are detailed.
 
 
 	\section{Convolutional Neural Networks}
 \label{sec:CNN}
-\textit{Convolutional Neural Networks} (CNNs) are a special subtype of MLPs that were popularized by LeCun \cite{lecun98} and, more recently, the successes of Krizhevsky \cite{krizhevsky2012} in the domain of image classification, although CNNs can be applied to other problems such as sound analysis \cite{CNN_sound} as well, given an adequate mapping of the problem. 
+\textit{Convolutional Neural Networks} (CNNs) are a special subtype of neural networks that were popularized by LeCun \cite{lecun98} and, more recently, the successes of Krizhevsky \cite{krizhevsky2012} in the domain of image classification, although CNNs can be applied to other problems such as sound analysis \cite{CNN_sound} as well, given an adequate representation of the problem. 
 
-The rationale for their creation was that using fully-connected networks like the ones presented in Section \textbf{\ref{subsec:mlp_backprop}} relate all elements of an input vector to every other element, which is generally a good thing to do. However, this doesn't scale well for very large datasets because of the large number of weights needed. In image data, pixels that are close to each other by some metric are much more likely to be related, while pixels that lie on opposite sides of the image hardly are part of the same pattern, as patterns in images are usually local. Consequently, CNNs encode this spatial relationship by using convolution operations, also called convolutional \textit{layers}, which share weights across all neurons involved in the convolution and thus scale much better.\\
+The rationale for their creation was that using fully-connected networks like the ones presented in Section \textbf{\ref{subsec:mlp_backprop}} relate all elements of an input vector to every other element, which is generally a good thing to do. However, this doesn't scale well for very large datasets because of the large number of weights needed. In image data, pixels that are close to each other by some metric are much more likely to be related, while pixels that lie on opposite sides of the image hardly are part of the same structure or pattern, as patterns in images are usually local. Consequently, CNNs encode this spatial relationship by using convolution operations, also called convolutional \textit{layers}, which share weights across all neurons involved in the convolution and thus scale much better.\\
 
 \noindent A \textit{convolution} is a mathematical operation which combines two functions into a new one. Mathematically, a convolution of two functions of a variable $x$ is defined as
 
 \[ f(x) * g(x) = \int \limits_{-\infty}^{\infty} f(u)g(x - u) \, \text{d}u \,, \]
 
-for a dummy variable $u$ that, for instance, denotes time. Convolutions were first used in physical signal processing, but can also be generalized to 2D and 3D spaces, for example to blur images or find contours. In case of an image that is $x \times y$ pixels large, the formula has to be changed to account for the two variables $x$ and $y$ of the image function $I(x, y)$ as well as the fact that pixels are discrete, i.e. not a double integral, but instead a double summation over all pixels is used:
+for a dummy variable $u$ that, for instance, denotes time. Convolutions were first used in physical signal processing, but can also be generalized to 2D and 3D spaces, for example to blur images or find contours. In the case of an image that is $x \times y$ pixels large, the formula has to be changed to account for the two variables $x$ and $y$ of the image function $I(x, y)$ as well as the fact that pixels are discrete, i.e. not a double integral, but instead a double summation over all pixels is used:
 
 \[ F(x, y) = I(x, y) * g(x, y) = \sum \limits_i \sum \limits_j I(x, y) \, g(x - i, y - j) \,, \] 
 
@@ -26,11 +26,11 @@ a values of the kernel matrix are used as the outputs of $f$ and can then be int
 
 \[ F(x, y) = \sum \limits_i \sum \limits_j I(x + i, y + j) \, f(i, j) \,, \]
 
-which is a more intuitive description of what a convolution amounts to, especially in the context of Figure \textbf{\ref{fig:convolution}}, which shows how a convolution is applied to an image. 
+which is a more intuitive description of what a convolution does, especially in the context of Figure \textbf{\ref{fig:convolution}}, which shows how a convolution is applied to an image. 
 
-Kernels with even dimensions can also be used. Because there exists no ``real'' center value in the neighborhood, an arbitrary value is chosen instead. For an example of a $2 \times 2$ kernel, one could choose the value to be calculated at each convolution step to be the value corresponding to the top left of the kernel. \cite[pp. 32-33]{machine_vision}\\
+Kernels with even dimensions can also be used. Because there is no ``real'' center value in the neighborhood, an arbitrary value is chosen instead. For an example of a $2 \times 2$ kernel, one could choose the value to be calculated at each convolution step to be the value corresponding to the top left of the kernel. \cite[pp. 32-33]{machine_vision}\\
 
-However, there also exist definitions of the convolution operation that compute outputs for values in $I$ that are on the border of the matrix, this means that some neighborhood values in $I$ are not defined because the neighborhood would extend over the boundaries of the matrix. In such out-of-bounds cases (OOB), several methods exist to nonetheless perform a convolution. Commonly, OOB values are set to zero and the convolution is performed as usual. An alternative is to treat the matrix like a torus and wrap around once the border is reached.
+However, there also exist definitions of the convolution operation that compute outputs for values in $I$ that are on the border of the matrix, this means that some neighborhood values in $I$ are not defined because the neighborhood would extend over the boundaries of the matrix. In such out-of-bounds cases (OOB), several methods exist to nonetheless perform a convolution. For example, OOB values can be set to zero and the convolution is then performed as usual. An alternative is to treat the matrix like a torus and wrap around once the border is reached.
 
 A normal convolution as defined above thus shrinks the input matrix each time it is applied because it only assigns new values to elements that have a valid neighborhood. For example, if a $3 \times 3$ kernel is used, a 1-value border of the data is lost. This definition of convolution is used in the following sections.\\
 
@@ -52,7 +52,7 @@ After the convolution, the feature maps are passed through a non-linear activati
 
 \noindent As the third step and last step of a convolutional layer, the generated activation maps are exposed to a pooling operation such as \textit{Maximum Pooling}. Maximum Pooling is a downsampling method that reduces the complexity of the network by replacing groups of values that are apart by a certain stride in the activation map with the maximum value within that group, resulting in a condensed activation map, while performing this calculation for each depth slice of the data independently. Intuitively, some of the information about where a pattern was detected by a filter while creating the feature map is given up in order to make the network easier to manage by reducing the valid convolution filter positions, although the relative spatial relationships between patterns are kept intact. Note that pooling is optional and usually is not performed after each convolution-activation operation, but rather after doing multiple of these (see Section \textbf{\ref{sec:unet}}).
 
-Finally, the resulting downsampled activation maps are fed into a fully-connected layer that calculates a desired number of output values like in a common MLP. \cite[pp. 330-345]{deeplearning_book}\\
+Finally, the resulting downsampled activation maps are fed into a fully-connected layer that calculates a desired number of output values like in a common neural network. \cite[pp. 330-345]{deeplearning_book}\\
 
 \noindent The training of such a network proceeds via Backpropagation as described in Section \textbf{\ref{subsec:mlp_backprop}}, only that the network has to learn the weights of the filters in addition to those of the fully-connected layer. Training the filters results in a hierarchy in which filters that are closer to the input detect low-level features such as edges, while further along the network, filter responses may be triggered by more complex objects only.\\
 
@@ -68,13 +68,13 @@ For an example of a simple CNN architecture, see Figure \textbf{\ref{fig:convnet
 
 
 	\section {Activation Functions}
-Even though previously, the Sigmoid function was given as an example of a suitable activation function for MLPs, recent research \cite{glorot, rectifiers} has shown that better alternatives exist, and it is hardly used anymore. This is mainly because Sigmoids contribute to the problem of ``vanishing gradients'' during Backpropagation, which causes earlier layers in a deep network to train much slower compared to layers near the output layer. ``Vanishing gradients'' happen when the magnitude of the gradient is close to zero, which in turn causes the training to change the network weights in affected layers by only a tiny amount, severely hampering the training progress in these layers.
+Even though previously, the Sigmoid function was given as an example of a suitable activation function for neural networks, recent research \cite{glorot, rectifiers} has shown that better alternatives exist, and it is hardly used anymore. This is mainly because Sigmoids contribute to the problem of ``vanishing gradients'' during Backpropagation, which causes earlier layers in a deep network to train much slower compared to layers near the output layer. ``Vanishing gradients'' happen when the magnitude of the gradient is close to zero, which in turn causes the training to change the network weights in affected layers by only a tiny amount, severely hampering the training progress in these layers.
 
 The Sigmoid function
 
 \[ \sigma(x) = \frac{1}{1 + e^{-x}} \]
 
-\noindent is especially prone to this because its derivative outputs values in the range $\left [0, 1/4 \right ]$ only. Combined with weights initialized to small values, e.g. Gaussian-distributed weights with zero mean and unit variance, the repeated application of the chain rule results in many terms in the range $\left [0, 1\right ]$ being multiplied with each other, leading to very small gradients the closer the algorithm gets to the input layer. The same is true for the $\tanh$ activation function
+\noindent is especially prone to this because its derivative maps inputs to values in the range $\left [0, 1/4 \right ]$ only. Combined with weights initialized as small values, e.g. Gaussian-distributed weights with zero mean and unit variance, the repeated application of the chain rule results in many terms in the range $\left [0, 1\right ]$ being multiplied with each other, leading to very small gradients the closer the algorithm gets to the input layer. The same is true for the $\tanh$ activation function
 
 \begin {align}
 	\tanh(x) &= \frac{1 - e^{-2x}}{1 + e^{-2x}}\\
@@ -82,7 +82,7 @@ The Sigmoid function
 		  &= 2 \sigma(2x) - 1
 \end {align}
 
-\noindent although its derivative is always in $[0, 1]$ and thus it decays more slowly as it passes through the network. However, in comparison with the Sigmoid, $\tanh$ has the advantage of being zero-centered, because data that is not zero-centered can be detrimental for Gradient Descent training (see Section \textbf{\ref{sec:weight_init}} for more information).\\
+\noindent although its derivative is always in $[0, 1]$ and thus it decays more slowly as it passes through the network. Additionally, $\tanh$ has the advantage of being zero-centered, because data that is not zero-centered can be detrimental for Gradient Descent training (see Section \textbf{\ref{sec:weight_init}} for more information).\\
 
 In general, activation functions for which
 
@@ -119,7 +119,7 @@ ReLUs do not saturate\footnote{This depends on the definition of saturation, for
 
 \noindent where $g$ is the gradient vector, $||g||$ is its $L^2$ norm and $\hat{g}$ is the regularized gradient. This regularization is done whenever $||g||$ is larger than some threshold $t$. \cite{l2clipping}\\
 
-\noindent Despite this, ReLUs still suffer from the problem that they can ``die'' when the network weights are updated in a way that makes them output activation values of zero forever - for example, when a large negative bias term turns all inputs negative and thus results in zero activations. Once a ReLU is dead, the gradient flowing through it will also be zero, and the weights for its neuron won't be updated anymore, which is another form of the saturation problem.
+\noindent Despite this, ReLUs still suffer from the problem that they can ``die'' when the network weights are updated in a way that makes them output activation values of zero forever - for example, when a large negative bias term turns all inputs negative and thus results in zero activations. Once a ReLU is dead, the gradient flowing through it will also be zero, and the weights for its neuron won't be updated anymore, which can be interpreted as another form of the saturation problem.
 
 An attempt at fixing this issue is relaxing the strict below-zero activation so it outputs a downscaled version of the input instead. This principle is called \textit{Leaky ReLU} \cite{lrelu} and formally changes the ReLU definition to 
 
@@ -198,7 +198,7 @@ Another important decision apart from choosing an appropriate activation functio
 
 A more reasonable approach is to initialize the weights as small random numbers, for example sampled from a Gaussian distribution with a small variance - albeit this causes problems because the resulting activations are also small and reduce the variance of the activations in the network the further the activations travel during Backpropagation, causing vanishing gradients. Making the weights larger overall also does not work, as saturating activation functions will then directly produce derivatives close to zero. \cite{karpathy_lecture2}\\
 
-\noindent \textit{Xavier initialization} \cite{glorot} provides an approximate method to get useful activations throughout the entire network layers by initializing the weights of a neuron by drawing them from a normal distribution $\mathcal{N}$ with mean $\mu = 0$ and a variance $\sigma^2$ which is calculated for each neuron independently, using the number of inputs $\alpha$ to that neuron and the number of outputs $\omega$ of that neuron:\footnote{Some frameworks use the simpler, alternative formula $\sigma^2 = 1/\alpha$ instead, disregarding the number of outputs.}
+\noindent \textit{Xavier initialization} \cite{glorot} provides an approximate method to get useful activations throughout all network layers by initializing the weights of a neuron by drawing them from a normal distribution $\mathcal{N}$ with mean $\mu = 0$ and a variance $\sigma^2$ which is calculated for each neuron independently, using the number of inputs $\alpha$ to that neuron and the number of outputs $\omega$ of that neuron:\footnote{Some frameworks use the simpler, alternative formula $\sigma^2 = 1/\alpha$ instead, disregarding the number of outputs.}
 
 \[ \sigma^2 = \frac{2}{\alpha + \omega} \,. \]
 
@@ -262,7 +262,7 @@ i.e. as a Jacobian matrix. \cite[\text{ p. 209}]{bishop_pattern}
 		\subsection{Cross-Entropy Loss}
 \label{subsec:cross_ent}
 
-A common loss layer in MLPs that perform multi-class classification is the \textit{Cross-Entropy Loss} layer. In many frameworks, the layer's implementation consists of two steps: First, the input $z$ of the layer is transformed by the Softmax function and is then used as an argument for the loss function.
+A common loss layer in neural networks that perform multi-class classification is the \textit{Cross-Entropy Loss} layer. In many frameworks, the layer's implementation consists of two steps: First, the input $z$ of the layer is transformed by the Softmax function and is then used as an argument for the loss function.
 
 The \textit{Cross-Entropy Loss} function compares a true probability distribution $p$ to a model probability distribution $q$. For a vector of calculated Softmax probabilities $z_i$, it is defined as follows:
 
@@ -299,7 +299,7 @@ One way to construct such a weight map is given in \cite{unet}, using the weight
 
 \noindent where \#c is the number of pixels that belong to a class $C$ and \#all is the number of pixels in the sample (or in all samples, depending on the weighting mode). This way, classes that occur less frequently are given a harsher penalty when misclassified, making them more important during training.
 
-For this thesis, the weight map was generated using average weighting for the class weights $w_c$ and omitting the modifier term (see Figure \textbf{\ref{fig:weight_map}}). The reason for this is that the modifier term was originally introduced in \cite{unet} to give a large weight to narrow strips of background pixels that were artificially inserted to act as a border between two overlapping cells. Detecting these borders was not a priority, and since calculating the distance to the next non-background pixel for each pixel takes some time even when employing spatial search data structures such as a PR-Tree,  a simple weight map rather than a complex one was adopted during early network tests where the data set was still subject to change and had to be recalculated occasionally.\\
+For this thesis, the weight map was generated using average weighting for the class weights $w_c$ and omitting the modifier term (see Figure \textbf{\ref{fig:weight_map}}). The reason for this is that the modifier term was originally introduced in \cite{unet} to give a large weight to narrow strips of background pixels that were artificially inserted to act as a border between two overlapping cells. Detecting these borders was not a priority, and since calculating the distance to the next non-background pixel for each pixel takes some time even when employing spatial search data structures such as a PR-Tree,  a simple weight map rather than a complex one was adopted during early network tests where the dataset was still subject to change and had to be recalculated occasionally.\\
 
 \begin {figure}[!htb]
 	\begin{center}
@@ -311,7 +311,7 @@ For this thesis, the weight map was generated using average weighting for the cl
 	\end {subfigure}
 	\end{center}
 
-		\caption[The Cross-Entropy Loss weight map.]{\textbf{Left:} A ground truth label for an image with four classes, three of which are foreground classes. \textbf{Right:} The calculated weight map to use with the weighted Cross-Entropy loss, created with inverse average weights and no distance modifier term. There are more background than foreground pixels, so the background is assigned a lower (darker) weight value, while the cell parts in the foreground are weighted heavier.}
+		\caption[The Cross-Entropy Loss weight map.]{\textbf{Left:} A ground truth label for an image with four classes, three of which are foreground classes. \textbf{Right:} The calculated weight map to use with the weighted Cross-Entropy loss, created with inverse average weights and no distance modifier term. There are more background than foreground pixels, so the background is assigned a lower (darker) weight value, while the cell parts in the foreground are weighted more heavily.}
 		\label{fig:weight_map}
 
 \end {figure}
@@ -368,7 +368,7 @@ An alternative to solving the problem of unbalanced classes in the training data
 	&= 2 \left ( \frac{t_j \sum_{i=1}^{n} \left ( y_i + t_i \right ) - \sum_{i=1}^{n} \left ( y_i t_i \right )  }{\left [ \sum_{i=1}^{n} \left ( y_i + t_i \right ) \right ]^2 } \right ) \,.
 \end {align}
 
-\noindent For multi-class problems, the approach is changed slightly: The $F_1$ score is calculated for each class $C_j$ in a binary fashion, using the $C_j$ as the ``foreground'' and all other classes $C_i, i \neq j$ as ``background''. This way, the definitions for TP, FP and FN can be used for more than two classes. The average of these multiple F-Measures is then used as the loss function.\footnote{It should be noted that the $F_1$ score \textbf{increases} the better the classification becomes.}
+\noindent For multi-class problems, the approach is changed slightly: The $F_1$ score is calculated for each class $C_j$ in a binary fashion, using the $C_j$ as the ``foreground'' and all other classes $C_i, i \neq j$ as ``background''. This way, the definitions for TP, FP and FN can be used for more than two classes. The average of these multiple F-Measures is then used as the loss function.\footnote{It should be noted that the $F_1$ score \textbf{increases} the better the classification becomes, whereas common loss functions decrease.}
 
 During the backward pass, the gradients are also calculated per class in a similiar way.
 
@@ -383,7 +383,7 @@ The U-Net first performs a series of standard computations, alternating $3 \time
 	\begin{center}
 		\includegraphics[scale=0.50]{img/fig_upconvolution}
 	\end{center}
-	\caption[Matrix upconvolution.]{The deconvolution or upsampling operation. This example shows upsampling by a factor of two of an input $I$, which is first padded with zero values to create $I'$, and then is convoluted with the $2 \times 2$ filter $f$. In this example, the ``center'' of the convolution is assumed to be the top left value. The dashed, red squares show the neighborhood of the first convolution step on $I'$ and the corresponding output in $F$. The additional zero values in $F$ can then be discarded, resulting in a approximate inversion of the Maximum Pooling operation. \footnotemark}
+	\caption[Matrix upconvolution.]{The deconvolution or upsampling operation. This example shows upsampling by a factor of two of an input $I$, which is first padded with zero values to create $I'$, and then convoluted with the $2 \times 2$ filter $f$. In this example, the ``center'' of the convolution is assumed to be the top left value. The dashed, red squares show the neighborhood of the first convolution step on $I'$ and the corresponding output in $F$. The additional zero values in $F$ can then be discarded, resulting in a approximate inversion of the Maximum Pooling operation. \footnotemark}
 	\label{fig:upconvolution}
 \end {figure}
 
